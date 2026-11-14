@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.gurusainathp.movieed.ui.HomeFragment;
 import com.gurusainathp.movieed.ui.PlaceholderFragment;
+import com.gurusainathp.movieed.ui.search.SearchFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         String tag;
         if (itemId == R.id.nav_search) {
             tag = "search";
-            fragment = PlaceholderFragment.newInstance(R.string.nav_search, R.string.search_subtitle);
+            fragment = new SearchFragment();
         } else if (itemId == R.id.nav_diary) {
             tag = "diary";
             fragment = PlaceholderFragment.newInstance(R.string.nav_diary, R.string.diary_subtitle);
