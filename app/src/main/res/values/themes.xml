@@ -28,4 +28,8 @@
 
     <style name="Theme.Movieed" parent="Base.Theme.Movieed" />
 
+    <!-- Bottom Navigation Active Indicator Style -->
+    <style name="Widget.Movieed.BottomNavigationView.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/movieed_surface_elevated</item>
+    </style>
 </resources>
