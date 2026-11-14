@@ -1,0 +1,58 @@
+---
+description: Movieed project rules — Java Android app, MVVM, Room, TMDB, offline-first.
+globs: "*.java,*.xml"
+alwaysApply: true
+---
+
+# Movieed Rules
+
+## Project
+- Name: Movieed
+- Package: com.gurusainath.movieed
+- SDK: Min API 26
+- Language: Java (not Kotlin)
+- UI: XML layouts + Material Components (Dark M3)
+- Architecture: MVVM
+- DB: Room / SQLite (local-first, no backend)
+- Network: Retrofit + OkHttp
+- Images: Glide
+- Background: WorkManager
+- Data: TMDB API
+- VCS: Git + GitHub
+
+## Current Status (Nov 14, 2026)
+- Build successful. colors.xml palette done. themes.xml dark M3 done.
+- Home screen built and tested. Initial commit awaiting confirmation.
+- Bottom navigation = next task.
+- Room, TMDB, search, logging = not started.
+
+## Working Style
+- One goal at a time. No multi-task dumping.
+- Give exact file paths for every create/modify.
+- Explain what and why before showing code.
+- No massive code dumps. Incremental guidance.
+- Ask user to build and test after each milestone.
+- Provide meaningful Git commit messages at milestones.
+- Maintain clean architecture and Android best practices.
+- UI polished: smooth animations, rounded components, consistent styling.
+
+## Immediate Next Steps (in order)
+1. Confirm Git commit "feat: create initial Movieed home screen" succeeded.
+2. Implement bottom navigation (consistent with existing theme).
+3. Establish MVVM structure (Models, Repositories, ViewModels, UI, Database packages).
+4. Build Room database (entities, DAOs, offline availability).
+5. Integrate TMDB (Retrofit, search, response models, Glide).
+6. Build movie logging (watched status, ratings, notes, dates, custom tags).
+
+## Constraints
+- Do NOT skip to database or TMDB before navigation is done.
+- Do NOT proceed until user confirms current task works.
+- Do NOT use Kotlin unless explicitly requested.
+- Do NOT modify colors.xml or themes.xml without asking.
+
+## MCP Discipline
+- Only connect MCP servers when actively needed.
+- Before any MCP call: justify cost — what specific info do I need?
+- Truncate MCP results: never dump full JSON. Cite counts + key items.
+- Prefer grep/search over MCP tools returning large datasets.
+- If an MCP server has a CLI equivalent, use the CLI instead.
