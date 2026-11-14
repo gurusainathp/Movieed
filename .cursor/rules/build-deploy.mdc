@@ -1,0 +1,19 @@
+---
+description: Build, install, and launch Movieed over wireless ADB. Do not commit unless asked.
+alwaysApply: true
+---
+
+# Build & Deploy (Wireless ADB)
+
+After code changes are complete, run from the project root. Windows PowerShell 5 has no `&&`, so chain on `$LASTEXITCODE`:
+
+```powershell
+.\gradlew.bat installDebug
+if ($LASTEXITCODE -eq 0) { adb shell am start -n com.gurusainath.movieed/.MainActivity }
+```
+
+- If build fails: show only the error lines (`Select-String -Pattern "error|FAILED"` on Windows). Do NOT dump full Gradle output.
+- If `adb devices` shows no device: stop and ask me to re-pair. Do not retry blindly.
+- After successful install: tell me what changed and what to test on the phone. Then STOP. Wait for my confirmation before committing.
+- Never run `git commit` or `git push` unless I explicitly say "commit" or "push".
+- Suggest a commit message when I confirm something works, but do not execute it.
