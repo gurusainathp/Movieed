@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Core backgrounds -->
+    <color name="movieed_background">#202522</color>
+    <color name="movieed_surface">#292F2B</color>
+    <color name="movieed_surface_elevated">#343B35</color>
+
+    <!-- Text -->
+    <color name="movieed_text_primary">#EAE8DF</color>
+    <color name="movieed_text_secondary">#A9AEA3</color>
+
+    <!-- Brand accents -->
+    <color name="movieed_primary">#A5B397</color>
+    <color name="movieed_primary_dark">#68785F</color>
+    <color name="movieed_accent">#D1B88C</color>
+
+    <!-- Utility -->
+    <color name="movieed_border">#414941</color>
+    <color name="movieed_error">#CF7777</color>
+
+    <!-- Original Android defaults -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

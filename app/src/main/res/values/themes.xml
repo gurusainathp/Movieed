@@ -1,9 +1,31 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Movieed" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Base.Theme.Movieed" parent="Theme.Material3.Dark.NoActionBar">
+
+        <!-- Brand colours -->
+        <item name="colorPrimary">@color/movieed_primary</item>
+        <item name="colorOnPrimary">@color/movieed_background</item>
+
+        <!-- Background -->
+        <item name="android:colorBackground">@color/movieed_background</item>
+        <item name="colorSurface">@color/movieed_surface</item>
+        <item name="colorOnSurface">@color/movieed_text_primary</item>
+
+        <!-- Secondary colours -->
+        <item name="colorSecondary">@color/movieed_accent</item>
+        <item name="colorOnSecondary">@color/movieed_background</item>
+
+        <!-- Status and navigation bars -->
+        <item name="android:statusBarColor">@color/movieed_background</item>
+        <item name="android:navigationBarColor">@color/movieed_background</item>
+
+        <!-- System bar icon appearance -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
     </style>
 
     <style name="Theme.Movieed" parent="Base.Theme.Movieed" />
+
 </resources>
