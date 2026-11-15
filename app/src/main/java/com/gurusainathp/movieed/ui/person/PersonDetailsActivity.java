@@ -13,13 +13,15 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 import com.gurusainathp.movieed.R;
+import com.gurusainathp.movieed.data.remote.dto.TmdbPersonCastCreditDto;
 import com.gurusainathp.movieed.domain.model.Movie;
 import com.gurusainathp.movieed.ui.movie.MovieDetailsActivity;
 import com.gurusainathp.movieed.ui.search.SearchMovieAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PersonDetailsActivity extends AppCompatActivity {
@@ -43,9 +45,17 @@ public class PersonDetailsActivity extends AppCompatActivity {
     private TextView tvInfo;
     private TextView tvBiography;
     private TextView tvReadMore;
+
+    private RecyclerView rvKnownFor;
+    private PersonFilmographyAdapter knownForAdapter;
+
     private RecyclerView rvFilmography;
-    private SearchMovieAdapter filmographyAdapter;
+    private PersonFilmographyAdapter filmographyAdapter;
+    private MaterialButton btnShowAll;
+
     private boolean isBioExpanded = false;
+    private boolean isFilmographyExpanded = false;
+    private List<TmdbPersonCastCreditDto> fullCreditsList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +67,15 @@ public class PersonDetailsActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(PersonViewModel.class);
 
-        MaterialToolbar toolbar = findViewById(R.id.person_toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
-        if (personName != null) {
-            toolbar.setTitle(personName);
-        }
-
         ivProfile = findViewById(R.id.iv_person_profile);
         tvName = findViewById(R.id.tv_person_name);
         tvInfo = findViewById(R.id.tv_person_info);
         tvBiography = findViewById(R.id.tv_person_biography);
         tvReadMore = findViewById(R.id.tv_read_more);
+
+        rvKnownFor = findViewById(R.id.rv_person_known_for);
         rvFilmography = findViewById(R.id.rv_person_filmography);
+        btnShowAll = findViewById(R.id.btn_show_all_filmography);
 
         tvReadMore.setOnClickListener(v -> {
             isBioExpanded = !isBioExpanded;
@@ -83,10 +90,23 @@ public class PersonDetailsActivity extends AppCompatActivity {
 
         tvName.setText(personName != null ? personName : "");
 
-        filmographyAdapter = new SearchMovieAdapter(movie -> {
-            MovieDetailsActivity.launch(this, movie.getId(), movie.getTitle(), movie.getPosterPath());
+        knownForAdapter = new PersonFilmographyAdapter(credit -> {
+            boolean isTv = "tv".equals(credit.getMediaType());
+            MovieDetailsActivity.launch(this, credit.getId(), credit.getTitle(), credit.getPosterPath(), isTv);
+        });
+        rvKnownFor.setAdapter(knownForAdapter);
+
+        filmographyAdapter = new PersonFilmographyAdapter(credit -> {
+            boolean isTv = "tv".equals(credit.getMediaType());
+            MovieDetailsActivity.launch(this, credit.getId(), credit.getTitle(), credit.getPosterPath(), isTv);
         });
         rvFilmography.setAdapter(filmographyAdapter);
+
+        btnShowAll.setOnClickListener(v -> {
+            isFilmographyExpanded = true;
+            btnShowAll.setVisibility(View.GONE);
+            displayFilmography();
+        });
 
         observeViewModel();
 
@@ -128,20 +148,26 @@ public class PersonDetailsActivity extends AppCompatActivity {
 
         viewModel.getFilmography().observe(this, list -> {
             if (list != null) {
-                List<Movie> movies = new ArrayList<>();
-                for (var dto : list) {
-                    movies.add(new Movie(
-                            dto.getId(),
-                            dto.getTitle(),
-                            dto.getOverview(),
-                            dto.getReleaseDate(),
-                            dto.getPosterPath(),
-                            dto.getBackdropPath(),
-                            dto.getVoteAverage(),
-                            dto.getMediaType()
-                    ));
+                // Sort reverse chronological by release date
+                fullCreditsList = new ArrayList<>(list);
+                fullCreditsList.sort((o1, o2) -> {
+                    String d1 = o1.getReleaseDate() != null ? o1.getReleaseDate() : "";
+                    String d2 = o2.getReleaseDate() != null ? o2.getReleaseDate() : "";
+                    return d2.compareTo(d1);
+                });
+
+                // Known For: Top 5 by vote average (highest rated first)
+                List<TmdbPersonCastCreditDto> sortedByRating = new ArrayList<>(fullCreditsList);
+                sortedByRating.sort((o1, o2) -> Double.compare(o2.getVoteAverage(), o1.getVoteAverage()));
+
+                List<TmdbPersonCastCreditDto> knownForCredits = new ArrayList<>();
+                int topCount = Math.min(5, sortedByRating.size());
+                for (int i = 0; i < topCount; i++) {
+                    knownForCredits.add(sortedByRating.get(i));
                 }
-                filmographyAdapter.setMovies(movies);
+                knownForAdapter.setCredits(knownForCredits);
+
+                displayFilmography();
             }
         });
 
@@ -150,5 +176,18 @@ public class PersonDetailsActivity extends AppCompatActivity {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void displayFilmography() {
+        if (fullCreditsList.isEmpty()) return;
+
+        if (isFilmographyExpanded || fullCreditsList.size() <= 10) {
+            filmographyAdapter.setCredits(fullCreditsList);
+            btnShowAll.setVisibility(View.GONE);
+        } else {
+            List<TmdbPersonCastCreditDto> subList = fullCreditsList.subList(0, 10);
+            filmographyAdapter.setCredits(subList);
+            btnShowAll.setVisibility(View.VISIBLE);
+        }
     }
 }

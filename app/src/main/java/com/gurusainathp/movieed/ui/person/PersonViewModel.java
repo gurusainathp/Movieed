@@ -7,11 +7,14 @@ import androidx.lifecycle.ViewModel;
 
 import com.gurusainathp.movieed.BuildConfig;
 import com.gurusainathp.movieed.data.remote.api.TmdbClient;
-import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbCombinedCreditsResponseDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbPersonCastCreditDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbPersonDto;
-import com.gurusainathp.movieed.data.remote.dto.TmdbPersonMovieCreditsResponseDto;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,11 +23,11 @@ import retrofit2.Response;
 public class PersonViewModel extends ViewModel {
 
     private final MutableLiveData<TmdbPersonDto> personDetails = new MutableLiveData<>();
-    private final MutableLiveData<List<TmdbMovieDto>> filmography = new MutableLiveData<>();
+    private final MutableLiveData<List<TmdbPersonCastCreditDto>> filmography = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public LiveData<TmdbPersonDto> getPersonDetails() { return personDetails; }
-    public LiveData<List<TmdbMovieDto>> getFilmography() { return filmography; }
+    public LiveData<List<TmdbPersonCastCreditDto>> getFilmography() { return filmography; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
 
     public void fetchPerson(int personId) {
@@ -45,18 +48,31 @@ public class PersonViewModel extends ViewModel {
                     }
                 });
 
-        TmdbClient.getApiService().getPersonMovieCredits(personId, BuildConfig.TMDB_API_KEY)
-                .enqueue(new Callback<TmdbPersonMovieCreditsResponseDto>() {
+        TmdbClient.getApiService().getCombinedCredits(personId, BuildConfig.TMDB_API_KEY)
+                .enqueue(new Callback<TmdbCombinedCreditsResponseDto>() {
                     @Override
-                    public void onResponse(@NonNull Call<TmdbPersonMovieCreditsResponseDto> call,
-                                           @NonNull Response<TmdbPersonMovieCreditsResponseDto> response) {
+                    public void onResponse(@NonNull Call<TmdbCombinedCreditsResponseDto> call,
+                                           @NonNull Response<TmdbCombinedCreditsResponseDto> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            filmography.setValue(response.body().getCast());
+                            Map<Integer, TmdbPersonCastCreditDto> combinedMap = new HashMap<>();
+                            if (response.body().getCast() != null) {
+                                for (TmdbPersonCastCreditDto c : response.body().getCast()) {
+                                    combinedMap.put(c.getId(), c);
+                                }
+                            }
+                            if (response.body().getCrew() != null) {
+                                for (TmdbPersonCastCreditDto c : response.body().getCrew()) {
+                                    if (!combinedMap.containsKey(c.getId())) {
+                                        combinedMap.put(c.getId(), c);
+                                    }
+                                }
+                            }
+                            filmography.setValue(new ArrayList<>(combinedMap.values()));
                         }
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<TmdbPersonMovieCreditsResponseDto> call, @NonNull Throwable t) {}
+                    public void onFailure(@NonNull Call<TmdbCombinedCreditsResponseDto> call, @NonNull Throwable t) {}
                 });
     }
 }

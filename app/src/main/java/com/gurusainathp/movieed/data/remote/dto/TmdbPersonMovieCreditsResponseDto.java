@@ -9,8 +9,8 @@ public class TmdbPersonMovieCreditsResponseDto {
     private int id;
 
     @SerializedName("cast")
-    private List<TmdbMovieDto> cast;
+    private List<TmdbPersonCastCreditDto> cast;
 
     public int getId() { return id; }
-    public List<TmdbMovieDto> getCast() { return cast; }
+    public List<TmdbPersonCastCreditDto> getCast() { return cast; }
 }

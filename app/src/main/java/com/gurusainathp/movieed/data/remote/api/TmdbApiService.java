@@ -1,10 +1,10 @@
 package com.gurusainathp.movieed.data.remote.api;
 
+import com.gurusainathp.movieed.data.remote.dto.TmdbCombinedCreditsResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCreditsResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbPersonDto;
-import com.gurusainathp.movieed.data.remote.dto.TmdbPersonMovieCreditsResponseDto;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -50,8 +50,8 @@ public interface TmdbApiService {
             @Query("api_key") String apiKey
     );
 
-    @GET("person/{person_id}/movie_credits")
-    Call<TmdbPersonMovieCreditsResponseDto> getPersonMovieCredits(
+    @GET("person/{person_id}/combined_credits")
+    Call<TmdbCombinedCreditsResponseDto> getCombinedCredits(
             @Path("person_id") int personId,
             @Query("api_key") String apiKey
     );
