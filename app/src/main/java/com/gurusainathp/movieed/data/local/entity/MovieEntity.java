@@ -4,11 +4,10 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "movies", indices = {@Index(value = {"tmdbId"}, unique = true)})
+@Entity(tableName = "movies")
 public class MovieEntity {
 
-    @PrimaryKey(autoGenerate = true)
-    private long id;
+    @PrimaryKey
     private int tmdbId;
     private String title;
     private String overview;
@@ -29,9 +28,6 @@ public class MovieEntity {
         this.runtime = runtime;
         this.lastUpdated = lastUpdated;
     }
-
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
 
     public int getTmdbId() { return tmdbId; }
     public void setTmdbId(int tmdbId) { this.tmdbId = tmdbId; }

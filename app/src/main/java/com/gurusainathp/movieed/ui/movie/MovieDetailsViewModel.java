@@ -78,31 +78,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 System.currentTimeMillis()
         );
 
-        // We insert/ensure movie is saved, then log entry
-        repository.insertMovie(movieEntity);
-
-        // Fetch or observe to get movieId, or insert log with matching tmdbId
-        long now = System.currentTimeMillis();
-        if (existingLog != null) {
-            existingLog.setRating(rating);
-            existingLog.setWatchedDate(watchedDate);
-            existingLog.setReview(review);
-            existingLog.setPrivateNote(note);
-            existingLog.setUpdatedAt(now);
-            repository.updateLog(existingLog);
-        } else {
-            // New log
-            MovieLogEntity newLog = new MovieLogEntity(
-                    dto.getId(), // Using tmdbId as movieId relation key
-                    watchedDate,
-                    rating,
-                    review,
-                    note,
-                    now,
-                    now
-            );
-            repository.insertLog(newLog);
-        }
+        repository.saveMovieAndLog(movieEntity, rating, watchedDate, review, note, existingLog);
     }
 
     public void deleteLog(MovieLogEntity log) {

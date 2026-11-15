@@ -24,9 +24,6 @@ public interface MovieDao {
     @Delete
     void delete(MovieEntity movie);
 
-    @Query("SELECT * FROM movies WHERE id = :id LIMIT 1")
-    LiveData<MovieEntity> getMovieById(long id);
-
     @Query("SELECT * FROM movies WHERE tmdbId = :tmdbId LIMIT 1")
     LiveData<MovieEntity> getMovieByTmdbId(int tmdbId);
 

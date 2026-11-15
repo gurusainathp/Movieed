@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey;
         tableName = "movie_logs",
         foreignKeys = @ForeignKey(
                 entity = MovieEntity.class,
-                parentColumns = "id",
+                parentColumns = "tmdbId",
                 childColumns = "movieId",
                 onDelete = ForeignKey.CASCADE
         ),
