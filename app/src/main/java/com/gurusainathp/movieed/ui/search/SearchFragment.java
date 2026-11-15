@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gurusainathp.movieed.BuildConfig;
 import com.gurusainathp.movieed.R;
+import com.gurusainathp.movieed.ui.movie.MovieDetailsActivity;
 
 public class SearchFragment extends Fragment {
 
@@ -51,7 +52,7 @@ public class SearchFragment extends Fragment {
         rvResults = view.findViewById(R.id.rv_search_results);
 
         adapter = new SearchMovieAdapter(movie -> {
-            Toast.makeText(requireContext(), "Selected: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
+            MovieDetailsActivity.launch(requireContext(), movie.getId(), movie.getTitle(), movie.getPosterPath());
         });
         rvResults.setAdapter(adapter);
 
