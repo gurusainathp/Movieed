@@ -11,6 +11,10 @@ public class TmdbCreditsResponseDto {
     @SerializedName("cast")
     private List<TmdbCastDto> cast;
 
+    @SerializedName("crew")
+    private List<TmdbCrewDto> crew;
+
     public int getId() { return id; }
     public List<TmdbCastDto> getCast() { return cast; }
+    public List<TmdbCrewDto> getCrew() { return crew; }
 }

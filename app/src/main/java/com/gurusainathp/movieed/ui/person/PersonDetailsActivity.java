@@ -42,8 +42,10 @@ public class PersonDetailsActivity extends AppCompatActivity {
     private TextView tvName;
     private TextView tvInfo;
     private TextView tvBiography;
+    private TextView tvReadMore;
     private RecyclerView rvFilmography;
     private SearchMovieAdapter filmographyAdapter;
+    private boolean isBioExpanded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +67,19 @@ public class PersonDetailsActivity extends AppCompatActivity {
         tvName = findViewById(R.id.tv_person_name);
         tvInfo = findViewById(R.id.tv_person_info);
         tvBiography = findViewById(R.id.tv_person_biography);
+        tvReadMore = findViewById(R.id.tv_read_more);
         rvFilmography = findViewById(R.id.rv_person_filmography);
+
+        tvReadMore.setOnClickListener(v -> {
+            isBioExpanded = !isBioExpanded;
+            if (isBioExpanded) {
+                tvBiography.setMaxLines(Integer.MAX_VALUE);
+                tvReadMore.setText("Read Less");
+            } else {
+                tvBiography.setMaxLines(4);
+                tvReadMore.setText("Read More");
+            }
+        });
 
         tvName.setText(personName != null ? personName : "");
 
@@ -97,8 +111,10 @@ public class PersonDetailsActivity extends AppCompatActivity {
 
                 if (dto.getBiography() != null && !dto.getBiography().isEmpty()) {
                     tvBiography.setText(dto.getBiography());
+                    tvReadMore.setVisibility(View.VISIBLE);
                 } else {
                     tvBiography.setText("No biography available.");
+                    tvReadMore.setVisibility(View.GONE);
                 }
 
                 if (dto.getProfilePath() != null) {

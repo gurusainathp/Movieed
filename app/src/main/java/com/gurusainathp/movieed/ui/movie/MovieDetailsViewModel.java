@@ -13,6 +13,7 @@ import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.remote.api.TmdbClient;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCastDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCreditsResponseDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbCrewDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 import com.gurusainathp.movieed.data.repository.MovieRepository;
 
@@ -27,6 +28,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
     private final MovieRepository repository;
     private final MutableLiveData<TmdbMovieDto> tmdbMovieDetails = new MutableLiveData<>();
     private final MutableLiveData<List<TmdbCastDto>> castList = new MutableLiveData<>();
+    private final MutableLiveData<List<TmdbCrewDto>> crewList = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public MovieDetailsViewModel(@NonNull Application application) {
@@ -40,6 +42,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
     public LiveData<List<TmdbCastDto>> getCastList() {
         return castList;
+    }
+
+    public LiveData<List<TmdbCrewDto>> getCrewList() {
+        return crewList;
     }
 
     public LiveData<String> getErrorMessage() {
@@ -84,6 +90,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Response<TmdbCreditsResponseDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     castList.setValue(response.body().getCast());
+                    crewList.setValue(response.body().getCrew());
                 }
             }
 

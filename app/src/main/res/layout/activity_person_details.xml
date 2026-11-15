@@ -90,10 +90,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:ellipsize="end"
                 android:lineSpacingExtra="4dp"
+                android:maxLines="4"
                 android:textColor="@color/movieed_text_primary"
                 android:textSize="14sp"
                 tools:text="Christian Charles Philip Bale is an English actor..." />
+
+            <TextView
+                android:id="@+id/tv_read_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Read More"
+                android:textColor="@color/movieed_primary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <TextView
                 android:layout_width="wrap_content"
