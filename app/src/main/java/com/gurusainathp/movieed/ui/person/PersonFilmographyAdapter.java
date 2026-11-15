@@ -15,6 +15,7 @@ import com.gurusainathp.movieed.data.remote.dto.TmdbPersonCastCreditDto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class PersonFilmographyAdapter extends RecyclerView.Adapter<PersonFilmographyAdapter.FilmographyViewHolder> {
 
@@ -41,7 +42,7 @@ public class PersonFilmographyAdapter extends RecyclerView.Adapter<PersonFilmogr
     @Override
     public FilmographyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_movie_search, parent, false);
+                .inflate(R.layout.item_person_credit, parent, false);
         return new FilmographyViewHolder(view);
     }
 
@@ -60,14 +61,16 @@ public class PersonFilmographyAdapter extends RecyclerView.Adapter<PersonFilmogr
         private final ImageView ivPoster;
         private final TextView tvTitle;
         private final TextView tvYear;
-        private final TextView tvOverview;
+        private final TextView tvCharacter;
+        private final TextView tvRating;
 
         public FilmographyViewHolder(@NonNull View itemView) {
             super(itemView);
             ivPoster = itemView.findViewById(R.id.iv_poster);
             tvTitle = itemView.findViewById(R.id.tv_title);
             tvYear = itemView.findViewById(R.id.tv_year);
-            tvOverview = itemView.findViewById(R.id.tv_overview);
+            tvCharacter = itemView.findViewById(R.id.tv_character);
+            tvRating = itemView.findViewById(R.id.tv_rating);
         }
 
         public void bind(TmdbPersonCastCreditDto credit, OnItemClickListener listener) {
@@ -84,9 +87,18 @@ public class PersonFilmographyAdapter extends RecyclerView.Adapter<PersonFilmogr
 
             String character = credit.getCharacter();
             if (character != null && !character.isEmpty()) {
-                tvOverview.setText(character);
+                tvCharacter.setText(character);
+                tvCharacter.setVisibility(View.VISIBLE);
             } else {
-                tvOverview.setText("—");
+                tvCharacter.setVisibility(View.GONE);
+            }
+
+            double voteAvg = credit.getVoteAverage();
+            if (voteAvg > 0) {
+                tvRating.setText("★ " + String.format(Locale.US, "%.1f", voteAvg));
+                tvRating.setVisibility(View.VISIBLE);
+            } else {
+                tvRating.setVisibility(View.GONE);
             }
 
             String posterPath = credit.getPosterPath();

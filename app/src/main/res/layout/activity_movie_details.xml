@@ -95,6 +95,16 @@
                         android:textSize="14sp"
                         tools:text="2010" />
 
+                    <TextView
+                        android:id="@+id/tv_details_rating"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/movieed_accent"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        tools:text="★ 8.8" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_log_movie"
                         style="@style/Widget.Material3.Button"

@@ -22,6 +22,8 @@ import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 import com.gurusainathp.movieed.ui.person.PersonDetailsActivity;
 
+import java.util.Locale;
+
 public class MovieDetailsActivity extends AppCompatActivity {
 
     private static final String EXTRA_TMDB_ID = "extra_tmdb_id";
@@ -52,6 +54,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private ImageView ivPoster;
     private TextView tvTitle;
     private TextView tvYear;
+    private TextView tvDetailsRating;
     private TextView tvOverview;
     private Button btnLogMovie;
 
@@ -86,6 +89,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         ivPoster = findViewById(R.id.iv_details_poster);
         tvTitle = findViewById(R.id.tv_details_title);
         tvYear = findViewById(R.id.tv_details_year);
+        tvDetailsRating = findViewById(R.id.tv_details_rating);
         tvOverview = findViewById(R.id.tv_details_overview);
         btnLogMovie = findViewById(R.id.btn_log_movie);
 
@@ -133,6 +137,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     tvYear.setText(releaseDate.substring(0, 4));
                 }
                 tvOverview.setText(dto.getOverview());
+
+                double voteAvg = dto.getVoteAverage();
+                if (voteAvg > 0) {
+                    tvDetailsRating.setText("★ " + String.format(Locale.US, "%.1f", voteAvg));
+                    tvDetailsRating.setVisibility(View.VISIBLE);
+                } else {
+                    tvDetailsRating.setVisibility(View.GONE);
+                }
 
                 if (dto.getBackdropPath() != null) {
                     Glide.with(this)

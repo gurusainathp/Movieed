@@ -121,7 +121,7 @@
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_movie_search" />
+                tools:listitem="@layout/item_person_credit" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -139,7 +139,7 @@
                 android:layout_marginTop="12dp"
                 android:nestedScrollingEnabled="false"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_movie_search" />
+                tools:listitem="@layout/item_person_credit" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_show_all_filmography"
