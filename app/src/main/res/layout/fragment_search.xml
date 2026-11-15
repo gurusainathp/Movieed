@@ -94,12 +94,41 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/ll_tmdb_footer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_input_layout"
         tools:listitem="@layout/item_movie_search" />
+
+    <LinearLayout
+        android:id="@+id/ll_tmdb_footer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_tmdb_logo"
+            android:layout_width="65dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/tmdb_attribution"
+            android:src="@drawable/ic_tmdb_logo" />
+
+        <TextView
+            android:id="@+id/tv_tmdb_attribution"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tmdb_attribution"
+            android:textColor="@color/movieed_text_secondary"
+            android:textSize="11sp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
