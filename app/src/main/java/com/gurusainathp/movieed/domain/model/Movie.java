@@ -8,9 +8,10 @@ public class Movie {
     private final String posterPath;
     private final String backdropPath;
     private final double voteAverage;
+    private final String mediaType;
 
     public Movie(int id, String title, String overview, String releaseDate,
-                 String posterPath, String backdropPath, double voteAverage) {
+                 String posterPath, String backdropPath, double voteAverage, String mediaType) {
         this.id = id;
         this.title = title;
         this.overview = overview;
@@ -18,6 +19,7 @@ public class Movie {
         this.posterPath = posterPath;
         this.backdropPath = backdropPath;
         this.voteAverage = voteAverage;
+        this.mediaType = mediaType;
     }
 
     public int getId() { return id; }
@@ -27,6 +29,7 @@ public class Movie {
     public String getPosterPath() { return posterPath; }
     public String getBackdropPath() { return backdropPath; }
     public double getVoteAverage() { return voteAverage; }
+    public String getMediaType() { return mediaType; }
 
     public String getFullPosterUrl() {
         if (posterPath == null || posterPath.isEmpty()) {

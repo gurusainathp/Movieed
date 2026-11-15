@@ -27,13 +27,20 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private static final String EXTRA_TMDB_ID = "extra_tmdb_id";
     private static final String EXTRA_TITLE = "extra_title";
     private static final String EXTRA_POSTER = "extra_poster";
+    private static final String EXTRA_IS_TV = "extra_is_tv";
 
-    public static void launch(Context context, int tmdbId, String title, String posterPath) {
+    public static void launch(Context context, int tmdbId, String title, String posterPath, boolean isTv) {
         Intent intent = new Intent(context, MovieDetailsActivity.class);
         intent.putExtra(EXTRA_TMDB_ID, tmdbId);
         intent.putExtra(EXTRA_TITLE, title);
         intent.putExtra(EXTRA_POSTER, posterPath);
+        intent.putExtra(EXTRA_IS_TV, isTv);
         context.startActivity(intent);
+    }
+
+    // Overload for backward compatibility
+    public static void launch(Context context, int tmdbId, String title, String posterPath) {
+        launch(context, tmdbId, title, posterPath, false);
     }
 
     private MovieDetailsViewModel viewModel;
@@ -67,6 +74,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         tmdbId = getIntent().getIntExtra(EXTRA_TMDB_ID, -1);
         movieTitle = getIntent().getStringExtra(EXTRA_TITLE);
         posterPath = getIntent().getStringExtra(EXTRA_POSTER);
+        boolean isTv = getIntent().getBooleanExtra(EXTRA_IS_TV, false);
 
         viewModel = new ViewModelProvider(this).get(MovieDetailsViewModel.class);
 
@@ -103,7 +111,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         observeViewModel();
 
         if (tmdbId != -1) {
-            viewModel.fetchMovieDetails(tmdbId);
+            viewModel.fetchMovieDetails(tmdbId, isTv);
         }
     }
 

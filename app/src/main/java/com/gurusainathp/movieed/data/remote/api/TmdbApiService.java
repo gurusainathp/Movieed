@@ -13,8 +13,8 @@ import retrofit2.http.Query;
 
 public interface TmdbApiService {
 
-    @GET("search/movie")
-    Call<TmdbMovieResponseDto> searchMovies(
+    @GET("search/multi")
+    Call<TmdbMovieResponseDto> searchMulti(
             @Query("api_key") String apiKey,
             @Query("query") String query,
             @Query("page") int page
@@ -26,9 +26,21 @@ public interface TmdbApiService {
             @Query("api_key") String apiKey
     );
 
+    @GET("tv/{tv_id}")
+    Call<TmdbMovieDto> getTvDetails(
+            @Path("tv_id") int tvId,
+            @Query("api_key") String apiKey
+    );
+
     @GET("movie/{movie_id}/credits")
     Call<TmdbCreditsResponseDto> getMovieCredits(
             @Path("movie_id") int movieId,
+            @Query("api_key") String apiKey
+    );
+
+    @GET("tv/{tv_id}/credits")
+    Call<TmdbCreditsResponseDto> getTvCredits(
+            @Path("tv_id") int tvId,
             @Query("api_key") String apiKey
     );
 

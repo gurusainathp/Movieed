@@ -54,36 +54,42 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         return repository.getLogsForMovie(movieId);
     }
 
-    public void fetchMovieDetails(int tmdbId) {
-        TmdbClient.getApiService().getMovieDetails(tmdbId, BuildConfig.TMDB_API_KEY)
-                .enqueue(new Callback<TmdbMovieDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbMovieDto> call, @NonNull Response<TmdbMovieDto> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            tmdbMovieDetails.setValue(response.body());
-                        } else {
-                            errorMessage.setValue("Failed to load details (" + response.code() + ")");
-                        }
-                    }
+    public void fetchMovieDetails(int tmdbId, boolean isTv) {
+        Call<TmdbMovieDto> detailsCall = isTv ?
+                TmdbClient.getApiService().getTvDetails(tmdbId, BuildConfig.TMDB_API_KEY) :
+                TmdbClient.getApiService().getMovieDetails(tmdbId, BuildConfig.TMDB_API_KEY);
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbMovieDto> call, @NonNull Throwable t) {
-                        errorMessage.setValue("Error: " + t.getLocalizedMessage());
-                    }
-                });
+        detailsCall.enqueue(new Callback<TmdbMovieDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieDto> call, @NonNull Response<TmdbMovieDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    tmdbMovieDetails.setValue(response.body());
+                } else {
+                    errorMessage.setValue("Failed to load details (" + response.code() + ")");
+                }
+            }
 
-        TmdbClient.getApiService().getMovieCredits(tmdbId, BuildConfig.TMDB_API_KEY)
-                .enqueue(new Callback<TmdbCreditsResponseDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Response<TmdbCreditsResponseDto> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            castList.setValue(response.body().getCast());
-                        }
-                    }
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieDto> call, @NonNull Throwable t) {
+                errorMessage.setValue("Error: " + t.getLocalizedMessage());
+            }
+        });
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {}
-                });
+        Call<TmdbCreditsResponseDto> creditsCall = isTv ?
+                TmdbClient.getApiService().getTvCredits(tmdbId, BuildConfig.TMDB_API_KEY) :
+                TmdbClient.getApiService().getMovieCredits(tmdbId, BuildConfig.TMDB_API_KEY);
+
+        creditsCall.enqueue(new Callback<TmdbCreditsResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Response<TmdbCreditsResponseDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    castList.setValue(response.body().getCast());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {}
+        });
     }
 
     public void saveMovieAndLog(TmdbMovieDto dto, float rating, String watchedDate, String review, String note, MovieLogEntity existingLog) {

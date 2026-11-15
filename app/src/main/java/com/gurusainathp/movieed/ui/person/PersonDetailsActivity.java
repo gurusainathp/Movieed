@@ -121,7 +121,8 @@ public class PersonDetailsActivity extends AppCompatActivity {
                             dto.getReleaseDate(),
                             dto.getPosterPath(),
                             dto.getBackdropPath(),
-                            dto.getVoteAverage()
+                            dto.getVoteAverage(),
+                            dto.getMediaType()
                     ));
                 }
                 filmographyAdapter.setMovies(movies);

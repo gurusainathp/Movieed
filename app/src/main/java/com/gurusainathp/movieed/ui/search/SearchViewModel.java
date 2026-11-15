@@ -53,7 +53,7 @@ public class SearchViewModel extends ViewModel {
         errorMessage.setValue(null);
 
         TmdbApiService apiService = TmdbClient.getApiService();
-        currentSearchCall = apiService.searchMovies(apiKey, query.trim(), 1);
+        currentSearchCall = apiService.searchMulti(apiKey, query.trim(), 1);
         currentSearchCall.enqueue(new Callback<TmdbMovieResponseDto>() {
             @Override
             public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
@@ -64,15 +64,20 @@ public class SearchViewModel extends ViewModel {
                     List<Movie> movies = new ArrayList<>();
                     if (dtos != null) {
                         for (TmdbMovieDto dto : dtos) {
-                            movies.add(new Movie(
-                                    dto.getId(),
-                                    dto.getTitle(),
-                                    dto.getOverview(),
-                                    dto.getReleaseDate(),
-                                    dto.getPosterPath(),
-                                    dto.getBackdropPath(),
-                                    dto.getVoteAverage()
-                            ));
+                            String mediaType = dto.getMediaType();
+                            // Include movies and tv shows (ignore persons)
+                            if (mediaType == null || !mediaType.equals("person")) {
+                                movies.add(new Movie(
+                                        dto.getId(),
+                                        dto.getTitle(),
+                                        dto.getOverview(),
+                                        dto.getReleaseDate(),
+                                        dto.getPosterPath(),
+                                        dto.getBackdropPath(),
+                                        dto.getVoteAverage(),
+                                        dto.getMediaType()
+                                ));
+                            }
                         }
                     }
                     searchResults.setValue(movies);

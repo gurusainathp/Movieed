@@ -52,7 +52,8 @@ public class SearchFragment extends Fragment {
         rvResults = view.findViewById(R.id.rv_search_results);
 
         adapter = new SearchMovieAdapter(movie -> {
-            MovieDetailsActivity.launch(requireContext(), movie.getId(), movie.getTitle(), movie.getPosterPath());
+            boolean isTv = "tv".equals(movie.getMediaType());
+            MovieDetailsActivity.launch(requireContext(), movie.getId(), movie.getTitle(), movie.getPosterPath(), isTv);
         });
         rvResults.setAdapter(adapter);
 
