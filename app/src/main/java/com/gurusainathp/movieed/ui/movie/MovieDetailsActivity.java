@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -19,6 +20,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.gurusainathp.movieed.R;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
+import com.gurusainathp.movieed.ui.person.PersonDetailsActivity;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
@@ -51,6 +53,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private TextView tvUserWatchedDate;
     private TextView tvUserReview;
 
+    private RecyclerView rvCast;
+    private CastAdapter castAdapter;
+
     private TmdbMovieDto currentMovieDto;
     private MovieLogEntity currentLogEntity;
 
@@ -79,6 +84,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         rbUserRating = findViewById(R.id.rb_user_rating);
         tvUserWatchedDate = findViewById(R.id.tv_user_watched_date);
         tvUserReview = findViewById(R.id.tv_user_review);
+
+        rvCast = findViewById(R.id.rv_movie_cast);
+        castAdapter = new CastAdapter(cast -> {
+            PersonDetailsActivity.launch(this, cast.getId(), cast.getName());
+        });
+        rvCast.setAdapter(castAdapter);
 
         tvTitle.setText(movieTitle != null ? movieTitle : "");
         if (posterPath != null) {
@@ -113,6 +124,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
                             .load("https://image.tmdb.org/t/p/w780" + dto.getBackdropPath())
                             .into(ivBackdrop);
                 }
+            }
+        });
+
+        viewModel.getCastList().observe(this, castList -> {
+            if (castList != null) {
+                castAdapter.setCastList(castList);
             }
         });
 

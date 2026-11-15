@@ -26,6 +26,10 @@
             android:name=".ui.movie.MovieDetailsActivity"
             android:exported="false"
             android:theme="@style/Theme.Movieed" />
+        <activity
+            android:name=".ui.person.PersonDetailsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Movieed" />
     </application>
 
 </manifest>

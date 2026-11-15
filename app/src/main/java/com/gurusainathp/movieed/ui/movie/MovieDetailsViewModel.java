@@ -11,6 +11,8 @@ import com.gurusainathp.movieed.BuildConfig;
 import com.gurusainathp.movieed.data.local.entity.MovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.remote.api.TmdbClient;
+import com.gurusainathp.movieed.data.remote.dto.TmdbCastDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbCreditsResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 import com.gurusainathp.movieed.data.repository.MovieRepository;
 
@@ -24,6 +26,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
     private final MovieRepository repository;
     private final MutableLiveData<TmdbMovieDto> tmdbMovieDetails = new MutableLiveData<>();
+    private final MutableLiveData<List<TmdbCastDto>> castList = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public MovieDetailsViewModel(@NonNull Application application) {
@@ -33,6 +36,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
     public LiveData<TmdbMovieDto> getTmdbMovieDetails() {
         return tmdbMovieDetails;
+    }
+
+    public LiveData<List<TmdbCastDto>> getCastList() {
+        return castList;
     }
 
     public LiveData<String> getErrorMessage() {
@@ -63,6 +70,19 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                     public void onFailure(@NonNull Call<TmdbMovieDto> call, @NonNull Throwable t) {
                         errorMessage.setValue("Error: " + t.getLocalizedMessage());
                     }
+                });
+
+        TmdbClient.getApiService().getMovieCredits(tmdbId, BuildConfig.TMDB_API_KEY)
+                .enqueue(new Callback<TmdbCreditsResponseDto>() {
+                    @Override
+                    public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Response<TmdbCreditsResponseDto> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            castList.setValue(response.body().getCast());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {}
                 });
     }
 

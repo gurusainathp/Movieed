@@ -186,6 +186,26 @@
                 android:textSize="14sp"
                 tools:text="A thief who steals corporate secrets through the use of dream-sharing technology..." />
 
+            <TextView
+                android:id="@+id/tv_cast_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="TOP CAST"
+                android:textColor="@color/movieed_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_movie_cast"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_cast" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
