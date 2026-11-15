@@ -9,6 +9,7 @@ import com.gurusainathp.movieed.data.local.dao.MovieLogDao;
 import com.gurusainathp.movieed.data.local.database.AppDatabase;
 import com.gurusainathp.movieed.data.local.entity.MovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
+import com.gurusainathp.movieed.data.local.entity.MovieLogWithDetails;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +21,7 @@ public class MovieRepository {
     private final MovieLogDao movieLogDao;
     private final LiveData<List<MovieEntity>> allMovies;
     private final LiveData<List<MovieLogEntity>> allLogs;
+    private final LiveData<List<MovieLogWithDetails>> allLogsWithDetails;
     private final ExecutorService executor;
 
     public MovieRepository(Application application) {
@@ -28,6 +30,7 @@ public class MovieRepository {
         movieLogDao = database.movieLogDao();
         allMovies = movieDao.getAllMovies();
         allLogs = movieLogDao.getAllLogs();
+        allLogsWithDetails = movieLogDao.getAllLogsWithDetails();
         executor = Executors.newSingleThreadExecutor();
     }
 
@@ -37,6 +40,10 @@ public class MovieRepository {
 
     public LiveData<List<MovieLogEntity>> getAllLogs() {
         return allLogs;
+    }
+
+    public LiveData<List<MovieLogWithDetails>> getAllLogsWithDetails() {
+        return allLogsWithDetails;
     }
 
     public LiveData<MovieEntity> getMovieByTmdbId(int tmdbId) {

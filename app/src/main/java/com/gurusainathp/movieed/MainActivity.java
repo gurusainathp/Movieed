@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.gurusainathp.movieed.ui.HomeFragment;
 import com.gurusainathp.movieed.ui.PlaceholderFragment;
+import com.gurusainathp.movieed.ui.diary.DiaryFragment;
 import com.gurusainathp.movieed.ui.search.SearchFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
             fragment = new SearchFragment();
         } else if (itemId == R.id.nav_diary) {
             tag = "diary";
-            fragment = PlaceholderFragment.newInstance(R.string.nav_diary, R.string.diary_subtitle);
+            fragment = new DiaryFragment();
         } else if (itemId == R.id.nav_profile) {
             tag = "profile";
             fragment = PlaceholderFragment.newInstance(R.string.nav_profile, R.string.profile_subtitle);

@@ -9,6 +9,8 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
+import com.gurusainathp.movieed.data.local.entity.MovieLogWithDetails;
+import androidx.room.Transaction;
 
 import java.util.List;
 
@@ -32,4 +34,8 @@ public interface MovieLogDao {
 
     @Query("SELECT * FROM movie_logs ORDER BY watchedDate DESC")
     LiveData<List<MovieLogEntity>> getAllLogs();
+
+    @Transaction
+    @Query("SELECT * FROM movie_logs ORDER BY watchedDate DESC, createdAt DESC")
+    LiveData<List<MovieLogWithDetails>> getAllLogsWithDetails();
 }
