@@ -89,9 +89,14 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
                 ivPoster.setImageResource(R.color.movieed_surface_elevated);
             }
 
-            if (item.log.getReaction() != null && !item.log.getReaction().isEmpty()) {
+            boolean hasReaction = item.log.getReaction() != null && !item.log.getReaction().isEmpty();
+            boolean isWatchlist = item.log.isWatchlist();
+
+            if (hasReaction && isWatchlist) {
+                tvStatus.setText("Watched • In Watchlist");
+            } else if (hasReaction) {
                 tvStatus.setText("Watched");
-            } else if (item.log.isWatchlist()) {
+            } else if (isWatchlist) {
                 tvStatus.setText("In Watchlist");
             } else {
                 tvStatus.setText("Logged");

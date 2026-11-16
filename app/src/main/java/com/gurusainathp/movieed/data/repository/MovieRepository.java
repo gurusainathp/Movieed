@@ -61,7 +61,12 @@ public class MovieRepository {
             if (existingLog != null) {
                 existingLog.setWatchlist(!existingLog.isWatchlist());
                 existingLog.setUpdatedAt(now);
-                movieLogDao.update(existingLog);
+
+                if (existingLog.getReaction() == null && !existingLog.isWatchlist()) {
+                    movieLogDao.delete(existingLog);
+                } else {
+                    movieLogDao.update(existingLog);
+                }
             } else {
                 MovieLogEntity newLog = new MovieLogEntity(
                         movie.getTmdbId(),
@@ -80,18 +85,29 @@ public class MovieRepository {
             movieDao.insert(movie);
             long now = System.currentTimeMillis();
             if (existingLog != null) {
+                // If movie was in Watchlist and user adds a reaction for the first time, remove from Watchlist
+                if (existingLog.isWatchlist() && existingLog.getReaction() == null && reaction != null) {
+                    existingLog.setWatchlist(false);
+                }
                 existingLog.setReaction(reaction);
                 existingLog.setUpdatedAt(now);
-                movieLogDao.update(existingLog);
+
+                if (existingLog.getReaction() == null && !existingLog.isWatchlist()) {
+                    movieLogDao.delete(existingLog);
+                } else {
+                    movieLogDao.update(existingLog);
+                }
             } else {
-                MovieLogEntity newLog = new MovieLogEntity(
-                        movie.getTmdbId(),
-                        reaction,
-                        false,
-                        now,
-                        now
-                );
-                movieLogDao.insert(newLog);
+                if (reaction != null) {
+                    MovieLogEntity newLog = new MovieLogEntity(
+                            movie.getTmdbId(),
+                            reaction,
+                            false,
+                            now,
+                            now
+                    );
+                    movieLogDao.insert(newLog);
+                }
             }
         });
     }

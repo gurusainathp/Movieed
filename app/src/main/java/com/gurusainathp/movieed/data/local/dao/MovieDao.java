@@ -15,7 +15,7 @@ import java.util.List;
 @Dao
 public interface MovieDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     long insert(MovieEntity movie);
 
     @Update
