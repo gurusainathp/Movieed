@@ -13,6 +13,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.gurusainathp.movieed.ui.HomeFragment;
 import com.gurusainathp.movieed.ui.PlaceholderFragment;
 import com.gurusainathp.movieed.ui.diary.DiaryFragment;
+import com.gurusainathp.movieed.ui.profile.ProfileFragment;
 import com.gurusainathp.movieed.ui.search.SearchFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             fragment = new DiaryFragment();
         } else if (itemId == R.id.nav_profile) {
             tag = "profile";
-            fragment = PlaceholderFragment.newInstance(R.string.nav_profile, R.string.profile_subtitle);
+            fragment = new ProfileFragment();
         } else {
             tag = "home";
             fragment = new HomeFragment();
