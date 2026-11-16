@@ -4,7 +4,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.gurusainathp.movieed.R;
+import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogWithDetails;
 
 import java.util.ArrayList;
@@ -60,17 +60,15 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
 
         private final ImageView ivPoster;
         private final TextView tvTitle;
-        private final TextView tvDate;
-        private final RatingBar rbRating;
-        private final TextView tvReview;
+        private final TextView tvStatus;
+        private final TextView tvReaction;
 
         public DiaryViewHolder(@NonNull View itemView) {
             super(itemView);
             ivPoster = itemView.findViewById(R.id.iv_diary_poster);
             tvTitle = itemView.findViewById(R.id.tv_diary_title);
-            tvDate = itemView.findViewById(R.id.tv_diary_date);
-            rbRating = itemView.findViewById(R.id.rb_diary_rating);
-            tvReview = itemView.findViewById(R.id.tv_diary_review);
+            tvStatus = itemView.findViewById(R.id.tv_diary_status);
+            tvReaction = itemView.findViewById(R.id.tv_diary_reaction);
         }
 
         public void bind(MovieLogWithDetails item, OnDiaryClickListener listener) {
@@ -91,19 +89,20 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
                 ivPoster.setImageResource(R.color.movieed_surface_elevated);
             }
 
-            if (item.log.getWatchedDate() != null && !item.log.getWatchedDate().isEmpty()) {
-                tvDate.setText("Watched " + item.log.getWatchedDate());
+            if (item.log.getReaction() != null && !item.log.getReaction().isEmpty()) {
+                tvStatus.setText("Watched");
+            } else if (item.log.isWatchlist()) {
+                tvStatus.setText("In Watchlist");
             } else {
-                tvDate.setText("");
+                tvStatus.setText("Logged");
             }
 
-            rbRating.setRating(item.log.getRating());
-
-            if (item.log.getReview() != null && !item.log.getReview().isEmpty()) {
-                tvReview.setText(item.log.getReview());
-                tvReview.setVisibility(View.VISIBLE);
+            String reactionLabel = MovieLogEntity.getLabelForReaction(item.log.getReaction());
+            if (reactionLabel != null && !reactionLabel.isEmpty()) {
+                tvReaction.setText(reactionLabel);
+                tvReaction.setVisibility(View.VISIBLE);
             } else {
-                tvReview.setVisibility(View.GONE);
+                tvReaction.setVisibility(View.GONE);
             }
 
             itemView.setOnClickListener(v -> {

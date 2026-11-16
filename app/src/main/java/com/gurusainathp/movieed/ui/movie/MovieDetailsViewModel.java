@@ -99,7 +99,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         });
     }
 
-    public void saveMovieAndLog(TmdbMovieDto dto, float rating, String watchedDate, String review, String note, MovieLogEntity existingLog) {
+
+
+    public void toggleWatchlist(TmdbMovieDto dto, MovieLogEntity existingLog) {
+        if (dto == null) return;
         MovieEntity movieEntity = new MovieEntity(
                 dto.getId(),
                 dto.getTitle(),
@@ -110,8 +113,22 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 0,
                 System.currentTimeMillis()
         );
+        repository.toggleWatchlist(movieEntity, existingLog);
+    }
 
-        repository.saveMovieAndLog(movieEntity, rating, watchedDate, review, note, existingLog);
+    public void saveReaction(TmdbMovieDto dto, String reaction, MovieLogEntity existingLog) {
+        if (dto == null) return;
+        MovieEntity movieEntity = new MovieEntity(
+                dto.getId(),
+                dto.getTitle(),
+                dto.getOverview(),
+                dto.getReleaseDate(),
+                dto.getPosterPath(),
+                dto.getBackdropPath(),
+                0,
+                System.currentTimeMillis()
+        );
+        repository.saveReaction(movieEntity, reaction, existingLog);
     }
 
     public void deleteLog(MovieLogEntity log) {

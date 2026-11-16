@@ -12,27 +12,19 @@ import com.gurusainathp.movieed.data.repository.MovieRepository;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class ProfileViewModel extends AndroidViewModel {
 
     public static class ProfileStats {
         public final int totalFilms;
-        public final double averageRating;
         public final int totalRuntimeHours;
-        public final Map<Integer, Integer> ratingCounts; // Star integer 1-5 to count
+        public final Map<String, Integer> reactionCounts; // "LOVE", "LIKE", "UMM", "DISLIKE", "HATE"
 
-        public ProfileStats(int totalFilms, double averageRating, int totalRuntimeHours, Map<Integer, Integer> ratingCounts) {
+        public ProfileStats(int totalFilms, int totalRuntimeHours, Map<String, Integer> reactionCounts) {
             this.totalFilms = totalFilms;
-            this.averageRating = averageRating;
             this.totalRuntimeHours = totalRuntimeHours;
-            this.ratingCounts = ratingCounts;
-        }
-
-        public String getFormattedAvgRating() {
-            if (totalFilms == 0) return "—";
-            return String.format(Locale.US, "%.1f", averageRating);
+            this.reactionCounts = reactionCounts;
         }
 
         public String getFormattedWatchTime() {
@@ -50,24 +42,22 @@ public class ProfileViewModel extends AndroidViewModel {
 
         profileStats = Transformations.map(repository.getAllLogsWithDetails(), logs -> {
             if (logs == null || logs.isEmpty()) {
-                return new ProfileStats(0, 0.0, 0, new HashMap<>());
+                return new ProfileStats(0, 0, new HashMap<>());
             }
 
             int count = logs.size();
-            double sumRating = 0.0;
             int totalRuntimeMinutes = 0;
-            Map<Integer, Integer> ratingCounts = new HashMap<>();
-            for (int i = 1; i <= 5; i++) {
-                ratingCounts.put(i, 0);
-            }
+            Map<String, Integer> reactionCounts = new HashMap<>();
+            reactionCounts.put("LOVE", 0);
+            reactionCounts.put("LIKE", 0);
+            reactionCounts.put("UMM", 0);
+            reactionCounts.put("DISLIKE", 0);
+            reactionCounts.put("HATE", 0);
 
             for (MovieLogWithDetails item : logs) {
-                float rating = item.log.getRating();
-                sumRating += rating;
-
-                int starInt = Math.round(rating);
-                if (starInt >= 1 && starInt <= 5) {
-                    ratingCounts.put(starInt, ratingCounts.get(starInt) + 1);
+                String reaction = item.log.getReaction();
+                if (reaction != null && reactionCounts.containsKey(reaction)) {
+                    reactionCounts.put(reaction, reactionCounts.get(reaction) + 1);
                 }
 
                 if (item.movie != null && item.movie.getRuntime() > 0) {
@@ -75,10 +65,9 @@ public class ProfileViewModel extends AndroidViewModel {
                 }
             }
 
-            double avgRating = sumRating / count;
             int hours = totalRuntimeMinutes / 60;
 
-            return new ProfileStats(count, avgRating, hours, ratingCounts);
+            return new ProfileStats(count, hours, reactionCounts);
         });
     }
 

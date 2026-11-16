@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,8 +14,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.card.MaterialCardView;
 import com.gurusainathp.movieed.R;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
@@ -40,7 +37,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    // Overload for backward compatibility
     public static void launch(Context context, int tmdbId, String title, String posterPath) {
         launch(context, tmdbId, title, posterPath, false);
     }
@@ -56,12 +52,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private TextView tvYear;
     private TextView tvDetailsRating;
     private TextView tvOverview;
-    private Button btnLogMovie;
 
-    private MaterialCardView cardPersonalLog;
-    private RatingBar rbUserRating;
-    private TextView tvUserWatchedDate;
-    private TextView tvUserReview;
+    private Button btnActionWatchlist;
+    private Button btnActionRate;
 
     private RecyclerView rvCast;
     private CastAdapter castAdapter;
@@ -83,31 +76,22 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(MovieDetailsViewModel.class);
 
-
-
         ivBackdrop = findViewById(R.id.iv_backdrop);
         ivPoster = findViewById(R.id.iv_details_poster);
         tvTitle = findViewById(R.id.tv_details_title);
         tvYear = findViewById(R.id.tv_details_year);
         tvDetailsRating = findViewById(R.id.tv_details_rating);
         tvOverview = findViewById(R.id.tv_details_overview);
-        btnLogMovie = findViewById(R.id.btn_log_movie);
 
-        cardPersonalLog = findViewById(R.id.card_personal_log);
-        rbUserRating = findViewById(R.id.rb_user_rating);
-        tvUserWatchedDate = findViewById(R.id.tv_user_watched_date);
-        tvUserReview = findViewById(R.id.tv_user_review);
+        btnActionWatchlist = findViewById(R.id.btn_action_watchlist);
+        btnActionRate = findViewById(R.id.btn_action_rate);
 
         rvCast = findViewById(R.id.rv_movie_cast);
-        castAdapter = new CastAdapter(cast -> {
-            PersonDetailsActivity.launch(this, cast.getId(), cast.getName());
-        });
+        castAdapter = new CastAdapter(cast -> PersonDetailsActivity.launch(this, cast.getId(), cast.getName()));
         rvCast.setAdapter(castAdapter);
 
         rvCrew = findViewById(R.id.rv_movie_crew);
-        crewAdapter = new CrewAdapter(crew -> {
-            PersonDetailsActivity.launch(this, crew.getId(), crew.getName());
-        });
+        crewAdapter = new CrewAdapter(crew -> PersonDetailsActivity.launch(this, crew.getId(), crew.getName()));
         rvCrew.setAdapter(crewAdapter);
 
         tvTitle.setText(movieTitle != null ? movieTitle : "");
@@ -117,7 +101,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     .into(ivPoster);
         }
 
-        btnLogMovie.setOnClickListener(v -> openLogDialog());
+        btnActionWatchlist.setOnClickListener(v -> {
+            if (currentMovieDto == null && tmdbId != -1) {
+                currentMovieDto = new TmdbMovieDto();
+            }
+            viewModel.toggleWatchlist(currentMovieDto, currentLogEntity);
+        });
+
+        btnActionRate.setOnClickListener(v -> openReactionPicker());
 
         observeViewModel();
 
@@ -169,20 +160,21 @@ public class MovieDetailsActivity extends AppCompatActivity {
         viewModel.getLogsForMovie(tmdbId).observe(this, logs -> {
             if (logs != null && !logs.isEmpty()) {
                 currentLogEntity = logs.get(0);
-                cardPersonalLog.setVisibility(View.VISIBLE);
-                btnLogMovie.setText("Edit Log");
-                rbUserRating.setRating(currentLogEntity.getRating());
-                tvUserWatchedDate.setText("Watched on " + currentLogEntity.getWatchedDate());
-                if (currentLogEntity.getReview() != null && !currentLogEntity.getReview().isEmpty()) {
-                    tvUserReview.setText(currentLogEntity.getReview());
-                    tvUserReview.setVisibility(View.VISIBLE);
+                if (currentLogEntity.isWatchlist()) {
+                    btnActionWatchlist.setText("✓ In Watchlist");
                 } else {
-                    tvUserReview.setVisibility(View.GONE);
+                    btnActionWatchlist.setText("+ Watchlist");
+                }
+
+                if (currentLogEntity.getReaction() != null && !currentLogEntity.getReaction().isEmpty()) {
+                    btnActionRate.setText(MovieLogEntity.getLabelForReaction(currentLogEntity.getReaction()));
+                } else {
+                    btnActionRate.setText("Rate");
                 }
             } else {
                 currentLogEntity = null;
-                cardPersonalLog.setVisibility(View.GONE);
-                btnLogMovie.setText("Log Movie");
+                btnActionWatchlist.setText("+ Watchlist");
+                btnActionRate.setText("Rate");
             }
         });
 
@@ -193,30 +185,24 @@ public class MovieDetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void openLogDialog() {
+    private void openReactionPicker() {
         if (currentMovieDto == null && tmdbId != -1) {
-            // Minimal DTO fallback if details haven't returned yet
             currentMovieDto = new TmdbMovieDto();
         }
 
-        LogMovieBottomSheetDialogFragment dialog = LogMovieBottomSheetDialogFragment.newInstance(currentLogEntity);
-        dialog.setOnLogSaveListener(new LogMovieBottomSheetDialogFragment.OnLogSaveListener() {
+        String currentReaction = currentLogEntity != null ? currentLogEntity.getReaction() : null;
+        ReactionPickerBottomSheetDialogFragment dialog = ReactionPickerBottomSheetDialogFragment.newInstance(currentReaction);
+        dialog.setOnReactionSelectedListener(new ReactionPickerBottomSheetDialogFragment.OnReactionSelectedListener() {
             @Override
-            public void onSave(float rating, String watchedDate, String review, String note) {
-                if (currentMovieDto != null) {
-                    viewModel.saveMovieAndLog(currentMovieDto, rating, watchedDate, review, note, currentLogEntity);
-                    Toast.makeText(MovieDetailsActivity.this, "Log saved to journal!", Toast.LENGTH_SHORT).show();
-                }
+            public void onReactionSelected(String reaction) {
+                viewModel.saveReaction(currentMovieDto, reaction, currentLogEntity);
             }
 
             @Override
-            public void onDelete() {
-                if (currentLogEntity != null) {
-                    viewModel.deleteLog(currentLogEntity);
-                    Toast.makeText(MovieDetailsActivity.this, "Log deleted.", Toast.LENGTH_SHORT).show();
-                }
+            public void onReactionCleared() {
+                viewModel.saveReaction(currentMovieDto, null, currentLogEntity);
             }
         });
-        dialog.show(getSupportFragmentManager(), "LogMovieDialog");
+        dialog.show(getSupportFragmentManager(), "ReactionPicker");
     }
 }

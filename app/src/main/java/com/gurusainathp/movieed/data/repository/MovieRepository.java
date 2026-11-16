@@ -54,24 +54,40 @@ public class MovieRepository {
         return movieLogDao.getLogsForMovie(movieId);
     }
 
-    public void saveMovieAndLog(MovieEntity movie, float rating, String watchedDate, String review, String note, MovieLogEntity existingLog) {
+    public void toggleWatchlist(MovieEntity movie, MovieLogEntity existingLog) {
         executor.execute(() -> {
             movieDao.insert(movie);
             long now = System.currentTimeMillis();
             if (existingLog != null) {
-                existingLog.setRating(rating);
-                existingLog.setWatchedDate(watchedDate);
-                existingLog.setReview(review);
-                existingLog.setPrivateNote(note);
+                existingLog.setWatchlist(!existingLog.isWatchlist());
                 existingLog.setUpdatedAt(now);
                 movieLogDao.update(existingLog);
             } else {
                 MovieLogEntity newLog = new MovieLogEntity(
                         movie.getTmdbId(),
-                        watchedDate,
-                        rating,
-                        review,
-                        note,
+                        null,
+                        true,
+                        now,
+                        now
+                );
+                movieLogDao.insert(newLog);
+            }
+        });
+    }
+
+    public void saveReaction(MovieEntity movie, String reaction, MovieLogEntity existingLog) {
+        executor.execute(() -> {
+            movieDao.insert(movie);
+            long now = System.currentTimeMillis();
+            if (existingLog != null) {
+                existingLog.setReaction(reaction);
+                existingLog.setUpdatedAt(now);
+                movieLogDao.update(existingLog);
+            } else {
+                MovieLogEntity newLog = new MovieLogEntity(
+                        movie.getTmdbId(),
+                        reaction,
+                        false,
                         now,
                         now
                 );

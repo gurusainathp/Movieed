@@ -29,13 +29,13 @@ public interface MovieLogDao {
     @Query("SELECT * FROM movie_logs WHERE id = :id LIMIT 1")
     LiveData<MovieLogEntity> getLogById(long id);
 
-    @Query("SELECT * FROM movie_logs WHERE movieId = :movieId ORDER BY watchedDate DESC")
+    @Query("SELECT * FROM movie_logs WHERE movieId = :movieId ORDER BY createdAt DESC")
     LiveData<List<MovieLogEntity>> getLogsForMovie(long movieId);
 
-    @Query("SELECT * FROM movie_logs ORDER BY watchedDate DESC")
+    @Query("SELECT * FROM movie_logs ORDER BY createdAt DESC")
     LiveData<List<MovieLogEntity>> getAllLogs();
 
     @Transaction
-    @Query("SELECT * FROM movie_logs ORDER BY watchedDate DESC, createdAt DESC")
+    @Query("SELECT * FROM movie_logs ORDER BY createdAt DESC")
     LiveData<List<MovieLogWithDetails>> getAllLogsWithDetails();
 }

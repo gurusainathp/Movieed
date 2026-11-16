@@ -22,19 +22,18 @@ public class ProfileFragment extends Fragment {
 
     private TextView tvTotalFilms;
     private TextView tvWatchTime;
-    private TextView tvAvgRating;
 
-    private LinearProgressIndicator progress5;
-    private LinearProgressIndicator progress4;
-    private LinearProgressIndicator progress3;
-    private LinearProgressIndicator progress2;
-    private LinearProgressIndicator progress1;
+    private LinearProgressIndicator progressLove;
+    private LinearProgressIndicator progressLike;
+    private LinearProgressIndicator progressUmm;
+    private LinearProgressIndicator progressDislike;
+    private LinearProgressIndicator progressHate;
 
-    private TextView tvCount5;
-    private TextView tvCount4;
-    private TextView tvCount3;
-    private TextView tvCount2;
-    private TextView tvCount1;
+    private TextView tvCountLove;
+    private TextView tvCountLike;
+    private TextView tvCountUmm;
+    private TextView tvCountDislike;
+    private TextView tvCountHate;
 
     @Nullable
     @Override
@@ -51,19 +50,18 @@ public class ProfileFragment extends Fragment {
 
         tvTotalFilms = view.findViewById(R.id.tv_stat_total_films);
         tvWatchTime = view.findViewById(R.id.tv_stat_watch_time);
-        tvAvgRating = view.findViewById(R.id.tv_stat_avg_rating);
 
-        progress5 = view.findViewById(R.id.progress_rating_5);
-        progress4 = view.findViewById(R.id.progress_rating_4);
-        progress3 = view.findViewById(R.id.progress_rating_3);
-        progress2 = view.findViewById(R.id.progress_rating_2);
-        progress1 = view.findViewById(R.id.progress_rating_1);
+        progressLove = view.findViewById(R.id.progress_reaction_love);
+        progressLike = view.findViewById(R.id.progress_reaction_like);
+        progressUmm = view.findViewById(R.id.progress_reaction_umm);
+        progressDislike = view.findViewById(R.id.progress_reaction_dislike);
+        progressHate = view.findViewById(R.id.progress_reaction_hate);
 
-        tvCount5 = view.findViewById(R.id.tv_count_rating_5);
-        tvCount4 = view.findViewById(R.id.tv_count_rating_4);
-        tvCount3 = view.findViewById(R.id.tv_count_rating_3);
-        tvCount2 = view.findViewById(R.id.tv_count_rating_2);
-        tvCount1 = view.findViewById(R.id.tv_count_rating_1);
+        tvCountLove = view.findViewById(R.id.tv_count_reaction_love);
+        tvCountLike = view.findViewById(R.id.tv_count_reaction_like);
+        tvCountUmm = view.findViewById(R.id.tv_count_reaction_umm);
+        tvCountDislike = view.findViewById(R.id.tv_count_reaction_dislike);
+        tvCountHate = view.findViewById(R.id.tv_count_reaction_hate);
 
         observeViewModel();
     }
@@ -73,21 +71,20 @@ public class ProfileFragment extends Fragment {
             if (stats != null) {
                 tvTotalFilms.setText(String.valueOf(stats.totalFilms));
                 tvWatchTime.setText(stats.getFormattedWatchTime());
-                tvAvgRating.setText(stats.getFormattedAvgRating());
 
                 int maxCount = Math.max(1, stats.totalFilms);
-                Map<Integer, Integer> counts = stats.ratingCounts;
+                Map<String, Integer> counts = stats.reactionCounts;
 
-                updateRatingRow(progress5, tvCount5, counts.get(5), maxCount);
-                updateRatingRow(progress4, tvCount4, counts.get(4), maxCount);
-                updateRatingRow(progress3, tvCount3, counts.get(3), maxCount);
-                updateRatingRow(progress2, tvCount2, counts.get(2), maxCount);
-                updateRatingRow(progress1, tvCount1, counts.get(1), maxCount);
+                updateReactionRow(progressLove, tvCountLove, counts.get("LOVE"), maxCount);
+                updateReactionRow(progressLike, tvCountLike, counts.get("LIKE"), maxCount);
+                updateReactionRow(progressUmm, tvCountUmm, counts.get("UMM"), maxCount);
+                updateReactionRow(progressDislike, tvCountDislike, counts.get("DISLIKE"), maxCount);
+                updateReactionRow(progressHate, tvCountHate, counts.get("HATE"), maxCount);
             }
         });
     }
 
-    private void updateRatingRow(LinearProgressIndicator progress, TextView tvCount, Integer countObj, int maxCount) {
+    private void updateReactionRow(LinearProgressIndicator progress, TextView tvCount, Integer countObj, int maxCount) {
         int count = countObj != null ? countObj : 0;
         tvCount.setText(String.valueOf(count));
         int percentage = Math.round(((float) count / maxCount) * 100);

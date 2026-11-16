@@ -20,20 +20,15 @@ public class MovieLogEntity {
     @PrimaryKey(autoGenerate = true)
     private long id;
     private long movieId;
-    private String watchedDate;
-    private float rating;
-    private String review;
-    private String privateNote;
+    private String reaction; // "LOVE", "LIKE", "UMM", "DISLIKE", "HATE"
+    private boolean isWatchlist;
     private long createdAt;
     private long updatedAt;
 
-    public MovieLogEntity(long movieId, String watchedDate, float rating,
-                          String review, String privateNote, long createdAt, long updatedAt) {
+    public MovieLogEntity(long movieId, String reaction, boolean isWatchlist, long createdAt, long updatedAt) {
         this.movieId = movieId;
-        this.watchedDate = watchedDate;
-        this.rating = rating;
-        this.review = review;
-        this.privateNote = privateNote;
+        this.reaction = reaction;
+        this.isWatchlist = isWatchlist;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -44,21 +39,39 @@ public class MovieLogEntity {
     public long getMovieId() { return movieId; }
     public void setMovieId(long movieId) { this.movieId = movieId; }
 
-    public String getWatchedDate() { return watchedDate; }
-    public void setWatchedDate(String watchedDate) { this.watchedDate = watchedDate; }
+    public String getReaction() { return reaction; }
+    public void setReaction(String reaction) { this.reaction = reaction; }
 
-    public float getRating() { return rating; }
-    public void setRating(float rating) { this.rating = rating; }
-
-    public String getReview() { return review; }
-    public void setReview(String review) { this.review = review; }
-
-    public String getPrivateNote() { return privateNote; }
-    public void setPrivateNote(String privateNote) { this.privateNote = privateNote; }
+    public boolean isWatchlist() { return isWatchlist; }
+    public void setWatchlist(boolean watchlist) { isWatchlist = watchlist; }
 
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 
     public long getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+
+    public static String getEmojiForReaction(String reaction) {
+        if (reaction == null) return "";
+        switch (reaction) {
+            case "LOVE": return "😍";
+            case "LIKE": return "🙂";
+            case "UMM": return "😐";
+            case "DISLIKE": return "🙁";
+            case "HATE": return "😡";
+            default: return "";
+        }
+    }
+
+    public static String getLabelForReaction(String reaction) {
+        if (reaction == null) return "";
+        switch (reaction) {
+            case "LOVE": return "😍 Love";
+            case "LIKE": return "🙂 Like";
+            case "UMM": return "😐 Umm";
+            case "DISLIKE": return "🙁 Dislike";
+            case "HATE": return "😡 Hate";
+            default: return "";
+        }
+    }
 }

@@ -11,7 +11,7 @@ import com.gurusainathp.movieed.data.local.dao.MovieLogDao;
 import com.gurusainathp.movieed.data.local.entity.MovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 
-@Database(entities = {MovieEntity.class, MovieLogEntity.class}, version = 2, exportSchema = false)
+@Database(entities = {MovieEntity.class, MovieLogEntity.class}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "movieed_database";

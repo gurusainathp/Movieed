@@ -46,7 +46,7 @@
             tools:text="The Dark Knight" />
 
         <TextView
-            android:id="@+id/tv_diary_date"
+            android:id="@+id/tv_diary_status"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -55,34 +55,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tv_diary_title"
             app:layout_constraintTop_toBottomOf="@id/tv_diary_title"
-            tools:text="Watched Nov 15, 2026" />
-
-        <RatingBar
-            android:id="@+id/rb_diary_rating"
-            style="?android:attr/ratingBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:isIndicator="true"
-            android:numStars="5"
-            android:progressTint="@color/movieed_accent"
-            android:stepSize="0.5"
-            app:layout_constraintStart_toStartOf="@id/tv_diary_title"
-            app:layout_constraintTop_toBottomOf="@id/tv_diary_date" />
+            tools:text="Logged in Journal" />
 
         <TextView
-            android:id="@+id/tv_diary_review"
+            android:id="@+id/tv_diary_reaction"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textColor="@color/movieed_text_secondary"
-            android:textSize="12sp"
+            android:textColor="@color/movieed_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tv_diary_title"
-            app:layout_constraintTop_toBottomOf="@id/rb_diary_rating"
-            tools:text="Masterpiece. Heath Ledger's performance is unforgettable." />
+            app:layout_constraintTop_toBottomOf="@id/tv_diary_status"
+            tools:text="😍 Love" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

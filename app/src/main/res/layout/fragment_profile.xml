@@ -68,7 +68,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="FILMS"
+                        android:text="FILMS LOGGED"
                         android:textColor="@color/movieed_text_secondary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -78,7 +78,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="3dp"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 app:cardBackgroundColor="@color/movieed_surface"
                 app:cardCornerRadius="12dp"
@@ -112,43 +112,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                app:cardBackgroundColor="@color/movieed_surface"
-                app:cardCornerRadius="12dp"
-                app:strokeColor="@color/movieed_border"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tv_stat_avg_rating"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/movieed_accent"
-                        android:textSize="26sp"
-                        android:textStyle="bold"
-                        tools:text="4.2" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="AVG RATING"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
         </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView
@@ -169,12 +132,12 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="RATING DISTRIBUTION"
+                    android:text="REACTION BREAKDOWN"
                     android:textColor="@color/movieed_primary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
-                <!-- 5 Stars Row -->
+                <!-- Love Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -185,23 +148,22 @@
                     <TextView
                         android:layout_width="30dp"
                         android:layout_height="wrap_content"
-                        android:text="5 ★"
-                        android:textColor="@color/movieed_accent"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:text="😍"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_rating_5"
+                        android:id="@+id/progress_reaction_love"
                         android:layout_width="0dp"
                         android:layout_height="8dp"
                         android:layout_marginHorizontal="12dp"
                         android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_accent"
+                        app:indicatorColor="@color/movieed_primary"
                         app:trackColor="@color/movieed_surface_elevated"
                         app:trackCornerRadius="4dp" />
 
                     <TextView
-                        android:id="@+id/tv_count_rating_5"
+                        android:id="@+id/tv_count_reaction_love"
                         android:layout_width="24dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
@@ -210,7 +172,7 @@
                         tools:text="6" />
                 </LinearLayout>
 
-                <!-- 4 Stars Row -->
+                <!-- Like Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -221,23 +183,22 @@
                     <TextView
                         android:layout_width="30dp"
                         android:layout_height="wrap_content"
-                        android:text="4 ★"
-                        android:textColor="@color/movieed_accent"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:text="🙂"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_rating_4"
+                        android:id="@+id/progress_reaction_like"
                         android:layout_width="0dp"
                         android:layout_height="8dp"
                         android:layout_marginHorizontal="12dp"
                         android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_accent"
+                        app:indicatorColor="@color/movieed_primary"
                         app:trackColor="@color/movieed_surface_elevated"
                         app:trackCornerRadius="4dp" />
 
                     <TextView
-                        android:id="@+id/tv_count_rating_4"
+                        android:id="@+id/tv_count_reaction_like"
                         android:layout_width="24dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
@@ -246,7 +207,7 @@
                         tools:text="4" />
                 </LinearLayout>
 
-                <!-- 3 Stars Row -->
+                <!-- Umm Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -257,23 +218,22 @@
                     <TextView
                         android:layout_width="30dp"
                         android:layout_height="wrap_content"
-                        android:text="3 ★"
-                        android:textColor="@color/movieed_accent"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:text="😐"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_rating_3"
+                        android:id="@+id/progress_reaction_umm"
                         android:layout_width="0dp"
                         android:layout_height="8dp"
                         android:layout_marginHorizontal="12dp"
                         android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_accent"
+                        app:indicatorColor="@color/movieed_primary"
                         app:trackColor="@color/movieed_surface_elevated"
                         app:trackCornerRadius="4dp" />
 
                     <TextView
-                        android:id="@+id/tv_count_rating_3"
+                        android:id="@+id/tv_count_reaction_umm"
                         android:layout_width="24dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
@@ -282,7 +242,7 @@
                         tools:text="2" />
                 </LinearLayout>
 
-                <!-- 2 Stars Row -->
+                <!-- Dislike Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -293,23 +253,22 @@
                     <TextView
                         android:layout_width="30dp"
                         android:layout_height="wrap_content"
-                        android:text="2 ★"
-                        android:textColor="@color/movieed_accent"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:text="🙁"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_rating_2"
+                        android:id="@+id/progress_reaction_dislike"
                         android:layout_width="0dp"
                         android:layout_height="8dp"
                         android:layout_marginHorizontal="12dp"
                         android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_accent"
+                        app:indicatorColor="@color/movieed_primary"
                         app:trackColor="@color/movieed_surface_elevated"
                         app:trackCornerRadius="4dp" />
 
                     <TextView
-                        android:id="@+id/tv_count_rating_2"
+                        android:id="@+id/tv_count_reaction_dislike"
                         android:layout_width="24dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
@@ -318,7 +277,7 @@
                         tools:text="1" />
                 </LinearLayout>
 
-                <!-- 1 Star Row -->
+                <!-- Hate Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -329,23 +288,22 @@
                     <TextView
                         android:layout_width="30dp"
                         android:layout_height="wrap_content"
-                        android:text="1 ★"
-                        android:textColor="@color/movieed_accent"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:text="😡"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_rating_1"
+                        android:id="@+id/progress_reaction_hate"
                         android:layout_width="0dp"
                         android:layout_height="8dp"
                         android:layout_marginHorizontal="12dp"
                         android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_accent"
+                        app:indicatorColor="@color/movieed_primary"
                         app:trackColor="@color/movieed_surface_elevated"
                         app:trackCornerRadius="4dp" />
 
                     <TextView
-                        android:id="@+id/tv_count_rating_1"
+                        android:id="@+id/tv_count_reaction_hate"
                         android:layout_width="24dp"
                         android:layout_height="wrap_content"
                         android:gravity="end"
