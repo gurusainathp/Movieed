@@ -60,6 +60,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private CastAdapter castAdapter;
     private RecyclerView rvCrew;
     private CrewAdapter crewAdapter;
+    private RecyclerView rvProviders;
+    private ProviderAdapter providerAdapter;
 
     private TmdbMovieDto currentMovieDto;
     private MovieLogEntity currentLogEntity;
@@ -93,6 +95,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
         rvCrew = findViewById(R.id.rv_movie_crew);
         crewAdapter = new CrewAdapter(crew -> PersonDetailsActivity.launch(this, crew.getId(), crew.getName()));
         rvCrew.setAdapter(crewAdapter);
+
+        rvProviders = findViewById(R.id.rv_movie_providers);
+        providerAdapter = new ProviderAdapter();
+        rvProviders.setAdapter(providerAdapter);
 
         tvTitle.setText(movieTitle != null ? movieTitle : "");
         if (posterPath != null) {
@@ -154,6 +160,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
         viewModel.getCrewList().observe(this, crewList -> {
             if (crewList != null) {
                 crewAdapter.setCrewList(crewList);
+            }
+        });
+
+        viewModel.getProviderList().observe(this, providers -> {
+            if (providers != null && !providers.isEmpty()) {
+                providerAdapter.setProviders(providers);
+                rvProviders.setVisibility(View.VISIBLE);
+            } else {
+                rvProviders.setVisibility(View.GONE);
             }
         });
 

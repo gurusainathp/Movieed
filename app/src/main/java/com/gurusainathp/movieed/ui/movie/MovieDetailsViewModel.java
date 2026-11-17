@@ -12,12 +12,20 @@ import com.gurusainathp.movieed.data.local.entity.MovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.remote.api.TmdbClient;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCastDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbCountryWatchProvidersDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCreditsResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCrewDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbProviderDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbWatchProvidersResponseDto;
+import com.gurusainathp.movieed.data.remote.dto.WatchProviderItem;
 import com.gurusainathp.movieed.data.repository.MovieRepository;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -29,6 +37,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
     private final MutableLiveData<TmdbMovieDto> tmdbMovieDetails = new MutableLiveData<>();
     private final MutableLiveData<List<TmdbCastDto>> castList = new MutableLiveData<>();
     private final MutableLiveData<List<TmdbCrewDto>> crewList = new MutableLiveData<>();
+    private final MutableLiveData<List<WatchProviderItem>> providerList = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public MovieDetailsViewModel(@NonNull Application application) {
@@ -46,6 +55,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
     public LiveData<List<TmdbCrewDto>> getCrewList() {
         return crewList;
+    }
+
+    public LiveData<List<WatchProviderItem>> getProviderList() {
+        return providerList;
     }
 
     public LiveData<String> getErrorMessage() {
@@ -96,6 +109,69 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {}
+        });
+
+        Call<TmdbWatchProvidersResponseDto> providersCall = isTv ?
+                TmdbClient.getApiService().getTvWatchProviders(tmdbId, BuildConfig.TMDB_API_KEY) :
+                TmdbClient.getApiService().getMovieWatchProviders(tmdbId, BuildConfig.TMDB_API_KEY);
+
+        providersCall.enqueue(new Callback<TmdbWatchProvidersResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbWatchProvidersResponseDto> call,
+                                   @NonNull Response<TmdbWatchProvidersResponseDto> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
+                    TmdbCountryWatchProvidersDto indiaProviders = response.body().getResults().get("IN");
+                    if (indiaProviders != null) {
+                        Map<Integer, WatchProviderItem> providerMap = new LinkedHashMap<>();
+
+                        if (indiaProviders.getFlatrate() != null) {
+                            for (TmdbProviderDto p : indiaProviders.getFlatrate()) {
+                                WatchProviderItem item = providerMap.get(p.getProviderId());
+                                if (item == null) {
+                                    item = new WatchProviderItem(p);
+                                    providerMap.put(p.getProviderId(), item);
+                                }
+                                item.setFlatrate(true);
+                            }
+                        }
+
+                        if (indiaProviders.getRent() != null) {
+                            for (TmdbProviderDto p : indiaProviders.getRent()) {
+                                WatchProviderItem item = providerMap.get(p.getProviderId());
+                                if (item == null) {
+                                    item = new WatchProviderItem(p);
+                                    providerMap.put(p.getProviderId(), item);
+                                }
+                                item.setRent(true);
+                            }
+                        }
+
+                        if (indiaProviders.getBuy() != null) {
+                            for (TmdbProviderDto p : indiaProviders.getBuy()) {
+                                WatchProviderItem item = providerMap.get(p.getProviderId());
+                                if (item == null) {
+                                    item = new WatchProviderItem(p);
+                                    providerMap.put(p.getProviderId(), item);
+                                }
+                                item.setBuy(true);
+                            }
+                        }
+
+                        List<WatchProviderItem> sortedList = new ArrayList<>(providerMap.values());
+                        Collections.sort(sortedList);
+                        providerList.setValue(sortedList);
+                    } else {
+                        providerList.setValue(new ArrayList<>());
+                    }
+                } else {
+                    providerList.setValue(new ArrayList<>());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbWatchProvidersResponseDto> call, @NonNull Throwable t) {
+                providerList.setValue(new ArrayList<>());
+            }
         });
     }
 

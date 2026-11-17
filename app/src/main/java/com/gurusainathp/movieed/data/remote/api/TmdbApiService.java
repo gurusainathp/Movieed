@@ -5,6 +5,7 @@ import com.gurusainathp.movieed.data.remote.dto.TmdbCreditsResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbPersonDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbWatchProvidersResponseDto;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -40,6 +41,18 @@ public interface TmdbApiService {
 
     @GET("tv/{tv_id}/credits")
     Call<TmdbCreditsResponseDto> getTvCredits(
+            @Path("tv_id") int tvId,
+            @Query("api_key") String apiKey
+    );
+
+    @GET("movie/{movie_id}/watch/providers")
+    Call<TmdbWatchProvidersResponseDto> getMovieWatchProviders(
+            @Path("movie_id") int movieId,
+            @Query("api_key") String apiKey
+    );
+
+    @GET("tv/{tv_id}/watch/providers")
+    Call<TmdbWatchProvidersResponseDto> getTvWatchProviders(
             @Path("tv_id") int tvId,
             @Query("api_key") String apiKey
     );

@@ -30,6 +30,17 @@ public class DiaryTabFragment extends Fragment {
     private DiaryAdapter adapter;
     private RecyclerView rvGrid;
     private TextView tvEmpty;
+    private View cardFilterBar;
+
+    private TextView btnFilterAll;
+    private TextView btnFilterLove;
+    private TextView btnFilterLike;
+    private TextView btnFilterUmm;
+    private TextView btnFilterDislike;
+    private TextView btnFilterHate;
+
+    private String selectedReactionFilter = "ALL";
+    private List<MovieLogWithDetails> currentAllLogs = new ArrayList<>();
 
     public static DiaryTabFragment newInstance(int tabType) {
         DiaryTabFragment fragment = new DiaryTabFragment();
@@ -58,11 +69,30 @@ public class DiaryTabFragment extends Fragment {
 
         rvGrid = view.findViewById(R.id.rv_tab_grid);
         tvEmpty = view.findViewById(R.id.tv_tab_empty);
+        cardFilterBar = view.findViewById(R.id.card_filter_bar);
 
         if (tabType == TAB_WATCHED) {
             tvEmpty.setText("No watched films logged yet.");
+            cardFilterBar.setVisibility(View.VISIBLE);
+
+            btnFilterAll = view.findViewById(R.id.btn_filter_all);
+            btnFilterLove = view.findViewById(R.id.btn_filter_love);
+            btnFilterLike = view.findViewById(R.id.btn_filter_like);
+            btnFilterUmm = view.findViewById(R.id.btn_filter_umm);
+            btnFilterDislike = view.findViewById(R.id.btn_filter_dislike);
+            btnFilterHate = view.findViewById(R.id.btn_filter_hate);
+
+            btnFilterAll.setOnClickListener(v -> setFilter("ALL"));
+            btnFilterLove.setOnClickListener(v -> setFilter("LOVE"));
+            btnFilterLike.setOnClickListener(v -> setFilter("LIKE"));
+            btnFilterUmm.setOnClickListener(v -> setFilter("UMM"));
+            btnFilterDislike.setOnClickListener(v -> setFilter("DISLIKE"));
+            btnFilterHate.setOnClickListener(v -> setFilter("HATE"));
+
+            updateFilterUI();
         } else {
             tvEmpty.setText("Your watchlist is empty.");
+            cardFilterBar.setVisibility(View.GONE);
         }
 
         adapter = new DiaryAdapter(item -> {
@@ -80,31 +110,62 @@ public class DiaryTabFragment extends Fragment {
         observeViewModel();
     }
 
+    private void setFilter(String filter) {
+        selectedReactionFilter = filter;
+        updateFilterUI();
+        applyFilterAndRender();
+    }
+
+    private void updateFilterUI() {
+        if (btnFilterAll == null) return;
+
+        highlightButton(btnFilterAll, "ALL".equals(selectedReactionFilter));
+        highlightButton(btnFilterLove, "LOVE".equals(selectedReactionFilter));
+        highlightButton(btnFilterLike, "LIKE".equals(selectedReactionFilter));
+        highlightButton(btnFilterUmm, "UMM".equals(selectedReactionFilter));
+        highlightButton(btnFilterDislike, "DISLIKE".equals(selectedReactionFilter));
+        highlightButton(btnFilterHate, "HATE".equals(selectedReactionFilter));
+    }
+
+    private void highlightButton(TextView btn, boolean isSelected) {
+        if (isSelected) {
+            btn.setBackgroundResource(R.drawable.bg_selected_filter);
+        } else {
+            btn.setBackgroundResource(R.drawable.bg_unselected_filter);
+        }
+    }
+
     private void observeViewModel() {
         viewModel.getDiaryLogs().observe(getViewLifecycleOwner(), logs -> {
-            List<MovieLogWithDetails> filteredList = new ArrayList<>();
-            if (logs != null) {
-                for (MovieLogWithDetails item : logs) {
-                    if (tabType == TAB_WATCHED) {
-                        if (item.log.getReaction() != null && !item.log.getReaction().isEmpty()) {
-                            filteredList.add(item);
-                        }
-                    } else {
-                        if (item.log.isWatchlist()) {
-                            filteredList.add(item);
-                        }
+            currentAllLogs = logs != null ? logs : new ArrayList<>();
+            applyFilterAndRender();
+        });
+    }
+
+    private void applyFilterAndRender() {
+        List<MovieLogWithDetails> filteredList = new ArrayList<>();
+        for (MovieLogWithDetails item : currentAllLogs) {
+            if (tabType == TAB_WATCHED) {
+                String r = item.log.getReaction();
+                if (r != null && !r.isEmpty()) {
+                    if ("ALL".equals(selectedReactionFilter) || selectedReactionFilter.equals(r)) {
+                        filteredList.add(item);
                     }
                 }
-            }
-
-            adapter.setItems(filteredList);
-            if (!filteredList.isEmpty()) {
-                tvEmpty.setVisibility(View.GONE);
-                rvGrid.setVisibility(View.VISIBLE);
             } else {
-                rvGrid.setVisibility(View.GONE);
-                tvEmpty.setVisibility(View.VISIBLE);
+                if (item.log.isWatchlist()) {
+                    filteredList.add(item);
+                }
             }
-        });
+        }
+
+        adapter.setItems(filteredList);
+        if (!filteredList.isEmpty()) {
+            tvEmpty.setVisibility(View.GONE);
+            rvGrid.setVisibility(View.VISIBLE);
+        } else {
+            rvGrid.setVisibility(View.GONE);
+            tvEmpty.setVisibility(View.VISIBLE);
+        }
     }
 }
