@@ -122,18 +122,18 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
                     TmdbCountryWatchProvidersDto indiaProviders = response.body().getResults().get("IN");
                     if (indiaProviders != null) {
-                        Map<Integer, WatchProviderItem> providerMap = new LinkedHashMap<>();
+                        Map<Integer, WatchProviderItem> flatrateMap = new LinkedHashMap<>();
+                        Map<Integer, WatchProviderItem> paidMap = new LinkedHashMap<>();
 
                         if (indiaProviders.getFlatrate() != null) {
                             for (TmdbProviderDto p : indiaProviders.getFlatrate()) {
                                 int iconRes = LocalProviderMapper.getLocalDrawableRes(p);
                                 if (iconRes != 0) {
-                                    WatchProviderItem item = providerMap.get(iconRes);
-                                    if (item == null) {
-                                        item = new WatchProviderItem(p);
-                                        providerMap.put(iconRes, item);
+                                    if (!flatrateMap.containsKey(iconRes)) {
+                                        WatchProviderItem item = new WatchProviderItem(p);
+                                        item.setFlatrate(true);
+                                        flatrateMap.put(iconRes, item);
                                     }
-                                    item.setFlatrate(true);
                                 }
                             }
                         }
@@ -142,10 +142,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                             for (TmdbProviderDto p : indiaProviders.getRent()) {
                                 int iconRes = LocalProviderMapper.getLocalDrawableRes(p);
                                 if (iconRes != 0) {
-                                    WatchProviderItem item = providerMap.get(iconRes);
+                                    WatchProviderItem item = paidMap.get(iconRes);
                                     if (item == null) {
                                         item = new WatchProviderItem(p);
-                                        providerMap.put(iconRes, item);
+                                        paidMap.put(iconRes, item);
                                     }
                                     item.setRent(true);
                                 }
@@ -156,19 +156,25 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                             for (TmdbProviderDto p : indiaProviders.getBuy()) {
                                 int iconRes = LocalProviderMapper.getLocalDrawableRes(p);
                                 if (iconRes != 0) {
-                                    WatchProviderItem item = providerMap.get(iconRes);
+                                    WatchProviderItem item = paidMap.get(iconRes);
                                     if (item == null) {
                                         item = new WatchProviderItem(p);
-                                        providerMap.put(iconRes, item);
+                                        paidMap.put(iconRes, item);
                                     }
                                     item.setBuy(true);
                                 }
                             }
                         }
 
-                        List<WatchProviderItem> sortedList = new ArrayList<>(providerMap.values());
-                        Collections.sort(sortedList);
-                        providerList.setValue(sortedList);
+                        List<WatchProviderItem> flatrateList = new ArrayList<>(flatrateMap.values());
+                        List<WatchProviderItem> paidList = new ArrayList<>(paidMap.values());
+                        Collections.sort(paidList);
+
+                        List<WatchProviderItem> resultList = new ArrayList<>();
+                        resultList.addAll(flatrateList);
+                        resultList.addAll(paidList);
+
+                        providerList.setValue(resultList);
                     } else {
                         providerList.setValue(new ArrayList<>());
                     }
