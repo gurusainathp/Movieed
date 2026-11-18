@@ -2,6 +2,7 @@ package com.gurusainathp.movieed.ui.diary;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -77,23 +78,17 @@ public class DiaryTabFragment extends Fragment {
     private RecyclerView rvGrid;
     private TextView tvEmpty;
 
-    // Watched Reaction Filter
-    private View cardFilterBar;
+    // Unified Filter Bar
+    private HorizontalScrollView scrollFilterBar;
+    private LinearLayout layoutFilterButtons;
     private TextView btnFilterAll;
-    private TextView btnFilterLove;
-    private TextView btnFilterLike;
-    private TextView btnFilterUmm;
-    private TextView btnFilterDislike;
-    private TextView btnFilterHate;
-    private String selectedReactionFilter = "ALL";
 
-    // Watchlist Provider Filter
-    private HorizontalScrollView scrollProviderFilterBar;
-    private LinearLayout layoutProviderFilters;
-    private TextView btnFilterProvAll;
+    private String selectedReactionFilter = "ALL";
     private int selectedProviderFilterRes = 0; // 0 means ALL
     private String selectedProviderName = "";
+
     private final Map<Long, Set<Integer>> movieProvidersMap = new HashMap<>();
+    private final Map<View, String> reactionViewMap = new HashMap<>();
     private final Map<View, Integer> providerViewResMap = new HashMap<>();
 
     private List<MovieLogWithDetails> currentAllLogs = new ArrayList<>();
@@ -125,40 +120,20 @@ public class DiaryTabFragment extends Fragment {
 
         rvGrid = view.findViewById(R.id.rv_tab_grid);
         tvEmpty = view.findViewById(R.id.tv_tab_empty);
-        cardFilterBar = view.findViewById(R.id.card_filter_bar);
-        scrollProviderFilterBar = view.findViewById(R.id.scroll_provider_filter_bar);
-        layoutProviderFilters = view.findViewById(R.id.layout_provider_filters);
+        scrollFilterBar = view.findViewById(R.id.scroll_provider_filter_bar);
+        layoutFilterButtons = view.findViewById(R.id.layout_provider_filters);
+        btnFilterAll = view.findViewById(R.id.btn_filter_prov_all);
+
+        setupDisallowInterceptTouch(scrollFilterBar);
 
         if (tabType == TAB_WATCHED) {
             tvEmpty.setText("No watched films logged yet.");
-            cardFilterBar.setVisibility(View.VISIBLE);
-            scrollProviderFilterBar.setVisibility(View.GONE);
-
-            btnFilterAll = view.findViewById(R.id.btn_filter_all);
-            btnFilterLove = view.findViewById(R.id.btn_filter_love);
-            btnFilterLike = view.findViewById(R.id.btn_filter_like);
-            btnFilterUmm = view.findViewById(R.id.btn_filter_umm);
-            btnFilterDislike = view.findViewById(R.id.btn_filter_dislike);
-            btnFilterHate = view.findViewById(R.id.btn_filter_hate);
-
-            btnFilterAll.setOnClickListener(v -> setReactionFilter("ALL"));
-            btnFilterLove.setOnClickListener(v -> setReactionFilter("LOVE"));
-            btnFilterLike.setOnClickListener(v -> setReactionFilter("LIKE"));
-            btnFilterUmm.setOnClickListener(v -> setReactionFilter("UMM"));
-            btnFilterDislike.setOnClickListener(v -> setReactionFilter("DISLIKE"));
-            btnFilterHate.setOnClickListener(v -> setReactionFilter("HATE"));
-
-            updateReactionFilterUI();
         } else {
             tvEmpty.setText("Your watchlist is empty.");
-            cardFilterBar.setVisibility(View.GONE);
-            scrollProviderFilterBar.setVisibility(View.VISIBLE);
-
-            btnFilterProvAll = view.findViewById(R.id.btn_filter_prov_all);
-            btnFilterProvAll.setOnClickListener(v -> setProviderFilter(0, ""));
-
-            buildProviderFilterBar();
         }
+
+        btnFilterAll.setOnClickListener(v -> setFilter("ALL", 0, ""));
+        buildUnifiedFilterBar();
 
         adapter = new DiaryAdapter(item -> {
             if (item != null && item.movie != null) {
@@ -175,21 +150,56 @@ public class DiaryTabFragment extends Fragment {
         observeViewModel();
     }
 
-    private void setReactionFilter(String filter) {
-        selectedReactionFilter = filter;
-        updateReactionFilterUI();
+    private void setupDisallowInterceptTouch(View view) {
+        if (view == null) return;
+        view.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (v.getParent() != null) {
+                        v.getParent().requestDisallowInterceptTouchEvent(true);
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (v instanceof HorizontalScrollView) {
+                        HorizontalScrollView hsv = (HorizontalScrollView) v;
+                        boolean canScroll = hsv.canScrollHorizontally(-1) || hsv.canScrollHorizontally(1);
+                        if (canScroll && v.getParent() != null) {
+                            v.getParent().requestDisallowInterceptTouchEvent(true);
+                        }
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (v.getParent() != null) {
+                        v.getParent().requestDisallowInterceptTouchEvent(false);
+                    }
+                    break;
+            }
+            return false;
+        });
+    }
+
+    private void setFilter(String reaction, int providerRes, String name) {
+        selectedReactionFilter = reaction;
+        selectedProviderFilterRes = providerRes;
+        selectedProviderName = name;
+        updateFilterUI();
         applyFilterAndRender();
     }
 
-    private void updateReactionFilterUI() {
-        if (btnFilterAll == null) return;
+    private void updateFilterUI() {
+        if (btnFilterAll != null) {
+            boolean isAll = "ALL".equals(selectedReactionFilter) && selectedProviderFilterRes == 0;
+            highlightButton(btnFilterAll, isAll);
+        }
 
-        highlightButton(btnFilterAll, "ALL".equals(selectedReactionFilter));
-        highlightButton(btnFilterLove, "LOVE".equals(selectedReactionFilter));
-        highlightButton(btnFilterLike, "LIKE".equals(selectedReactionFilter));
-        highlightButton(btnFilterUmm, "UMM".equals(selectedReactionFilter));
-        highlightButton(btnFilterDislike, "DISLIKE".equals(selectedReactionFilter));
-        highlightButton(btnFilterHate, "HATE".equals(selectedReactionFilter));
+        for (Map.Entry<View, String> entry : reactionViewMap.entrySet()) {
+            highlightButton(entry.getKey(), entry.getValue().equals(selectedReactionFilter));
+        }
+
+        for (Map.Entry<View, Integer> entry : providerViewResMap.entrySet()) {
+            highlightButton(entry.getKey(), entry.getValue() == selectedProviderFilterRes);
+        }
     }
 
     private void highlightButton(View btn, boolean isSelected) {
@@ -200,40 +210,24 @@ public class DiaryTabFragment extends Fragment {
         }
     }
 
-    private void setProviderFilter(int iconRes, String name) {
-        selectedProviderFilterRes = iconRes;
-        selectedProviderName = name;
-        updateProviderFilterUI();
-        applyFilterAndRender();
-    }
-
-    private void updateProviderFilterUI() {
-        if (btnFilterProvAll != null) {
-            highlightButton(btnFilterProvAll, selectedProviderFilterRes == 0);
-        }
-
-        for (Map.Entry<View, Integer> entry : providerViewResMap.entrySet()) {
-            View btn = entry.getKey();
-            int res = entry.getValue();
-            highlightButton(btn, res == selectedProviderFilterRes);
-        }
-    }
-
     private void observeViewModel() {
         viewModel.getDiaryLogs().observe(getViewLifecycleOwner(), logs -> {
             currentAllLogs = logs != null ? logs : new ArrayList<>();
 
-            if (tabType == TAB_WATCHLIST && !currentAllLogs.isEmpty()) {
-                fetchWatchlistProviders();
+            if (!currentAllLogs.isEmpty()) {
+                fetchTabProviders();
             }
 
             applyFilterAndRender();
         });
     }
 
-    private void fetchWatchlistProviders() {
+    private void fetchTabProviders() {
         for (MovieLogWithDetails item : currentAllLogs) {
-            if (item.log.isWatchlist() && item.movie != null) {
+            boolean isRelevant = (tabType == TAB_WATCHED && item.log.getReaction() != null && !item.log.getReaction().isEmpty())
+                    || (tabType == TAB_WATCHLIST && item.log.isWatchlist());
+
+            if (isRelevant && item.movie != null) {
                 long movieId = item.movie.getTmdbId();
                 if (!movieProvidersMap.containsKey(movieId)) {
                     movieProvidersMap.put(movieId, new HashSet<>());
@@ -276,20 +270,48 @@ public class DiaryTabFragment extends Fragment {
         }
     }
 
-    private void buildProviderFilterBar() {
-        if (layoutProviderFilters == null) return;
+    private void buildUnifiedFilterBar() {
+        if (layoutFilterButtons == null) return;
 
-        layoutProviderFilters.removeAllViews();
-        layoutProviderFilters.addView(btnFilterProvAll);
+        layoutFilterButtons.removeAllViews();
+        layoutFilterButtons.addView(btnFilterAll);
 
+        reactionViewMap.clear();
         providerViewResMap.clear();
 
+        // If Watched tab, add reaction filter buttons first
+        if (tabType == TAB_WATCHED) {
+            String[] emojis = {"😍", "🙂", "😐", "🙁", "😡"};
+            String[] keys = {"LOVE", "LIKE", "UMM", "DISLIKE", "HATE"};
+
+            for (int i = 0; i < emojis.length; i++) {
+                String emoji = emojis[i];
+                String key = keys[i];
+
+                TextView btnEmoji = new TextView(requireContext());
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dpToPx(48), dpToPx(48));
+                lp.setMarginStart(dpToPx(4));
+                lp.setMarginEnd(dpToPx(4));
+                btnEmoji.setLayoutParams(lp);
+                btnEmoji.setGravity(android.view.Gravity.CENTER);
+                btnEmoji.setText(emoji);
+                btnEmoji.setTextSize(22f);
+                btnEmoji.setClickable(true);
+                btnEmoji.setFocusable(true);
+
+                boolean isSelected = key.equals(selectedReactionFilter) && selectedProviderFilterRes == 0;
+                highlightButton(btnEmoji, isSelected);
+
+                btnEmoji.setOnClickListener(v -> setFilter(key, 0, ""));
+                reactionViewMap.put(btnEmoji, key);
+                layoutFilterButtons.addView(btnEmoji);
+            }
+        }
+
+        // Add provider filter buttons
         for (ProviderInfo info : ALL_PROVIDERS) {
             FrameLayout btnContainer = new FrameLayout(requireContext());
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    dpToPx(44),
-                    dpToPx(44)
-            );
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dpToPx(48), dpToPx(48));
             lp.setMarginStart(dpToPx(4));
             lp.setMarginEnd(dpToPx(4));
             btnContainer.setLayoutParams(lp);
@@ -307,12 +329,13 @@ public class DiaryTabFragment extends Fragment {
             ivIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
             btnContainer.addView(ivIcon, ivLp);
 
-            highlightButton(btnContainer, info.iconRes == selectedProviderFilterRes);
+            boolean isSelected = (info.iconRes == selectedProviderFilterRes);
+            highlightButton(btnContainer, isSelected);
 
-            btnContainer.setOnClickListener(v -> setProviderFilter(info.iconRes, info.name));
+            btnContainer.setOnClickListener(v -> setFilter(tabType == TAB_WATCHED ? selectedReactionFilter : "ALL", info.iconRes, info.name));
 
             providerViewResMap.put(btnContainer, info.iconRes);
-            layoutProviderFilters.addView(btnContainer);
+            layoutFilterButtons.addView(btnContainer);
         }
     }
 
@@ -327,19 +350,21 @@ public class DiaryTabFragment extends Fragment {
             if (tabType == TAB_WATCHED) {
                 String r = item.log.getReaction();
                 if (r != null && !r.isEmpty()) {
-                    if ("ALL".equals(selectedReactionFilter) || selectedReactionFilter.equals(r)) {
+                    boolean matchesReaction = "ALL".equals(selectedReactionFilter) || selectedReactionFilter.equals(r);
+                    Set<Integer> icons = item.movie != null ? movieProvidersMap.get((long) item.movie.getTmdbId()) : null;
+                    boolean matchesProvider = (selectedProviderFilterRes == 0) || (icons != null && icons.contains(selectedProviderFilterRes));
+
+                    if (matchesReaction && matchesProvider) {
                         filteredList.add(item);
                     }
                 }
             } else {
                 if (item.log.isWatchlist()) {
-                    if (selectedProviderFilterRes == 0) {
+                    Set<Integer> icons = item.movie != null ? movieProvidersMap.get((long) item.movie.getTmdbId()) : null;
+                    boolean matchesProvider = (selectedProviderFilterRes == 0) || (icons != null && icons.contains(selectedProviderFilterRes));
+
+                    if (matchesProvider) {
                         filteredList.add(item);
-                    } else if (item.movie != null) {
-                        Set<Integer> icons = movieProvidersMap.get((long) item.movie.getTmdbId());
-                        if (icons != null && icons.contains(selectedProviderFilterRes)) {
-                            filteredList.add(item);
-                        }
                     }
                 }
             }
@@ -353,8 +378,8 @@ public class DiaryTabFragment extends Fragment {
             rvGrid.setVisibility(View.GONE);
             tvEmpty.setVisibility(View.VISIBLE);
 
-            if (tabType == TAB_WATCHLIST && selectedProviderFilterRes != 0) {
-                tvEmpty.setText("No movies available on " + selectedProviderName + " in your Watchlist.");
+            if (selectedProviderFilterRes != 0) {
+                tvEmpty.setText("No movies available on " + selectedProviderName + ".");
             } else if (tabType == TAB_WATCHLIST) {
                 tvEmpty.setText("Your watchlist is empty.");
             } else if (tabType == TAB_WATCHED && !"ALL".equals(selectedReactionFilter)) {
