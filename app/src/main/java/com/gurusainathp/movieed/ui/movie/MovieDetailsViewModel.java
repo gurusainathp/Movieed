@@ -126,34 +126,43 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
                         if (indiaProviders.getFlatrate() != null) {
                             for (TmdbProviderDto p : indiaProviders.getFlatrate()) {
-                                WatchProviderItem item = providerMap.get(p.getProviderId());
-                                if (item == null) {
-                                    item = new WatchProviderItem(p);
-                                    providerMap.put(p.getProviderId(), item);
+                                int iconRes = LocalProviderMapper.getLocalDrawableRes(p);
+                                if (iconRes != 0) {
+                                    WatchProviderItem item = providerMap.get(iconRes);
+                                    if (item == null) {
+                                        item = new WatchProviderItem(p);
+                                        providerMap.put(iconRes, item);
+                                    }
+                                    item.setFlatrate(true);
                                 }
-                                item.setFlatrate(true);
                             }
                         }
 
                         if (indiaProviders.getRent() != null) {
                             for (TmdbProviderDto p : indiaProviders.getRent()) {
-                                WatchProviderItem item = providerMap.get(p.getProviderId());
-                                if (item == null) {
-                                    item = new WatchProviderItem(p);
-                                    providerMap.put(p.getProviderId(), item);
+                                int iconRes = LocalProviderMapper.getLocalDrawableRes(p);
+                                if (iconRes != 0) {
+                                    WatchProviderItem item = providerMap.get(iconRes);
+                                    if (item == null) {
+                                        item = new WatchProviderItem(p);
+                                        providerMap.put(iconRes, item);
+                                    }
+                                    item.setRent(true);
                                 }
-                                item.setRent(true);
                             }
                         }
 
                         if (indiaProviders.getBuy() != null) {
                             for (TmdbProviderDto p : indiaProviders.getBuy()) {
-                                WatchProviderItem item = providerMap.get(p.getProviderId());
-                                if (item == null) {
-                                    item = new WatchProviderItem(p);
-                                    providerMap.put(p.getProviderId(), item);
+                                int iconRes = LocalProviderMapper.getLocalDrawableRes(p);
+                                if (iconRes != 0) {
+                                    WatchProviderItem item = providerMap.get(iconRes);
+                                    if (item == null) {
+                                        item = new WatchProviderItem(p);
+                                        providerMap.put(iconRes, item);
+                                    }
+                                    item.setBuy(true);
                                 }
-                                item.setBuy(true);
                             }
                         }
 

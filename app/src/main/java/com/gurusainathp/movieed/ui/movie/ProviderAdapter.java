@@ -62,9 +62,12 @@ public class ProviderAdapter extends RecyclerView.Adapter<ProviderAdapter.Provid
         public void bind(WatchProviderItem item) {
             if (item == null || item.getProvider() == null) return;
 
-            if (item.getProvider().getLogoPath() != null) {
+            int iconRes = LocalProviderMapper.getLocalDrawableRes(item.getProvider());
+            if (iconRes != 0) {
+                ivLogo.setImageResource(iconRes);
+            } else if (item.getProvider().getLogoPath() != null) {
                 Glide.with(itemView.getContext())
-                        .load("https://image.tmdb.org/t/p/w154" + item.getProvider().getLogoPath())
+                        .load("https://image.tmdb.org/t/p/w500" + item.getProvider().getLogoPath())
                         .placeholder(R.color.movieed_surface_elevated)
                         .into(ivLogo);
             } else {
