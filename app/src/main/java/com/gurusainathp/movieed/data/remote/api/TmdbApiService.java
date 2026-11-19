@@ -21,6 +21,29 @@ public interface TmdbApiService {
             @Query("page") int page
     );
 
+    @GET("trending/movie/day")
+    Call<TmdbMovieResponseDto> getTrendingMovies(
+            @Query("api_key") String apiKey
+    );
+
+    @GET("movie/top_rated")
+    Call<TmdbMovieResponseDto> getTopRatedMovies(
+            @Query("api_key") String apiKey,
+            @Query("page") int page
+    );
+
+    @GET("movie/now_playing")
+    Call<TmdbMovieResponseDto> getNowPlayingMovies(
+            @Query("api_key") String apiKey,
+            @Query("page") int page
+    );
+
+    @GET("movie/popular")
+    Call<TmdbMovieResponseDto> getPopularMovies(
+            @Query("api_key") String apiKey,
+            @Query("page") int page
+    );
+
     @GET("movie/{movie_id}")
     Call<TmdbMovieDto> getMovieDetails(
             @Path("movie_id") int movieId,
