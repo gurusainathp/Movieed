@@ -5,7 +5,6 @@ import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,16 +24,16 @@ public class RecommendationEngine {
         }
     }
 
-    public List<TmdbMovieDto> filterAndRankRecommendations(List<TmdbMovieDto> rawRecommendations,
-                                                           List<MovieLogWithDetails> userLogs) {
+    public List<TmdbMovieDto> filterAndRankRecommendations(
+            List<TmdbMovieDto> rawRecommendations,
+            List<MovieLogWithDetails> userLogs,
+            Map<Integer, Float> preferredPersonWeights) {
+
         if (rawRecommendations == null || rawRecommendations.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // Collect IDs of movies the user has already logged or watched
         Set<Long> loggedMovieIds = new HashSet<>();
-        Map<Integer, Float> genreWeights = new HashMap<>();
-
         if (userLogs != null) {
             for (MovieLogWithDetails item : userLogs) {
                 if (item.log != null) {
@@ -48,15 +47,12 @@ public class RecommendationEngine {
         for (TmdbMovieDto dto : rawRecommendations) {
             if (dto == null) continue;
 
-            // Skip if user already logged/watched this film
             if (loggedMovieIds.contains((long) dto.getId())) {
                 continue;
             }
 
-            // Calculate base recommendation score: TMDB rating + vote count weight
             float score = (float) dto.getVoteAverage();
 
-            // Bonus for highly rated TMDB films
             if (dto.getVoteAverage() >= 7.5) {
                 score += 1.5f;
             }
@@ -64,7 +60,6 @@ public class RecommendationEngine {
             scoredMovies.add(new ScoredMovie(dto, score));
         }
 
-        // Sort movies by recommendation score descending
         Collections.sort(scoredMovies, (a, b) -> Float.compare(b.score, a.score));
 
         List<TmdbMovieDto> result = new ArrayList<>();
@@ -73,6 +68,11 @@ public class RecommendationEngine {
         }
 
         return result;
+    }
+
+    public List<TmdbMovieDto> filterAndRankRecommendations(List<TmdbMovieDto> rawRecommendations,
+                                                           List<MovieLogWithDetails> userLogs) {
+        return filterAndRankRecommendations(rawRecommendations, userLogs, null);
     }
 
     private static class ScoredMovie {
