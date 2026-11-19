@@ -114,7 +114,12 @@ public class DiaryTabFragment extends Fragment {
             tabType = getArguments().getInt(ARG_TAB_TYPE, TAB_WATCHED);
         }
 
-        viewModel = new ViewModelProvider(requireParentFragment()).get(DiaryViewModel.class);
+        // Use requireActivity() or requireParentFragment() safely so it works when nested in ProfileFragment
+        try {
+            viewModel = new ViewModelProvider(requireParentFragment()).get(DiaryViewModel.class);
+        } catch (Exception e) {
+            viewModel = new ViewModelProvider(requireActivity()).get(DiaryViewModel.class);
+        }
 
         rvGrid = view.findViewById(R.id.rv_tab_grid);
         tvEmpty = view.findViewById(R.id.tv_tab_empty);

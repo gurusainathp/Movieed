@@ -16,10 +16,12 @@ import com.gurusainathp.movieed.data.remote.dto.TmdbCountryWatchProvidersDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCreditsResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCrewDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
+import com.gurusainathp.movieed.data.remote.dto.TmdbMovieResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbProviderDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbWatchProvidersResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.WatchProviderItem;
 import com.gurusainathp.movieed.data.repository.MovieRepository;
+import com.gurusainathp.movieed.domain.recommendation.RecommendationEngine;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +40,9 @@ public class MovieDetailsViewModel extends AndroidViewModel {
     private final MutableLiveData<List<TmdbCastDto>> castList = new MutableLiveData<>();
     private final MutableLiveData<List<TmdbCrewDto>> crewList = new MutableLiveData<>();
     private final MutableLiveData<List<WatchProviderItem>> providerList = new MutableLiveData<>();
+    private final MutableLiveData<List<TmdbMovieDto>> recommendationList = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private final RecommendationEngine recommendationEngine = new RecommendationEngine();
 
     public MovieDetailsViewModel(@NonNull Application application) {
         super(application);
@@ -59,6 +63,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
     public LiveData<List<WatchProviderItem>> getProviderList() {
         return providerList;
+    }
+
+    public LiveData<List<TmdbMovieDto>> getRecommendationList() {
+        return recommendationList;
     }
 
     public LiveData<String> getErrorMessage() {
@@ -186,6 +194,31 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             @Override
             public void onFailure(@NonNull Call<TmdbWatchProvidersResponseDto> call, @NonNull Throwable t) {
                 providerList.setValue(new ArrayList<>());
+            }
+        });
+
+        Call<TmdbMovieResponseDto> recommendationsCall = isTv ?
+                TmdbClient.getApiService().getTvRecommendations(tmdbId, BuildConfig.TMDB_API_KEY) :
+                TmdbClient.getApiService().getMovieRecommendations(tmdbId, BuildConfig.TMDB_API_KEY);
+
+        recommendationsCall.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
+                    List<TmdbMovieDto> rawList = response.body().getResults();
+                    List<TmdbMovieDto> filtered = recommendationEngine.filterAndRankRecommendations(
+                            rawList,
+                            repository.getAllLogsWithDetails().getValue()
+                    );
+                    recommendationList.setValue(filtered);
+                } else {
+                    recommendationList.setValue(new ArrayList<>());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                recommendationList.setValue(new ArrayList<>());
             }
         });
     }

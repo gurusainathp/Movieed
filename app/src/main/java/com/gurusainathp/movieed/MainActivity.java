@@ -11,8 +11,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.gurusainathp.movieed.ui.HomeFragment;
-import com.gurusainathp.movieed.ui.PlaceholderFragment;
-import com.gurusainathp.movieed.ui.diary.DiaryFragment;
+import com.gurusainathp.movieed.ui.explore.ExploreFragment;
 import com.gurusainathp.movieed.ui.profile.ProfileFragment;
 import com.gurusainathp.movieed.ui.search.SearchFragment;
 
@@ -44,15 +43,15 @@ public class MainActivity extends AppCompatActivity {
     private void showTab(int itemId) {
         Fragment fragment;
         String tag;
-        if (itemId == R.id.nav_search) {
+        if (itemId == R.id.nav_explore) {
+            tag = "explore";
+            fragment = new ExploreFragment();
+        } else if (itemId == R.id.nav_search) {
             tag = "search";
             fragment = new SearchFragment();
         } else if (itemId == R.id.nav_diary) {
             tag = "diary";
-            fragment = new DiaryFragment();
-        } else if (itemId == R.id.nav_profile) {
-            tag = "profile";
-            fragment = new ProfileFragment();
+            fragment = new ProfileFragment(); // Merged Profile + Diary
         } else {
             tag = "home";
             fragment = new HomeFragment();

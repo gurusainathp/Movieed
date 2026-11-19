@@ -26,6 +26,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
+        android:nestedScrollingEnabled="true"
         android:paddingBottom="80dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="4"

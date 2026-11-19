@@ -10,15 +10,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.gurusainathp.movieed.R;
+import com.gurusainathp.movieed.ui.diary.DiaryPagerAdapter;
+import com.gurusainathp.movieed.ui.diary.DiaryViewModel;
 
 import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
     private ProfileViewModel viewModel;
+    private DiaryViewModel diaryViewModel;
 
     private TextView tvTotalFilms;
     private TextView tvWatchTime;
@@ -35,6 +41,9 @@ public class ProfileFragment extends Fragment {
     private TextView tvCountDislike;
     private TextView tvCountHate;
 
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -47,6 +56,7 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        diaryViewModel = new ViewModelProvider(this).get(DiaryViewModel.class);
 
         tvTotalFilms = view.findViewById(R.id.tv_stat_total_films);
         tvWatchTime = view.findViewById(R.id.tv_stat_watch_time);
@@ -62,6 +72,21 @@ public class ProfileFragment extends Fragment {
         tvCountUmm = view.findViewById(R.id.tv_count_reaction_umm);
         tvCountDislike = view.findViewById(R.id.tv_count_reaction_dislike);
         tvCountHate = view.findViewById(R.id.tv_count_reaction_hate);
+
+        tabLayout = view.findViewById(R.id.tl_profile_diary_tabs);
+        viewPager = view.findViewById(R.id.vp_profile_diary_pager);
+
+        // Setup Diary Pager inside ProfileFragment
+        DiaryPagerAdapter diaryPagerAdapter = new DiaryPagerAdapter(this);
+        viewPager.setAdapter(diaryPagerAdapter);
+
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            if (position == 0) {
+                tab.setText("Watched");
+            } else {
+                tab.setText("Watchlist");
+            }
+        }).attach();
 
         observeViewModel();
     }

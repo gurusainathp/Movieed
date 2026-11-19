@@ -62,6 +62,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private CrewAdapter crewAdapter;
     private RecyclerView rvProviders;
     private ProviderAdapter providerAdapter;
+    private RecyclerView rvRecommendations;
+    private com.gurusainathp.movieed.ui.HomeMovieAdapter recommendationAdapter;
+    private TextView tvRecommendationsHeader;
 
     private TmdbMovieDto currentMovieDto;
     private MovieLogEntity currentLogEntity;
@@ -99,6 +102,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         rvProviders = findViewById(R.id.rv_movie_providers);
         providerAdapter = new ProviderAdapter();
         rvProviders.setAdapter(providerAdapter);
+
+        tvRecommendationsHeader = findViewById(R.id.tv_recommendations_header);
+        rvRecommendations = findViewById(R.id.rv_movie_recommendations);
+        recommendationAdapter = new com.gurusainathp.movieed.ui.HomeMovieAdapter(movie ->
+                MovieDetailsActivity.launch(this, movie.getId(), movie.getTitle(), movie.getPosterPath()));
+        rvRecommendations.setAdapter(recommendationAdapter);
 
         tvTitle.setText(movieTitle != null ? movieTitle : "");
         if (posterPath != null) {
@@ -169,6 +178,32 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 rvProviders.setVisibility(View.VISIBLE);
             } else {
                 rvProviders.setVisibility(View.GONE);
+            }
+        });
+
+        viewModel.getRecommendationList().observe(this, recommendations -> {
+            if (recommendations != null && !recommendations.isEmpty()) {
+                java.util.List<com.gurusainathp.movieed.domain.model.Movie> domainList = new java.util.ArrayList<>();
+                for (TmdbMovieDto dto : recommendations) {
+                    if (dto != null) {
+                        domainList.add(new com.gurusainathp.movieed.domain.model.Movie(
+                                dto.getId(),
+                                dto.getTitle(),
+                                dto.getOverview(),
+                                dto.getReleaseDate(),
+                                dto.getPosterPath(),
+                                dto.getBackdropPath(),
+                                dto.getVoteAverage(),
+                                "movie"
+                        ));
+                    }
+                }
+                recommendationAdapter.setMovies(domainList);
+                tvRecommendationsHeader.setVisibility(View.VISIBLE);
+                rvRecommendations.setVisibility(View.VISIBLE);
+            } else {
+                tvRecommendationsHeader.setVisibility(View.GONE);
+                rvRecommendations.setVisibility(View.GONE);
             }
         });
 

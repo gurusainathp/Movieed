@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,337 +7,358 @@
     android:layout_height="match_parent"
     android:background="@color/movieed_background">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_profile"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:background="@color/movieed_background"
+        app:elevation="0dp">
 
-        <TextView
-            android:id="@+id/tv_profile_header"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/nav_profile"
-            android:textColor="@color/movieed_text_primary"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Your story, one film at a time."
-            android:textColor="@color/movieed_text_secondary"
-            android:textSize="14sp" />
-
-        <LinearLayout
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_profile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="1"
-                app:cardBackgroundColor="@color/movieed_surface"
-                app:cardCornerRadius="12dp"
-                app:strokeColor="@color/movieed_border"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tv_stat_total_films"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/movieed_primary"
-                        android:textSize="26sp"
-                        android:textStyle="bold"
-                        tools:text="14" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="FILMS LOGGED"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                app:cardBackgroundColor="@color/movieed_surface"
-                app:cardCornerRadius="12dp"
-                app:strokeColor="@color/movieed_border"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tv_stat_watch_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/movieed_primary"
-                        android:textSize="26sp"
-                        android:textStyle="bold"
-                        tools:text="28 hrs" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="WATCH TIME"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/movieed_surface"
-            app:cardCornerRadius="12dp"
-            app:strokeColor="@color/movieed_border"
-            app:strokeWidth="1dp">
-
+            <!-- Profile Stats & Breakdown (Collapses on scroll up) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp"
+                app:layout_collapseMode="none">
+
+                <TextView
+                    android:id="@+id/tv_profile_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/nav_diary"
+                    android:textColor="@color/movieed_text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="REACTION BREAKDOWN"
-                    android:textColor="@color/movieed_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="4dp"
+                    android:text="Your story, one film at a time."
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="14sp" />
 
-                <!-- Love Row -->
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="@color/movieed_surface"
+                        app:cardCornerRadius="12dp"
+                        app:strokeColor="@color/movieed_border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tv_stat_total_films"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/movieed_primary"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                tools:text="14" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="FILMS LOGGED"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="@color/movieed_surface"
+                        app:cardCornerRadius="12dp"
+                        app:strokeColor="@color/movieed_border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tv_stat_watch_time"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/movieed_primary"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                tools:text="28 hrs" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="WATCH TIME"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
 
-                    <TextView
-                        android:layout_width="30dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="😍"
-                        android:textColor="@color/movieed_text_primary"
-                        android:textSize="16sp" />
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_reaction_love"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_marginHorizontal="12dp"
-                        android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_primary"
-                        app:trackColor="@color/movieed_surface_elevated"
-                        app:trackCornerRadius="4dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="REACTION BREAKDOWN"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/tv_count_reaction_love"
-                        android:layout_width="24dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="12sp"
-                        tools:text="6" />
-                </LinearLayout>
+                        <!-- Love Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                <!-- Like Row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="30dp"
+                                android:layout_height="wrap_content"
+                                android:text="😍"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="16sp" />
 
-                    <TextView
-                        android:layout_width="30dp"
-                        android:layout_height="wrap_content"
-                        android:text="🙂"
-                        android:textColor="@color/movieed_text_primary"
-                        android:textSize="16sp" />
+                            <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/progress_reaction_love"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_marginHorizontal="12dp"
+                                android:layout_weight="1"
+                                app:indicatorColor="@color/movieed_primary"
+                                app:trackColor="@color/movieed_surface_elevated"
+                                app:trackCornerRadius="4dp" />
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_reaction_like"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_marginHorizontal="12dp"
-                        android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_primary"
-                        app:trackColor="@color/movieed_surface_elevated"
-                        app:trackCornerRadius="4dp" />
+                            <TextView
+                                android:id="@+id/tv_count_reaction_love"
+                                android:layout_width="24dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="12sp"
+                                tools:text="6" />
+                        </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_count_reaction_like"
-                        android:layout_width="24dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="12sp"
-                        tools:text="4" />
-                </LinearLayout>
+                        <!-- Like Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                <!-- Umm Row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="30dp"
+                                android:layout_height="wrap_content"
+                                android:text="🙂"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="16sp" />
 
-                    <TextView
-                        android:layout_width="30dp"
-                        android:layout_height="wrap_content"
-                        android:text="😐"
-                        android:textColor="@color/movieed_text_primary"
-                        android:textSize="16sp" />
+                            <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/progress_reaction_like"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_marginHorizontal="12dp"
+                                android:layout_weight="1"
+                                app:indicatorColor="@color/movieed_primary"
+                                app:trackColor="@color/movieed_surface_elevated"
+                                app:trackCornerRadius="4dp" />
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_reaction_umm"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_marginHorizontal="12dp"
-                        android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_primary"
-                        app:trackColor="@color/movieed_surface_elevated"
-                        app:trackCornerRadius="4dp" />
+                            <TextView
+                                android:id="@+id/tv_count_reaction_like"
+                                android:layout_width="24dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="12sp"
+                                tools:text="4" />
+                        </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_count_reaction_umm"
-                        android:layout_width="24dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="12sp"
-                        tools:text="2" />
-                </LinearLayout>
+                        <!-- Umm Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                <!-- Dislike Row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="30dp"
+                                android:layout_height="wrap_content"
+                                android:text="😐"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="16sp" />
 
-                    <TextView
-                        android:layout_width="30dp"
-                        android:layout_height="wrap_content"
-                        android:text="🙁"
-                        android:textColor="@color/movieed_text_primary"
-                        android:textSize="16sp" />
+                            <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/progress_reaction_umm"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_marginHorizontal="12dp"
+                                android:layout_weight="1"
+                                app:indicatorColor="@color/movieed_primary"
+                                app:trackColor="@color/movieed_surface_elevated"
+                                app:trackCornerRadius="4dp" />
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_reaction_dislike"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_marginHorizontal="12dp"
-                        android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_primary"
-                        app:trackColor="@color/movieed_surface_elevated"
-                        app:trackCornerRadius="4dp" />
+                            <TextView
+                                android:id="@+id/tv_count_reaction_umm"
+                                android:layout_width="24dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="12sp"
+                                tools:text="2" />
+                        </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_count_reaction_dislike"
-                        android:layout_width="24dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="12sp"
-                        tools:text="1" />
-                </LinearLayout>
+                        <!-- Dislike Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                <!-- Hate Row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="30dp"
+                                android:layout_height="wrap_content"
+                                android:text="🙁"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="16sp" />
 
-                    <TextView
-                        android:layout_width="30dp"
-                        android:layout_height="wrap_content"
-                        android:text="😡"
-                        android:textColor="@color/movieed_text_primary"
-                        android:textSize="16sp" />
+                            <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/progress_reaction_dislike"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_marginHorizontal="12dp"
+                                android:layout_weight="1"
+                                app:indicatorColor="@color/movieed_primary"
+                                app:trackColor="@color/movieed_surface_elevated"
+                                app:trackCornerRadius="4dp" />
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progress_reaction_hate"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_marginHorizontal="12dp"
-                        android:layout_weight="1"
-                        app:indicatorColor="@color/movieed_primary"
-                        app:trackColor="@color/movieed_surface_elevated"
-                        app:trackCornerRadius="4dp" />
+                            <TextView
+                                android:id="@+id/tv_count_reaction_dislike"
+                                android:layout_width="24dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="12sp"
+                                tools:text="1" />
+                        </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_count_reaction_hate"
-                        android:layout_width="24dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:textColor="@color/movieed_text_secondary"
-                        android:textSize="12sp"
-                        tools:text="1" />
-                </LinearLayout>
+                        <!-- Hate Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="30dp"
+                                android:layout_height="wrap_content"
+                                android:text="😡"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="16sp" />
+
+                            <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/progress_reaction_hate"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_marginHorizontal="12dp"
+                                android:layout_weight="1"
+                                app:indicatorColor="@color/movieed_primary"
+                                app:trackColor="@color/movieed_surface_elevated"
+                                app:trackCornerRadius="4dp" />
+
+                            <TextView
+                                android:id="@+id/tv_count_reaction_hate"
+                                android:layout_width="24dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="12sp"
+                                tools:text="1" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- TMDB Official Attribution Footer -->
-        <LinearLayout
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        <!-- Pinned Tabs for Watched & Watchlist (Remains visible as Diary header) -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tl_profile_diary_tabs"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:orientation="horizontal">
+            android:layout_height="44dp"
+            android:background="@color/movieed_surface"
+            app:tabBackground="@color/movieed_surface"
+            app:tabGravity="fill"
+            app:tabIndicator="@drawable/tab_indicator_sharp"
+            app:tabIndicatorColor="@color/movieed_primary"
+            app:tabIndicatorFullWidth="true"
+            app:tabIndicatorHeight="3dp"
+            app:tabMode="fixed"
+            app:tabSelectedTextColor="@color/movieed_primary"
+            app:tabTextColor="@color/movieed_text_secondary" />
 
-            <ImageView
-                android:layout_width="65dp"
-                android:layout_height="18dp"
-                android:layout_marginEnd="8dp"
-                android:contentDescription="@string/tmdb_attribution"
-                android:src="@drawable/ic_tmdb_logo" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tmdb_attribution"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="11sp" />
-        </LinearLayout>
+    <!-- ViewPager for Diary Tabs (Watched & Watchlist grids + Filter bars) -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vp_profile_diary_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

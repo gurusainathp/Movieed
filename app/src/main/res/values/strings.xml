@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">Movieed</string>
     <string name="nav_home">Home</string>
+    <string name="nav_explore">Explore</string>
     <string name="nav_search">Search</string>
     <string name="nav_diary">Diary</string>
     <string name="nav_profile">Profile</string>
+    <string name="explore_subtitle">Discover collections, genres, and stories.</string>
     <string name="search_subtitle">Find a film to log.</string>
     <string name="diary_subtitle">Films you have watched.</string>
     <string name="profile_subtitle">Your Movieed profile.</string>

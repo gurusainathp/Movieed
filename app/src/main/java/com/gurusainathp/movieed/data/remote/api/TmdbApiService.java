@@ -80,6 +80,18 @@ public interface TmdbApiService {
             @Query("api_key") String apiKey
     );
 
+    @GET("movie/{movie_id}/recommendations")
+    Call<TmdbMovieResponseDto> getMovieRecommendations(
+            @Path("movie_id") int movieId,
+            @Query("api_key") String apiKey
+    );
+
+    @GET("tv/{tv_id}/recommendations")
+    Call<TmdbMovieResponseDto> getTvRecommendations(
+            @Path("tv_id") int tvId,
+            @Query("api_key") String apiKey
+    );
+
     @GET("person/{person_id}")
     Call<TmdbPersonDto> getPersonDetails(
             @Path("person_id") int personId,
