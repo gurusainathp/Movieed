@@ -35,15 +35,17 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_diary_grid" />
 
-    <!-- Unified Swipeable Filter Bar (Reactions + Providers for Watched, Providers for Watchlist) -->
-    <HorizontalScrollView
+    <!-- Custom NestedHorizontalScrollView for conflict-free gesture handling -->
+    <com.gurusainathp.movieed.ui.diary.NestedHorizontalScrollView
         android:id="@+id/scroll_provider_filter_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="8dp"
         android:layout_marginBottom="16dp"
         android:clipToPadding="false"
-        android:overScrollMode="never"
+        android:fadingEdgeLength="16dp"
+        android:overScrollMode="ifContentScrolls"
+        android:requiresFadingEdge="horizontal"
         android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -71,6 +73,6 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
-    </HorizontalScrollView>
+    </com.gurusainathp.movieed.ui.diary.NestedHorizontalScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

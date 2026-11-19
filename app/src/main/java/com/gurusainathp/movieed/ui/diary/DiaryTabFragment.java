@@ -2,11 +2,9 @@ package com.gurusainathp.movieed.ui.diary;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -79,7 +77,7 @@ public class DiaryTabFragment extends Fragment {
     private TextView tvEmpty;
 
     // Unified Filter Bar
-    private HorizontalScrollView scrollFilterBar;
+    private NestedHorizontalScrollView scrollFilterBar;
     private LinearLayout layoutFilterButtons;
     private TextView btnFilterAll;
 
@@ -124,8 +122,6 @@ public class DiaryTabFragment extends Fragment {
         layoutFilterButtons = view.findViewById(R.id.layout_provider_filters);
         btnFilterAll = view.findViewById(R.id.btn_filter_prov_all);
 
-        setupDisallowInterceptTouch(scrollFilterBar);
-
         if (tabType == TAB_WATCHED) {
             tvEmpty.setText("No watched films logged yet.");
         } else {
@@ -148,35 +144,6 @@ public class DiaryTabFragment extends Fragment {
         rvGrid.setAdapter(adapter);
 
         observeViewModel();
-    }
-
-    private void setupDisallowInterceptTouch(View view) {
-        if (view == null) return;
-        view.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (v.getParent() != null) {
-                        v.getParent().requestDisallowInterceptTouchEvent(true);
-                    }
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (v instanceof HorizontalScrollView) {
-                        HorizontalScrollView hsv = (HorizontalScrollView) v;
-                        boolean canScroll = hsv.canScrollHorizontally(-1) || hsv.canScrollHorizontally(1);
-                        if (canScroll && v.getParent() != null) {
-                            v.getParent().requestDisallowInterceptTouchEvent(true);
-                        }
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    if (v.getParent() != null) {
-                        v.getParent().requestDisallowInterceptTouchEvent(false);
-                    }
-                    break;
-            }
-            return false;
-        });
     }
 
     private void setFilter(String reaction, int providerRes, String name) {
@@ -329,10 +296,10 @@ public class DiaryTabFragment extends Fragment {
             ivIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
             btnContainer.addView(ivIcon, ivLp);
 
-            boolean isSelected = (info.iconRes == selectedProviderFilterRes);
+            boolean isSelected = (info.iconRes == selectedProviderFilterRes) && "ALL".equals(selectedReactionFilter);
             highlightButton(btnContainer, isSelected);
 
-            btnContainer.setOnClickListener(v -> setFilter(tabType == TAB_WATCHED ? selectedReactionFilter : "ALL", info.iconRes, info.name));
+            btnContainer.setOnClickListener(v -> setFilter("ALL", info.iconRes, info.name));
 
             providerViewResMap.put(btnContainer, info.iconRes);
             layoutFilterButtons.addView(btnContainer);
@@ -350,11 +317,16 @@ public class DiaryTabFragment extends Fragment {
             if (tabType == TAB_WATCHED) {
                 String r = item.log.getReaction();
                 if (r != null && !r.isEmpty()) {
-                    boolean matchesReaction = "ALL".equals(selectedReactionFilter) || selectedReactionFilter.equals(r);
-                    Set<Integer> icons = item.movie != null ? movieProvidersMap.get((long) item.movie.getTmdbId()) : null;
-                    boolean matchesProvider = (selectedProviderFilterRes == 0) || (icons != null && icons.contains(selectedProviderFilterRes));
-
-                    if (matchesReaction && matchesProvider) {
+                    if (!"ALL".equals(selectedReactionFilter)) {
+                        if (selectedReactionFilter.equals(r)) {
+                            filteredList.add(item);
+                        }
+                    } else if (selectedProviderFilterRes != 0) {
+                        Set<Integer> icons = item.movie != null ? movieProvidersMap.get((long) item.movie.getTmdbId()) : null;
+                        if (icons != null && icons.contains(selectedProviderFilterRes)) {
+                            filteredList.add(item);
+                        }
+                    } else {
                         filteredList.add(item);
                     }
                 }
