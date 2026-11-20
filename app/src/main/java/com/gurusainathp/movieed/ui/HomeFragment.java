@@ -32,10 +32,10 @@ public class HomeFragment extends Fragment {
 
     // Adapters
     private HomeRecentLogAdapter recentLogAdapter;
-    private HomeTopMovieAdapter topMovieAdapter;
+    private HomeMovieAdapter recommendedAdapter;
+    private HomeMovieAdapter classicsAdapter;
     private HomeMovieAdapter trendingAdapter;
     private HomeMovieAdapter nowPlayingAdapter;
-    private HomeMovieAdapter popularAdapter;
 
     // Views
     private ProgressBar pbLoading;
@@ -54,11 +54,15 @@ public class HomeFragment extends Fragment {
     // Sections
     private View sectionRecentlyLogged;
     private TextView btnSeeAllDiary;
+
+    private View sectionRecommended;
+    private TextView btnExploreMore;
+
     private RecyclerView rvRecentlyLogged;
-    private RecyclerView rvTopMovies;
+    private RecyclerView rvRecommendedMovies;
+    private RecyclerView rvClassicsMovies;
     private RecyclerView rvTrendingMovies;
     private RecyclerView rvNowPlayingMovies;
-    private RecyclerView rvPopularMovies;
 
     @Nullable
     @Override
@@ -78,7 +82,8 @@ public class HomeFragment extends Fragment {
         observeViewModel();
 
         btnRetry.setOnClickListener(v -> loadData());
-        btnSeeAllDiary.setOnClickListener(v -> navigateToDiaryTab());
+        btnSeeAllDiary.setOnClickListener(v -> navigateToTab(R.id.nav_diary));
+        btnExploreMore.setOnClickListener(v -> navigateToTab(R.id.nav_explore));
 
         loadData();
     }
@@ -99,11 +104,14 @@ public class HomeFragment extends Fragment {
         sectionRecentlyLogged = view.findViewById(R.id.section_recently_logged);
         btnSeeAllDiary = view.findViewById(R.id.btn_see_all_diary);
 
+        sectionRecommended = view.findViewById(R.id.section_recommended);
+        btnExploreMore = view.findViewById(R.id.btn_explore_more);
+
         rvRecentlyLogged = view.findViewById(R.id.rv_recently_logged);
-        rvTopMovies = view.findViewById(R.id.rv_top_movies);
+        rvRecommendedMovies = view.findViewById(R.id.rv_recommended_home_movies);
+        rvClassicsMovies = view.findViewById(R.id.rv_classics_movies);
         rvTrendingMovies = view.findViewById(R.id.rv_trending_movies);
         rvNowPlayingMovies = view.findViewById(R.id.rv_now_playing_movies);
-        rvPopularMovies = view.findViewById(R.id.rv_popular_movies);
     }
 
     private void setupRecyclerViews() {
@@ -121,10 +129,15 @@ public class HomeFragment extends Fragment {
         rvRecentlyLogged.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvRecentlyLogged.setAdapter(recentLogAdapter);
 
-        // Top 10 of All Time
-        topMovieAdapter = new HomeTopMovieAdapter(this::openMovieDetails);
-        rvTopMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvTopMovies.setAdapter(topMovieAdapter);
+        // You May Like These (Recommendations)
+        recommendedAdapter = new HomeMovieAdapter(this::openMovieDetails);
+        rvRecommendedMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvRecommendedMovies.setAdapter(recommendedAdapter);
+
+        // Hall of Fame Classics
+        classicsAdapter = new HomeMovieAdapter(this::openMovieDetails);
+        rvClassicsMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvClassicsMovies.setAdapter(classicsAdapter);
 
         // Trending
         trendingAdapter = new HomeMovieAdapter(this::openMovieDetails);
@@ -135,11 +148,6 @@ public class HomeFragment extends Fragment {
         nowPlayingAdapter = new HomeMovieAdapter(this::openMovieDetails);
         rvNowPlayingMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvNowPlayingMovies.setAdapter(nowPlayingAdapter);
-
-        // Popular
-        popularAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvPopularMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvPopularMovies.setAdapter(popularAdapter);
     }
 
     private void openMovieDetails(Movie movie) {
@@ -154,11 +162,11 @@ public class HomeFragment extends Fragment {
         );
     }
 
-    private void navigateToDiaryTab() {
+    private void navigateToTab(int menuId) {
         if (getActivity() != null) {
             BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottom_nav);
             if (bottomNav != null) {
-                bottomNav.setSelectedItemId(R.id.nav_diary);
+                bottomNav.setSelectedItemId(menuId);
             }
         }
     }
@@ -228,9 +236,19 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Top 10 movies
-        viewModel.getTopRatedMovies().observe(getViewLifecycleOwner(), movies -> {
-            topMovieAdapter.setMovies(movies);
+        // Recommended Movies ("YOU MAY LIKE THESE")
+        viewModel.getRecommendedMovies().observe(getViewLifecycleOwner(), movies -> {
+            if (movies != null && !movies.isEmpty()) {
+                sectionRecommended.setVisibility(View.VISIBLE);
+                recommendedAdapter.setMovies(movies);
+            } else {
+                sectionRecommended.setVisibility(View.GONE);
+            }
+        });
+
+        // Hall of Fame Classics
+        viewModel.getClassicsMovies().observe(getViewLifecycleOwner(), movies -> {
+            classicsAdapter.setMovies(movies);
         });
 
         // Trending movies
@@ -241,11 +259,6 @@ public class HomeFragment extends Fragment {
         // In Theaters
         viewModel.getNowPlayingMovies().observe(getViewLifecycleOwner(), movies -> {
             nowPlayingAdapter.setMovies(movies);
-        });
-
-        // Popular
-        viewModel.getPopularMovies().observe(getViewLifecycleOwner(), movies -> {
-            popularAdapter.setMovies(movies);
         });
     }
 }

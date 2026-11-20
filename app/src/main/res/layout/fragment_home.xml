@@ -157,10 +157,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_unselected_filter"
+                            android:letterSpacing="0.1"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="4dp"
                             android:text="FEATURED TODAY"
-                            android:letterSpacing="0.1"
                             android:textColor="@color/movieed_primary"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -212,7 +212,7 @@
 
         </LinearLayout>
 
-        <!-- SECTION: RECENTLY LOGGED / WATCHLIST (Movie Logging app personal touch) -->
+        <!-- SECTION: RECENTLY LOGGED / WATCHLIST -->
         <LinearLayout
             android:id="@+id/section_recently_logged"
             android:layout_width="match_parent"
@@ -263,9 +263,75 @@
 
         </LinearLayout>
 
-        <!-- SECTION: TOP 10 MOVIES -->
+        <!-- SECTION: YOU MAY LIKE THESE (RECOMMENDATIONS + EXPLORE MORE) -->
         <LinearLayout
-            android:id="@+id/section_top_rated"
+            android:id="@+id/section_recommended"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="28dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="20dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.12"
+                        android:text="YOU MAY LIKE THESE"
+                        android:textColor="@color/movieed_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Personalized picks based on your watch history"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/btn_explore_more"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:text="Explore More →"
+                    android:textColor="@color/movieed_accent"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_recommended_home_movies"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="8dp" />
+
+        </LinearLayout>
+
+        <!-- SECTION: HALL OF FAME CLASSICS -->
+        <LinearLayout
+            android:id="@+id/section_classics"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -276,7 +342,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:letterSpacing="0.12"
-                android:text="TOP 10 OF ALL TIME"
+                android:text="HALL OF FAME CLASSICS"
                 android:textColor="@color/movieed_primary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -286,12 +352,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="2dp"
-                android:text="Masterpieces every movie logger should experience"
+                android:text="All-time masterpieces every cinema lover must experience"
                 android:textColor="@color/movieed_text_secondary"
                 android:textSize="12sp" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_top_movies"
+                android:id="@+id/rv_classics_movies"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -341,7 +407,7 @@
 
         </LinearLayout>
 
-        <!-- SECTION: IN THEATERS / NOW PLAYING -->
+        <!-- SECTION: IN THEATERS NOW -->
         <LinearLayout
             android:id="@+id/section_now_playing"
             android:layout_width="match_parent"
@@ -364,51 +430,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="2dp"
-                android:text="Fresh releases waiting for your first reaction"
+                android:text="Fresh releases waiting for your reaction"
                 android:textColor="@color/movieed_text_secondary"
                 android:textSize="12sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_now_playing_movies"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
-
-        </LinearLayout>
-
-        <!-- SECTION: POPULAR HITS -->
-        <LinearLayout
-            android:id="@+id/section_popular"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:letterSpacing="0.12"
-                android:text="POPULAR &amp; ACCLAIMED"
-                android:textColor="@color/movieed_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="2dp"
-                android:text="Crowd favorites you might want to add to your watchlist"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="12sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_popular_movies"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
