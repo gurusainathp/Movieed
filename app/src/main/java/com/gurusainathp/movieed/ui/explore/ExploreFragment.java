@@ -49,15 +49,18 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
         progressBar = view.findViewById(R.id.progress_explore);
         tvEmpty = view.findViewById(R.id.tv_explore_empty);
 
+        // Preload next 2 pages in memory for buttery smooth swipe
+        viewPager.setOffscreenPageLimit(2);
+
         adapter = new ExploreAdapter(this);
         viewPager.setAdapter(adapter);
 
-        // Infinite reel pagination: fetch next page when near bottom (within 3 items)
+        // Infinite reel pagination: fetch next page when near bottom (within 4 items)
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                if (position >= adapter.getItemCount() - 3 && adapter.getItemCount() > 0) {
+                if (position >= adapter.getItemCount() - 4 && adapter.getItemCount() > 0) {
                     viewModel.loadNextPage(cachedUserLogs);
                 }
             }

@@ -85,7 +85,7 @@ public class ExploreViewModel extends AndroidViewModel {
     public void loadExploreMovies(List<MovieLogWithDetails> userLogs) {
         if (Boolean.TRUE.equals(isLoading.getValue())) return;
         isLoading.setValue(true);
-        currentTrendingPage = 1 + random.nextInt(3); // Random start page for freshness
+        currentTrendingPage = 1 + random.nextInt(3);
         seenMovieIds.clear();
 
         List<RecommendedMovie> accumulated = new ArrayList<>();
@@ -114,7 +114,6 @@ public class ExploreViewModel extends AndroidViewModel {
             fetchClassicsPool(profile, accumulated, pendingCalls);
             fetchTrendingPool(currentTrendingPage, profile, accumulated, pendingCalls);
         } else {
-            // Cold start: fetch classics pool + trending pool
             AtomicInteger pendingCalls = new AtomicInteger(2);
             fetchClassicsPool(profile, accumulated, pendingCalls);
             fetchTrendingPool(currentTrendingPage, profile, accumulated, pendingCalls);
@@ -135,7 +134,7 @@ public class ExploreViewModel extends AndroidViewModel {
                             Collections.shuffle(results);
                             int added = 0;
                             for (TmdbMovieDto dto : results) {
-                                if (dto == null || profile.loggedMovieIds.contains((long) dto.getId())) continue;
+                                if (!isValidMovie(dto, profile)) continue;
                                 synchronized (seenMovieIds) {
                                     if (seenMovieIds.contains(dto.getId())) continue;
                                     seenMovieIds.add(dto.getId());
@@ -237,6 +236,9 @@ public class ExploreViewModel extends AndroidViewModel {
                                 for (TmdbPersonCastCreditDto item : candidates) {
                                     if (item == null || item.getTitle() == null) continue;
                                     if (profile.loggedMovieIds.contains((long) item.getId())) continue;
+                                    if (item.getBackdropPath() == null && item.getPosterPath() == null) continue;
+                                    if (item.getOverview() == null || item.getOverview().trim().isEmpty()) continue;
+
                                     synchronized (seenMovieIds) {
                                         if (seenMovieIds.contains(item.getId())) continue;
                                         seenMovieIds.add(item.getId());
@@ -245,7 +247,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                     TmdbMovieDto dto = new TmdbMovieDto(
                                             item.getId(),
                                             item.getTitle(),
-                                            "",
+                                            item.getOverview(),
                                             item.getReleaseDate(),
                                             item.getPosterPath(),
                                             item.getBackdropPath(),
@@ -290,7 +292,7 @@ public class ExploreViewModel extends AndroidViewModel {
     private void fetchClassicsPool(RecommendationEngine.UserTasteProfile profile,
                                   List<RecommendedMovie> accumulated,
                                   AtomicInteger pendingCalls) {
-        int randomPage = 1 + random.nextInt(8); // Random page among all-time top rated
+        int randomPage = 1 + random.nextInt(8);
         TmdbClient.getApiService().getTopRatedMovies(BuildConfig.TMDB_API_KEY, randomPage)
                 .enqueue(new Callback<TmdbMovieResponseDto>() {
                     @Override
@@ -301,7 +303,7 @@ public class ExploreViewModel extends AndroidViewModel {
                             Collections.shuffle(results);
                             int count = 0;
                             for (TmdbMovieDto dto : results) {
-                                if (dto == null || profile.loggedMovieIds.contains((long) dto.getId())) continue;
+                                if (!isValidMovie(dto, profile)) continue;
                                 synchronized (seenMovieIds) {
                                     if (seenMovieIds.contains(dto.getId())) continue;
                                     seenMovieIds.add(dto.getId());
@@ -347,7 +349,7 @@ public class ExploreViewModel extends AndroidViewModel {
                             Collections.shuffle(results);
                             int count = 0;
                             for (TmdbMovieDto dto : results) {
-                                if (dto == null || profile.loggedMovieIds.contains((long) dto.getId())) continue;
+                                if (!isValidMovie(dto, profile)) continue;
                                 synchronized (seenMovieIds) {
                                     if (seenMovieIds.contains(dto.getId())) continue;
                                     seenMovieIds.add(dto.getId());
@@ -408,7 +410,7 @@ public class ExploreViewModel extends AndroidViewModel {
                         isFetchingMore = false;
                         if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
                             for (TmdbMovieDto dto : response.body().getResults()) {
-                                if (dto == null || profile.loggedMovieIds.contains((long) dto.getId())) continue;
+                                if (!isValidMovie(dto, profile)) continue;
                                 synchronized (seenMovieIds) {
                                     if (seenMovieIds.contains(dto.getId())) continue;
                                     seenMovieIds.add(dto.getId());
@@ -427,7 +429,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                         RecommendedMovie.SourceType.MOVIE,
                                         dto.getId(),
                                         dto.getTitle()
-                                ));
+                                    ));
                             }
                             exploreFeed.setValue(currentList);
                         }
@@ -438,6 +440,14 @@ public class ExploreViewModel extends AndroidViewModel {
                         isFetchingMore = false;
                     }
                 });
+    }
+
+    private boolean isValidMovie(TmdbMovieDto dto, RecommendationEngine.UserTasteProfile profile) {
+        if (dto == null || dto.getTitle() == null || dto.getTitle().trim().isEmpty()) return false;
+        if (profile != null && profile.loggedMovieIds.contains((long) dto.getId())) return false;
+        if (dto.getBackdropPath() == null && dto.getPosterPath() == null) return false;
+        if (dto.getOverview() == null || dto.getOverview().trim().isEmpty()) return false;
+        return true;
     }
 
     public void toggleWatchlist(TmdbMovieDto dto, MovieLogEntity existingLog) {

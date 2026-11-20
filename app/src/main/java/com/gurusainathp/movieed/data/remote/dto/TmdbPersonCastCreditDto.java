@@ -13,6 +13,9 @@ public class TmdbPersonCastCreditDto {
     @SerializedName("name")
     private String name;
 
+    @SerializedName("overview")
+    private String overview;
+
     @SerializedName("character")
     private String character;
 
@@ -39,6 +42,7 @@ public class TmdbPersonCastCreditDto {
 
     public int getId() { return id; }
     public String getTitle() { return title != null ? title : name; }
+    public String getOverview() { return overview != null ? overview : ""; }
     public String getCharacter() {
         if (character != null && !character.isEmpty()) {
             return character;
