@@ -1,6 +1,8 @@
 package com.gurusainathp.movieed.ui.explore;
 
 import android.app.Application;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -46,35 +48,12 @@ public class ExploreViewModel extends AndroidViewModel {
     private final MutableLiveData<Map<Long, MovieLogEntity>> logsMapLiveData = new MutableLiveData<>(new HashMap<>());
 
     private final Random random = new Random();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int currentTrendingPage = 1;
     private boolean isFetchingMore = false;
     private final Set<Integer> seenMovieIds = new HashSet<>();
     private final Map<MovieEntity, List<TmdbMovieDto>> activeSeedCandidatesMap = new HashMap<>();
-
-    public static class DirectorInfo {
-        public final int directorId;
-        public final String directorName;
-        public final MovieEntity sourceMovie;
-
-        public DirectorInfo(int directorId, String directorName, MovieEntity sourceMovie) {
-            this.directorId = directorId;
-            this.directorName = directorName;
-            this.sourceMovie = sourceMovie;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof DirectorInfo)) return false;
-            DirectorInfo that = (DirectorInfo) o;
-            return directorId == that.directorId;
-        }
-
-        @Override
-        public int hashCode() {
-            return Integer.hashCode(directorId);
-        }
-    }
+    private final Map<Integer, List<TmdbPersonCastCreditDto>> directorCreditsCache = new HashMap<>();
 
     public ExploreViewModel(@NonNull Application application) {
         super(application);
@@ -116,6 +95,14 @@ public class ExploreViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         currentTrendingPage = 1 + random.nextInt(3);
 
+        // Failsafe timeout guarantee: never hang loading for more than 3 seconds
+        mainHandler.removeCallbacksAndMessages(null);
+        mainHandler.postDelayed(() -> {
+            if (Boolean.TRUE.equals(isLoading.getValue())) {
+                isLoading.setValue(false);
+            }
+        }, 3000);
+
         synchronized (seenMovieIds) {
             seenMovieIds.clear();
         }
@@ -132,21 +119,20 @@ public class ExploreViewModel extends AndroidViewModel {
         }
 
         if (!preferredMovies.isEmpty()) {
-            // 1. Pure random sampling of 3-5 seed movies for recommendations
             Collections.shuffle(preferredMovies, random);
-            int seedCount = Math.min(preferredMovies.size(), 3 + random.nextInt(3));
+            int seedCount = Math.min(preferredMovies.size(), 2 + random.nextInt(2));
             List<MovieEntity> seedMovies = preferredMovies.subList(0, seedCount);
 
-            // 2. Decoupled Director Pool: collect directors across loved/liked history
             List<MovieEntity> directorSourcePool = new ArrayList<>(profile.lovedMovies);
             if (directorSourcePool.isEmpty()) {
                 directorSourcePool.addAll(profile.likedMovies);
             }
             Collections.shuffle(directorSourcePool, random);
-            int directorScanLimit = Math.min(8, directorSourcePool.size());
+            int directorScanLimit = Math.min(2, directorSourcePool.size());
             List<MovieEntity> directorSourceMovies = directorSourcePool.subList(0, directorScanLimit);
 
-            AtomicInteger pendingCalls = new AtomicInteger(seedMovies.size() + directorSourceMovies.size() + 2);
+            // Primary loading count = seeds + classics + trending (2)
+            AtomicInteger pendingCalls = new AtomicInteger(seedMovies.size() + 2);
 
             for (MovieEntity seedMovie : seedMovies) {
                 fetchSeedRecommendations(seedMovie, profile, accumulated, pendingCalls);
@@ -154,7 +140,7 @@ public class ExploreViewModel extends AndroidViewModel {
 
             Set<Integer> collectedDirectorIds = new HashSet<>();
             for (MovieEntity sourceMovie : directorSourceMovies) {
-                fetchAndPoolDirector(sourceMovie, profile, accumulated, collectedDirectorIds, pendingCalls);
+                fetchAndPoolDirector(sourceMovie, profile, accumulated, collectedDirectorIds);
             }
 
             fetchClassicsPool(profile, accumulated, pendingCalls);
@@ -194,8 +180,7 @@ public class ExploreViewModel extends AndroidViewModel {
     private void fetchAndPoolDirector(MovieEntity sourceMovie,
                                       RecommendationEngine.UserTasteProfile profile,
                                       List<RecommendedMovie> accumulated,
-                                      Set<Integer> collectedDirectorIds,
-                                      AtomicInteger pendingCalls) {
+                                      Set<Integer> collectedDirectorIds) {
         TmdbClient.getApiService().getMovieCredits(sourceMovie.getTmdbId(), BuildConfig.TMDB_API_KEY)
                 .enqueue(new Callback<TmdbCreditsResponseDto>() {
                     @Override
@@ -214,72 +199,102 @@ public class ExploreViewModel extends AndroidViewModel {
                                 }
                             }
                         }
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
-                    }
+                    public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {}
                 });
     }
 
     private void fetchDirectorMovies(int directorId, String directorName, MovieEntity sourceMovie,
                                      RecommendationEngine.UserTasteProfile profile,
                                      List<RecommendedMovie> accumulated) {
+        synchronized (directorCreditsCache) {
+            if (directorCreditsCache.containsKey(directorId)) {
+                List<TmdbPersonCastCreditDto> cached = directorCreditsCache.get(directorId);
+                if (cached != null) {
+                    processDirectorCredits(cached, directorId, directorName, sourceMovie, profile, accumulated);
+                    return;
+                }
+            }
+        }
+
         TmdbClient.getApiService().getCombinedCredits(directorId, BuildConfig.TMDB_API_KEY)
                 .enqueue(new Callback<TmdbCombinedCreditsResponseDto>() {
                     @Override
                     public void onResponse(@NonNull Call<TmdbCombinedCreditsResponseDto> call,
                                            @NonNull Response<TmdbCombinedCreditsResponseDto> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
-                            List<TmdbPersonCastCreditDto> crewMovies = response.body().getCrew();
-                            int count = 0;
-                            for (TmdbPersonCastCreditDto item : crewMovies) {
-                                if (item == null || item.getTitle() == null) continue;
-                                if (profile.loggedMovieIds.contains((long) item.getId())) continue;
-                                if (item.getBackdropPath() == null && item.getPosterPath() == null) continue;
+                            List<TmdbPersonCastCreditDto> crewMovies = new ArrayList<>(response.body().getCrew());
+                            Collections.sort(crewMovies, (a, b) -> Double.compare(b.getVoteAverage(), a.getVoteAverage()));
 
-                                synchronized (seenMovieIds) {
-                                    if (seenMovieIds.contains(item.getId())) continue;
-                                    seenMovieIds.add(item.getId());
-                                }
-
-                                TmdbMovieDto dto = new TmdbMovieDto(
-                                        item.getId(),
-                                        item.getTitle(),
-                                        item.getOverview(),
-                                        item.getReleaseDate(),
-                                        item.getPosterPath(),
-                                        item.getBackdropPath(),
-                                        item.getVoteAverage(),
-                                        item.getMediaType()
-                                );
-
-                                List<String> reasons = new ArrayList<>();
-                                reasons.add("Directed by " + directorName + " (from your history)");
-                                float score = (float) item.getVoteAverage() + 3.5f + random.nextFloat();
-
-                                synchronized (accumulated) {
-                                    accumulated.add(new RecommendedMovie(
-                                            dto,
-                                            score,
-                                            reasons,
-                                            sourceMovie.getPosterPath(),
-                                            RecommendedMovie.SourceType.PERSON,
-                                            directorId,
-                                            directorName
-                                    ));
-                                }
-
-                                if (++count >= 2) break;
+                            synchronized (directorCreditsCache) {
+                                directorCreditsCache.put(directorId, crewMovies);
                             }
+
+                            processDirectorCredits(crewMovies, directorId, directorName, sourceMovie, profile, accumulated);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<TmdbCombinedCreditsResponseDto> call, @NonNull Throwable t) {}
                 });
+    }
+
+    private void processDirectorCredits(List<TmdbPersonCastCreditDto> crewMovies, int directorId, String directorName, MovieEntity sourceMovie,
+                                        RecommendationEngine.UserTasteProfile profile, List<RecommendedMovie> accumulated) {
+        int count = 0;
+        List<RecommendedMovie> directorBatch = new ArrayList<>();
+        for (TmdbPersonCastCreditDto item : crewMovies) {
+            if (item == null || item.getTitle() == null) continue;
+            if (profile.loggedMovieIds.contains((long) item.getId())) continue;
+            if (item.getBackdropPath() == null && item.getPosterPath() == null) continue;
+
+            synchronized (seenMovieIds) {
+                if (seenMovieIds.contains(item.getId())) continue;
+                seenMovieIds.add(item.getId());
+            }
+
+            TmdbMovieDto dto = new TmdbMovieDto(
+                    item.getId(),
+                    item.getTitle(),
+                    item.getOverview(),
+                    item.getReleaseDate(),
+                    item.getPosterPath(),
+                    item.getBackdropPath(),
+                    item.getVoteAverage(),
+                    item.getMediaType()
+            );
+
+            List<String> reasons = new ArrayList<>();
+            reasons.add("Directed by " + directorName + " (from your history)");
+            float score = (float) item.getVoteAverage() + 3.5f + random.nextFloat();
+
+            directorBatch.add(new RecommendedMovie(
+                    dto,
+                    score,
+                    reasons,
+                    sourceMovie.getPosterPath(),
+                    RecommendedMovie.SourceType.PERSON,
+                    directorId,
+                    directorName
+            ));
+
+            if (++count >= 2) break;
+        }
+
+        if (!directorBatch.isEmpty()) {
+            synchronized (accumulated) {
+                accumulated.addAll(directorBatch);
+            }
+            List<RecommendedMovie> currentFeed = exploreFeed.getValue();
+            if (currentFeed != null) {
+                List<RecommendedMovie> updated = new ArrayList<>(currentFeed);
+                updated.addAll(directorBatch);
+                Collections.sort(updated, (a, b) -> Float.compare(b.getScore(), a.getScore()));
+                exploreFeed.setValue(updated);
+            }
+        }
     }
 
     private void fetchClassicsPool(RecommendationEngine.UserTasteProfile profile,
@@ -315,7 +330,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                             dto.getTitle()
                                     ));
                                 }
-                                if (++count >= 4) break;
+                                if (++count >= 6) break;
                             }
                         }
                         checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
@@ -366,7 +381,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                             dto.getTitle()
                                     ));
                                 }
-                                if (++count >= 6) break;
+                                if (++count >= 10) break;
                             }
                         }
                         checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
@@ -383,6 +398,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                            List<RecommendedMovie> accumulated,
                                            RecommendationEngine.UserTasteProfile profile) {
         if (pendingCalls.decrementAndGet() == 0) {
+            mainHandler.removeCallbacksAndMessages(null);
             isLoading.setValue(false);
 
             synchronized (activeSeedCandidatesMap) {
@@ -405,8 +421,32 @@ public class ExploreViewModel extends AndroidViewModel {
                 }
             }
 
-            Collections.sort(accumulated, (a, b) -> Float.compare(b.getScore(), a.getScore()));
-            exploreFeed.setValue(new ArrayList<>(accumulated));
+            List<RecommendedMovie> jitteredList = new ArrayList<>();
+            for (RecommendedMovie rm : accumulated) {
+                float jitteredScore = rm.getScore() + (random.nextFloat() * 6.0f) - 2.0f;
+                jitteredList.add(new RecommendedMovie(
+                        rm.getMovie(),
+                        jitteredScore,
+                        rm.getReasons(),
+                        rm.getReasonPosterPath(),
+                        rm.getSourceType(),
+                        rm.getSourceId(),
+                        rm.getSourceName()
+                ));
+            }
+
+            Collections.sort(jitteredList, (a, b) -> Float.compare(b.getScore(), a.getScore()));
+
+            List<RecommendedMovie> blendedList = new ArrayList<>();
+            int chunkSize = 5;
+            for (int i = 0; i < jitteredList.size(); i += chunkSize) {
+                int end = Math.min(i + chunkSize, jitteredList.size());
+                List<RecommendedMovie> chunk = new ArrayList<>(jitteredList.subList(i, end));
+                Collections.shuffle(chunk, random);
+                blendedList.addAll(chunk);
+            }
+
+            exploreFeed.setValue(blendedList);
         }
     }
 
@@ -463,6 +503,15 @@ public class ExploreViewModel extends AndroidViewModel {
         if (profile != null && profile.loggedMovieIds.contains((long) dto.getId())) return false;
         if (dto.getBackdropPath() == null && dto.getPosterPath() == null) return false;
         if (dto.getOverview() == null || dto.getOverview().trim().isEmpty()) return false;
+
+        String titleLower = dto.getTitle().toLowerCase(Locale.US);
+        if (titleLower.contains("making of") ||
+            titleLower.contains("behind the scenes") ||
+            titleLower.contains("featurette") ||
+            titleLower.contains("deleted scenes") ||
+            titleLower.contains("bloopers")) {
+            return false;
+        }
         return true;
     }
 
