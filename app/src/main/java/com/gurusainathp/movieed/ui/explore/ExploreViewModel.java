@@ -446,8 +446,64 @@ public class ExploreViewModel extends AndroidViewModel {
                 blendedList.addAll(chunk);
             }
 
-            exploreFeed.setValue(blendedList);
+            List<RecommendedMovie> interleavedList = interleaveByReason(blendedList);
+            exploreFeed.setValue(interleavedList);
         }
+    }
+
+    private List<RecommendedMovie> interleaveByReason(List<RecommendedMovie> inputList) {
+        if (inputList == null || inputList.size() <= 1) {
+            return inputList;
+        }
+
+        Map<String, List<RecommendedMovie>> buckets = new java.util.LinkedHashMap<>();
+        for (RecommendedMovie rm : inputList) {
+            String primaryReason = (rm.getReasons() != null && !rm.getReasons().isEmpty())
+                    ? rm.getReasons().get(0) : "General";
+            buckets.computeIfAbsent(primaryReason, k -> new ArrayList<>()).add(rm);
+        }
+
+        List<Map.Entry<String, List<RecommendedMovie>>> sortedBuckets = new ArrayList<>(buckets.entrySet());
+        Collections.sort(sortedBuckets, (a, b) -> Integer.compare(b.getValue().size(), a.getValue().size()));
+
+        List<RecommendedMovie> interleaved = new ArrayList<>();
+        int totalSize = inputList.size();
+        String lastReason = "";
+
+        while (interleaved.size() < totalSize) {
+            boolean placedInThisPass = false;
+
+            for (Map.Entry<String, List<RecommendedMovie>> entry : sortedBuckets) {
+                String reason = entry.getKey();
+                List<RecommendedMovie> bucket = entry.getValue();
+
+                if (!bucket.isEmpty() && !reason.equals(lastReason)) {
+                    RecommendedMovie rm = bucket.remove(0);
+                    interleaved.add(rm);
+                    lastReason = reason;
+                    placedInThisPass = true;
+                    break;
+                }
+            }
+
+            if (!placedInThisPass) {
+                for (Map.Entry<String, List<RecommendedMovie>> entry : sortedBuckets) {
+                    List<RecommendedMovie> bucket = entry.getValue();
+                    if (!bucket.isEmpty()) {
+                        RecommendedMovie rm = bucket.remove(0);
+                        interleaved.add(rm);
+                        lastReason = (rm.getReasons() != null && !rm.getReasons().isEmpty())
+                                ? rm.getReasons().get(0) : "General";
+                        placedInThisPass = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!placedInThisPass) break;
+        }
+
+        return interleaved;
     }
 
     public void loadNextPage(List<MovieLogWithDetails> userLogs) {
