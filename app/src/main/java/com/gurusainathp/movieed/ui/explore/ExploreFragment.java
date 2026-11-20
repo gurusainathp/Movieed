@@ -55,12 +55,21 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
         adapter = new ExploreAdapter(this);
         viewPager.setAdapter(adapter);
 
-        // Infinite reel pagination: fetch next page when near bottom (within 4 items)
+        // Infinite reel pagination & seed rotation every 10-15 scrolls
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            private int pagesViewedSinceLastReset = 0;
+            private int targetResetThreshold = 10 + new java.util.Random().nextInt(6); // 10 to 15 scrolls
+
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                if (position >= adapter.getItemCount() - 4 && adapter.getItemCount() > 0) {
+                pagesViewedSinceLastReset++;
+
+                if (pagesViewedSinceLastReset >= targetResetThreshold) {
+                    pagesViewedSinceLastReset = 0;
+                    targetResetThreshold = 10 + new java.util.Random().nextInt(6);
+                    viewModel.loadExploreMovies(cachedUserLogs, true); // Rotate seeds & fresh feed!
+                } else if (position >= adapter.getItemCount() - 5 && adapter.getItemCount() > 0) {
                     viewModel.loadNextPage(cachedUserLogs);
                 }
             }
