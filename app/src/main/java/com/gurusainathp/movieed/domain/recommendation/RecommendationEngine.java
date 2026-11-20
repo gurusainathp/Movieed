@@ -13,9 +13,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 public class RecommendationEngine {
+
+    private final Random random = new Random();
 
     public static float getReactionWeight(String reaction) {
         if (reaction == null) return 0f;
@@ -32,8 +35,9 @@ public class RecommendationEngine {
     public static class UserTasteProfile {
         public final Set<Long> loggedMovieIds = new HashSet<>();
         public final List<MovieEntity> lovedMovies = new ArrayList<>();
+        public final List<MovieEntity> likedMovies = new ArrayList<>();
         public final Map<Integer, Float> personAffinity = new HashMap<>(); // personId -> weight
-        public final Map<String, String> personNames = new HashMap<>(); // personId -> Name
+        public final Map<String, String> personNames = new HashMap<>(); // personIdStr -> Name
 
         public static UserTasteProfile build(List<MovieLogWithDetails> logs) {
             UserTasteProfile profile = new UserTasteProfile();
@@ -45,8 +49,10 @@ public class RecommendationEngine {
 
                 float weight = getReactionWeight(item.log.getReaction());
                 if (item.movie != null) {
-                    if (weight >= 1.5f) {
+                    if (weight >= 3.0f) {
                         profile.lovedMovies.add(item.movie);
+                    } else if (weight >= 1.5f) {
+                        profile.likedMovies.add(item.movie);
                     }
                 }
             }
@@ -90,13 +96,16 @@ public class RecommendationEngine {
             if (sourceMovieTitle != null && !sourceMovieTitle.isEmpty()) {
                 reasons.add("Because you loved " + sourceMovieTitle);
                 reasonPoster = sourcePosterPath;
-                score += 2.0f;
+                score += 3.0f;
             }
 
-            if (candidate.getVoteAverage() >= 7.5) {
-                score += 1.5f;
+            if (candidate.getVoteAverage() >= 7.8) {
+                score += 1.8f;
                 reasons.add("Critically acclaimed (" + String.format(java.util.Locale.US, "%.1f", candidate.getVoteAverage()) + "★)");
             }
+
+            // Freshness jitter (0.0 to 1.0) to prevent static repetitions on reload
+            score += random.nextFloat() * 1.0f;
 
             if (reasons.isEmpty()) {
                 reasons.add("Trending pick for you");
