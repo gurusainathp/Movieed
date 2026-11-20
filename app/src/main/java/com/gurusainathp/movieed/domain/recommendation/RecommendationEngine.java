@@ -68,6 +68,72 @@ public class RecommendationEngine {
         }
     }
 
+    public List<RecommendedMovie> aggregateMultiSeedRecommendations(
+            Map<MovieEntity, List<TmdbMovieDto>> seedToRecommendationsMap,
+            UserTasteProfile profile) {
+
+        if (seedToRecommendationsMap == null || seedToRecommendationsMap.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Map<Integer, MultiSeedCandidate> candidateMap = new HashMap<>();
+
+        for (Map.Entry<MovieEntity, List<TmdbMovieDto>> entry : seedToRecommendationsMap.entrySet()) {
+            MovieEntity seedMovie = entry.getKey();
+            List<TmdbMovieDto> candidates = entry.getValue();
+
+            if (candidates == null) continue;
+
+            for (TmdbMovieDto candidate : candidates) {
+                if (candidate == null) continue;
+
+                if (profile != null && profile.loggedMovieIds.contains((long) candidate.getId())) {
+                    continue;
+                }
+
+                MultiSeedCandidate candidateRecord = candidateMap.get(candidate.getId());
+                if (candidateRecord == null) {
+                    candidateRecord = new MultiSeedCandidate(candidate);
+                    candidateMap.put(candidate.getId(), candidateRecord);
+                }
+
+                candidateRecord.addSeedMatch(seedMovie);
+            }
+        }
+
+        List<RecommendedMovie> scoredList = new ArrayList<>();
+
+        for (MultiSeedCandidate record : candidateMap.values()) {
+            float score = (float) record.dto.getVoteAverage();
+            List<String> reasons = new ArrayList<>();
+            String primaryPoster = null;
+
+            int matchCount = record.matchingSeeds.size();
+            if (matchCount > 1) {
+                score += (matchCount - 1) * 3.0f;
+            }
+
+            if (!record.matchingSeeds.isEmpty()) {
+                MovieEntity topSeed = record.matchingSeeds.get(0);
+                reasons.add("Because you loved " + topSeed.getTitle());
+                primaryPoster = topSeed.getPosterPath();
+                score += 3.0f;
+            }
+
+            if (record.dto.getVoteAverage() >= 7.8) {
+                score += 1.8f;
+                reasons.add("Critically acclaimed (" + String.format(java.util.Locale.US, "%.1f", record.dto.getVoteAverage()) + "★)");
+            }
+
+            score += random.nextFloat() * 0.8f;
+
+            scoredList.add(new RecommendedMovie(record.dto, score, reasons, primaryPoster));
+        }
+
+        Collections.sort(scoredList, (a, b) -> Float.compare(b.getScore(), a.getScore()));
+        return scoredList;
+    }
+
     public List<RecommendedMovie> rankCandidateMovies(
             List<TmdbMovieDto> candidates,
             UserTasteProfile profile,
@@ -104,7 +170,6 @@ public class RecommendationEngine {
                 reasons.add("Critically acclaimed (" + String.format(java.util.Locale.US, "%.1f", candidate.getVoteAverage()) + "★)");
             }
 
-            // Freshness jitter (0.0 to 1.0) to prevent static repetitions on reload
             score += random.nextFloat() * 1.0f;
 
             if (reasons.isEmpty()) {
@@ -130,5 +195,20 @@ public class RecommendationEngine {
             result.add(rm.getMovie());
         }
         return result;
+    }
+
+    private static class MultiSeedCandidate {
+        final TmdbMovieDto dto;
+        final List<MovieEntity> matchingSeeds = new ArrayList<>();
+
+        MultiSeedCandidate(TmdbMovieDto dto) {
+            this.dto = dto;
+        }
+
+        void addSeedMatch(MovieEntity seed) {
+            if (seed != null && !matchingSeeds.contains(seed)) {
+                matchingSeeds.add(seed);
+            }
+        }
     }
 }

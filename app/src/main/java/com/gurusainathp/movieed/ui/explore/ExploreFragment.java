@@ -94,6 +94,7 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
         });
 
         viewModel.getAllLogsWithDetails().observe(getViewLifecycleOwner(), logs -> {
+            boolean wasEmpty = cachedUserLogs.isEmpty();
             cachedUserLogs = logs != null ? logs : new ArrayList<>();
             List<MovieLogEntity> rawLogs = new ArrayList<>();
             for (MovieLogWithDetails item : cachedUserLogs) {
@@ -103,8 +104,9 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
             }
             viewModel.updateLogsMap(rawLogs);
 
-            if (viewModel.getExploreFeed().getValue() == null || viewModel.getExploreFeed().getValue().isEmpty()) {
-                viewModel.loadExploreMovies(cachedUserLogs);
+            boolean isNowNonEmpty = !cachedUserLogs.isEmpty();
+            if ((wasEmpty && isNowNonEmpty) || viewModel.getExploreFeed().getValue() == null || viewModel.getExploreFeed().getValue().isEmpty()) {
+                viewModel.loadExploreMovies(cachedUserLogs, true);
             }
         });
     }
