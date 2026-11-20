@@ -51,6 +51,31 @@ public class ExploreViewModel extends AndroidViewModel {
     private final Set<Integer> seenMovieIds = new HashSet<>();
     private final Map<MovieEntity, List<TmdbMovieDto>> activeSeedCandidatesMap = new HashMap<>();
 
+    public static class DirectorInfo {
+        public final int directorId;
+        public final String directorName;
+        public final MovieEntity sourceMovie;
+
+        public DirectorInfo(int directorId, String directorName, MovieEntity sourceMovie) {
+            this.directorId = directorId;
+            this.directorName = directorName;
+            this.sourceMovie = sourceMovie;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof DirectorInfo)) return false;
+            DirectorInfo that = (DirectorInfo) o;
+            return directorId == that.directorId;
+        }
+
+        @Override
+        public int hashCode() {
+            return Integer.hashCode(directorId);
+        }
+    }
+
     public ExploreViewModel(@NonNull Application application) {
         super(application);
         repository = new MovieRepository(application);
@@ -107,14 +132,29 @@ public class ExploreViewModel extends AndroidViewModel {
         }
 
         if (!preferredMovies.isEmpty()) {
+            // 1. Pure random sampling of 3-5 seed movies for recommendations
             Collections.shuffle(preferredMovies, random);
-            int seedCount = Math.min(preferredMovies.size(), 3 + random.nextInt(3)); // 3 to 5 random seeds
+            int seedCount = Math.min(preferredMovies.size(), 3 + random.nextInt(3));
             List<MovieEntity> seedMovies = preferredMovies.subList(0, seedCount);
 
-            AtomicInteger pendingCalls = new AtomicInteger(seedMovies.size() + 2);
+            // 2. Decoupled Director Pool: collect directors across loved/liked history
+            List<MovieEntity> directorSourcePool = new ArrayList<>(profile.lovedMovies);
+            if (directorSourcePool.isEmpty()) {
+                directorSourcePool.addAll(profile.likedMovies);
+            }
+            Collections.shuffle(directorSourcePool, random);
+            int directorScanLimit = Math.min(8, directorSourcePool.size());
+            List<MovieEntity> directorSourceMovies = directorSourcePool.subList(0, directorScanLimit);
+
+            AtomicInteger pendingCalls = new AtomicInteger(seedMovies.size() + directorSourceMovies.size() + 2);
 
             for (MovieEntity seedMovie : seedMovies) {
-                fetchSeedRecommendationsAndCredits(seedMovie, profile, accumulated, pendingCalls);
+                fetchSeedRecommendations(seedMovie, profile, accumulated, pendingCalls);
+            }
+
+            Set<Integer> collectedDirectorIds = new HashSet<>();
+            for (MovieEntity sourceMovie : directorSourceMovies) {
+                fetchAndPoolDirector(sourceMovie, profile, accumulated, collectedDirectorIds, pendingCalls);
             }
 
             fetchClassicsPool(profile, accumulated, pendingCalls);
@@ -126,10 +166,10 @@ public class ExploreViewModel extends AndroidViewModel {
         }
     }
 
-    private void fetchSeedRecommendationsAndCredits(MovieEntity seedMovie,
-                                                      RecommendationEngine.UserTasteProfile profile,
-                                                      List<RecommendedMovie> accumulated,
-                                                      AtomicInteger pendingCalls) {
+    private void fetchSeedRecommendations(MovieEntity seedMovie,
+                                          RecommendationEngine.UserTasteProfile profile,
+                                          List<RecommendedMovie> accumulated,
+                                          AtomicInteger pendingCalls) {
         TmdbClient.getApiService().getMovieRecommendations(seedMovie.getTmdbId(), BuildConfig.TMDB_API_KEY)
                 .enqueue(new Callback<TmdbMovieResponseDto>() {
                     @Override
@@ -141,8 +181,6 @@ public class ExploreViewModel extends AndroidViewModel {
                                 activeSeedCandidatesMap.put(seedMovie, results);
                             }
                         }
-
-                        fetchDirectorFilmography(seedMovie, profile, accumulated);
                         checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
                     }
 
@@ -153,38 +191,40 @@ public class ExploreViewModel extends AndroidViewModel {
                 });
     }
 
-    private void fetchDirectorFilmography(MovieEntity seedMovie,
-                                         RecommendationEngine.UserTasteProfile profile,
-                                         List<RecommendedMovie> accumulated) {
-        TmdbClient.getApiService().getMovieCredits(seedMovie.getTmdbId(), BuildConfig.TMDB_API_KEY)
+    private void fetchAndPoolDirector(MovieEntity sourceMovie,
+                                      RecommendationEngine.UserTasteProfile profile,
+                                      List<RecommendedMovie> accumulated,
+                                      Set<Integer> collectedDirectorIds,
+                                      AtomicInteger pendingCalls) {
+        TmdbClient.getApiService().getMovieCredits(sourceMovie.getTmdbId(), BuildConfig.TMDB_API_KEY)
                 .enqueue(new Callback<TmdbCreditsResponseDto>() {
                     @Override
                     public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call,
                                            @NonNull Response<TmdbCreditsResponseDto> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            TmdbCreditsResponseDto credits = response.body();
-                            TmdbCrewDto director = null;
-                            if (credits.getCrew() != null) {
-                                for (TmdbCrewDto crew : credits.getCrew()) {
-                                    if (crew != null && "Director".equalsIgnoreCase(crew.getJob())) {
-                                        director = crew;
-                                        break;
+                        if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
+                            for (TmdbCrewDto crew : response.body().getCrew()) {
+                                if (crew != null && "Director".equalsIgnoreCase(crew.getJob())) {
+                                    synchronized (collectedDirectorIds) {
+                                        if (!collectedDirectorIds.contains(crew.getId())) {
+                                            collectedDirectorIds.add(crew.getId());
+                                            fetchDirectorMovies(crew.getId(), crew.getName(), sourceMovie, profile, accumulated);
+                                        }
                                     }
+                                    break;
                                 }
                             }
-
-                            if (director != null) {
-                                fetchDirectorMovies(director.getId(), director.getName(), seedMovie, profile, accumulated);
-                            }
                         }
+                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {}
+                    public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {
+                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
+                    }
                 });
     }
 
-    private void fetchDirectorMovies(int directorId, String directorName, MovieEntity seedMovie,
+    private void fetchDirectorMovies(int directorId, String directorName, MovieEntity sourceMovie,
                                      RecommendationEngine.UserTasteProfile profile,
                                      List<RecommendedMovie> accumulated) {
         TmdbClient.getApiService().getCombinedCredits(directorId, BuildConfig.TMDB_API_KEY)
@@ -217,7 +257,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                 );
 
                                 List<String> reasons = new ArrayList<>();
-                                reasons.add("Directed by " + directorName + " (from " + seedMovie.getTitle() + ")");
+                                reasons.add("Directed by " + directorName + " (from your history)");
                                 float score = (float) item.getVoteAverage() + 3.5f + random.nextFloat();
 
                                 synchronized (accumulated) {
@@ -225,14 +265,14 @@ public class ExploreViewModel extends AndroidViewModel {
                                             dto,
                                             score,
                                             reasons,
-                                            seedMovie.getPosterPath(),
+                                            sourceMovie.getPosterPath(),
                                             RecommendedMovie.SourceType.PERSON,
                                             directorId,
                                             directorName
                                     ));
                                 }
 
-                                if (++count >= 3) break;
+                                if (++count >= 2) break;
                             }
                         }
                     }
