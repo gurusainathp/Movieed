@@ -84,12 +84,15 @@
 
                 </LinearLayout>
 
-                <!-- Right Reason Badge Card with Poster -->
+                <!-- Right Reason Badge Card with Poster (Clickable to jump to context) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_explore_reason"
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
                     app:cardBackgroundColor="@color/movieed_surface"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="4dp"

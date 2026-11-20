@@ -17,8 +17,10 @@ import com.gurusainathp.movieed.R;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogWithDetails;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
+import com.gurusainathp.movieed.domain.model.RecommendedMovie;
 import com.gurusainathp.movieed.ui.movie.MovieDetailsActivity;
 import com.gurusainathp.movieed.ui.movie.ReactionPickerBottomSheetDialogFragment;
+import com.gurusainathp.movieed.ui.person.PersonDetailsActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +117,31 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
                 movie.getPosterPath(),
                 isTv
         );
+    }
+
+    @Override
+    public void onReasonClick(RecommendedMovie item) {
+        if (item == null) return;
+        if (item.getSourceType() == RecommendedMovie.SourceType.PERSON && item.getSourceId() > 0) {
+            PersonDetailsActivity.launch(requireContext(), item.getSourceId(), item.getSourceName());
+        } else if (item.getSourceType() == RecommendedMovie.SourceType.MOVIE && item.getSourceId() > 0) {
+            MovieDetailsActivity.launch(
+                    requireContext(),
+                    item.getSourceId(),
+                    item.getSourceName(),
+                    item.getReasonPosterPath(),
+                    false
+            );
+        } else if (item.getMovie() != null) {
+            boolean isTv = "tv".equals(item.getMovie().getMediaType());
+            MovieDetailsActivity.launch(
+                    requireContext(),
+                    item.getMovie().getId(),
+                    item.getMovie().getTitle(),
+                    item.getMovie().getPosterPath(),
+                    isTv
+            );
+        }
     }
 
     @Override

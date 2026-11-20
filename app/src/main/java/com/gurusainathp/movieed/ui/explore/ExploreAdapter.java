@@ -26,6 +26,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
 
     public interface OnExploreActionListener {
         void onMovieClick(TmdbMovieDto movie);
+        void onReasonClick(RecommendedMovie recommendedMovie);
         void onWatchlistClick(TmdbMovieDto movie, MovieLogEntity currentLog);
         void onRateClick(TmdbMovieDto movie, MovieLogEntity currentLog);
     }
@@ -70,6 +71,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
 
     class ExploreViewHolder extends RecyclerView.ViewHolder {
         private final View layoutHeaderDetails;
+        private final View cardReason;
         private final ImageView ivBackdrop;
         private final TextView tvTitle;
         private final TextView tvYear;
@@ -83,6 +85,7 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
         ExploreViewHolder(@NonNull View itemView) {
             super(itemView);
             layoutHeaderDetails = itemView.findViewById(R.id.layout_explore_header_details);
+            cardReason = itemView.findViewById(R.id.card_explore_reason);
             ivBackdrop = itemView.findViewById(R.id.iv_explore_backdrop);
             tvTitle = itemView.findViewById(R.id.tv_explore_title);
             tvYear = itemView.findViewById(R.id.tv_explore_year);
@@ -159,6 +162,14 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
                 layoutHeaderDetails.setOnClickListener(v -> {
                     if (actionListener != null) {
                         actionListener.onMovieClick(movie);
+                    }
+                });
+            }
+
+            if (cardReason != null) {
+                cardReason.setOnClickListener(v -> {
+                    if (actionListener != null) {
+                        actionListener.onReasonClick(item);
                     }
                 });
             }
