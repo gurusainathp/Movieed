@@ -1,5 +1,6 @@
 package com.gurusainathp.movieed.domain.recommendation;
 
+import com.gurusainathp.movieed.data.local.entity.MovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogWithDetails;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCastDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCrewDto;
@@ -30,9 +31,9 @@ public class RecommendationEngine {
 
     public static class UserTasteProfile {
         public final Set<Long> loggedMovieIds = new HashSet<>();
-        public final Map<String, Float> lovedMovieTitles = new HashMap<>();
+        public final List<MovieEntity> lovedMovies = new ArrayList<>();
         public final Map<Integer, Float> personAffinity = new HashMap<>(); // personId -> weight
-        public final Map<String, String> personNames = new HashMap<>(); // personIdStr -> Name
+        public final Map<String, String> personNames = new HashMap<>(); // personId -> Name
 
         public static UserTasteProfile build(List<MovieLogWithDetails> logs) {
             UserTasteProfile profile = new UserTasteProfile();
@@ -43,9 +44,9 @@ public class RecommendationEngine {
                 profile.loggedMovieIds.add(item.log.getMovieId());
 
                 float weight = getReactionWeight(item.log.getReaction());
-                if (item.movie != null && item.movie.getTitle() != null) {
+                if (item.movie != null) {
                     if (weight >= 1.5f) {
-                        profile.lovedMovieTitles.put(item.movie.getTitle(), weight);
+                        profile.lovedMovies.add(item.movie);
                     }
                 }
             }
@@ -65,6 +66,7 @@ public class RecommendationEngine {
             List<TmdbMovieDto> candidates,
             UserTasteProfile profile,
             String sourceMovieTitle,
+            String sourcePosterPath,
             List<TmdbCastDto> sourceCast,
             List<TmdbCrewDto> sourceCrew) {
 
@@ -83,38 +85,24 @@ public class RecommendationEngine {
 
             float score = (float) candidate.getVoteAverage();
             List<String> reasons = new ArrayList<>();
+            String reasonPoster = null;
 
             if (sourceMovieTitle != null && !sourceMovieTitle.isEmpty()) {
-                reasons.add("Because you checked " + sourceMovieTitle);
-                score += 1.0f;
+                reasons.add("Because you loved " + sourceMovieTitle);
+                reasonPoster = sourcePosterPath;
+                score += 2.0f;
             }
 
             if (candidate.getVoteAverage() >= 7.5) {
                 score += 1.5f;
-                reasons.add("Highly rated on TMDB (" + String.format(java.util.Locale.US, "%.1f", candidate.getVoteAverage()) + "★)");
-            }
-
-            if (profile != null) {
-                for (Map.Entry<Integer, Float> entry : profile.personAffinity.entrySet()) {
-                    int personId = entry.getKey();
-                    float affinity = entry.getValue();
-                    if (affinity > 0) {
-                        String name = profile.personNames.get(String.valueOf(personId));
-                        if (name != null) {
-                            score += affinity;
-                            reasons.add("Featuring " + name);
-                        }
-                    } else if (affinity < 0) {
-                        score += affinity;
-                    }
-                }
+                reasons.add("Critically acclaimed (" + String.format(java.util.Locale.US, "%.1f", candidate.getVoteAverage()) + "★)");
             }
 
             if (reasons.isEmpty()) {
-                reasons.add("Popular recommendation");
+                reasons.add("Trending pick for you");
             }
 
-            scoredList.add(new RecommendedMovie(candidate, score, reasons));
+            scoredList.add(new RecommendedMovie(candidate, score, reasons, reasonPoster));
         }
 
         Collections.sort(scoredList, (a, b) -> Float.compare(b.getScore(), a.getScore()));
@@ -126,7 +114,7 @@ public class RecommendationEngine {
             List<MovieLogWithDetails> userLogs) {
 
         UserTasteProfile profile = UserTasteProfile.build(userLogs);
-        List<RecommendedMovie> ranked = rankCandidateMovies(rawRecommendations, profile, null, null, null);
+        List<RecommendedMovie> ranked = rankCandidateMovies(rawRecommendations, profile, null, null, null, null);
 
         List<TmdbMovieDto> result = new ArrayList<>();
         for (RecommendedMovie rm : ranked) {

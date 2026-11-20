@@ -1,39 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/movieed_background"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:background="@color/movieed_background">
 
-    <TextView
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager_explore"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" />
+
+    <ProgressBar
+        android:id="@+id/progress_explore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:letterSpacing="0.2"
-        android:text="EXPLORE"
-        android:textColor="@color/movieed_primary"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/movieed_primary"
+        android:visibility="gone" />
 
     <TextView
+        android:id="@+id/tv_explore_empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:text="Coming Soon"
-        android:textColor="@color/movieed_text_primary"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="Discover curated genres, film collections, and lists."
+        android:layout_gravity="center"
+        android:text="No movies found"
         android:textColor="@color/movieed_text_secondary"
-        android:textSize="13sp" />
+        android:textSize="16sp"
+        android:visibility="gone" />
 
-</LinearLayout>
+</FrameLayout>

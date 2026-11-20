@@ -10,11 +10,17 @@ public class RecommendedMovie {
     private final TmdbMovieDto movie;
     private final float score;
     private final List<String> reasons;
+    private String reasonPosterPath;
 
     public RecommendedMovie(TmdbMovieDto movie, float score, List<String> reasons) {
         this.movie = movie;
         this.score = score;
         this.reasons = reasons != null ? reasons : new ArrayList<>();
+    }
+
+    public RecommendedMovie(TmdbMovieDto movie, float score, List<String> reasons, String reasonPosterPath) {
+        this(movie, score, reasons);
+        this.reasonPosterPath = reasonPosterPath;
     }
 
     public TmdbMovieDto getMovie() {
@@ -34,5 +40,19 @@ public class RecommendedMovie {
             return reasons.get(0);
         }
         return "Recommended for you";
+    }
+
+    public String getReasonPosterPath() {
+        return reasonPosterPath != null ? reasonPosterPath : (movie != null ? movie.getPosterPath() : null);
+    }
+
+    public void setReasonPosterPath(String reasonPosterPath) {
+        this.reasonPosterPath = reasonPosterPath;
+    }
+
+    public void addReason(String reason) {
+        if (reason != null && !reasons.contains(reason)) {
+            reasons.add(reason);
+        }
     }
 }

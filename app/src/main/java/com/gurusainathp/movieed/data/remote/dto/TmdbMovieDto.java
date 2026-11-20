@@ -37,6 +37,20 @@ public class TmdbMovieDto {
     @SerializedName("genre_ids")
     private java.util.List<Integer> genreIds;
 
+    public TmdbMovieDto() {}
+
+    public TmdbMovieDto(int id, String title, String overview, String releaseDate,
+                        String posterPath, String backdropPath, double voteAverage, String mediaType) {
+        this.id = id;
+        this.title = title;
+        this.overview = overview;
+        this.releaseDate = releaseDate;
+        this.posterPath = posterPath;
+        this.backdropPath = backdropPath;
+        this.voteAverage = voteAverage;
+        this.mediaType = mediaType;
+    }
+
     public int getId() { return id; }
     public String getTitle() { return title != null ? title : name; }
     public String getOverview() { return overview; }
