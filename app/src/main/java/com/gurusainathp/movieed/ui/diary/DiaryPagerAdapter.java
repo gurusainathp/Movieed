@@ -14,9 +14,9 @@ public class DiaryPagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         if (position == 0) {
-            return DiaryTabFragment.newInstance(DiaryTabFragment.TAB_WATCHED);
-        } else {
             return DiaryTabFragment.newInstance(DiaryTabFragment.TAB_WATCHLIST);
+        } else {
+            return DiaryTabFragment.newInstance(DiaryTabFragment.TAB_WATCHED);
         }
     }
 
