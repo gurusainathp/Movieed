@@ -107,8 +107,9 @@ public class ExploreViewModel extends AndroidViewModel {
         }
 
         if (!preferredMovies.isEmpty()) {
-            int seedLimit = Math.min(5, preferredMovies.size());
-            List<MovieEntity> seedMovies = preferredMovies.subList(0, seedLimit);
+            Collections.shuffle(preferredMovies, random);
+            int seedCount = Math.min(preferredMovies.size(), 3 + random.nextInt(3)); // 3 to 5 random seeds
+            List<MovieEntity> seedMovies = preferredMovies.subList(0, seedCount);
 
             AtomicInteger pendingCalls = new AtomicInteger(seedMovies.size() + 2);
 
