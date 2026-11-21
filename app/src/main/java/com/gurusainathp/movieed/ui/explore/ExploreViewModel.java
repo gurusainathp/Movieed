@@ -457,50 +457,55 @@ public class ExploreViewModel extends AndroidViewModel {
         }
 
         Map<String, List<RecommendedMovie>> buckets = new java.util.LinkedHashMap<>();
+        buckets.put("MOVIE", new ArrayList<>());
+        buckets.put("DIRECTOR", new ArrayList<>());
+        buckets.put("CLASSIC", new ArrayList<>());
+        buckets.put("TRENDING", new ArrayList<>());
+
         for (RecommendedMovie rm : inputList) {
-            String primaryReason = (rm.getReasons() != null && !rm.getReasons().isEmpty())
-                    ? rm.getReasons().get(0) : "General";
-            buckets.computeIfAbsent(primaryReason, k -> new ArrayList<>()).add(rm);
+            String reason = (rm.getReasons() != null && !rm.getReasons().isEmpty())
+                    ? rm.getReasons().get(0) : "";
+
+            if (reason.startsWith("Because you loved") || reason.startsWith("Because you liked")) {
+                buckets.get("MOVIE").add(rm);
+            } else if (reason.startsWith("Directed by")) {
+                buckets.get("DIRECTOR").add(rm);
+            } else if (reason.startsWith("Hall of Fame Classic")) {
+                buckets.get("CLASSIC").add(rm);
+            } else {
+                buckets.get("TRENDING").add(rm);
+            }
         }
 
-        List<Map.Entry<String, List<RecommendedMovie>>> sortedBuckets = new ArrayList<>(buckets.entrySet());
-        Collections.sort(sortedBuckets, (a, b) -> Integer.compare(b.getValue().size(), a.getValue().size()));
+        List<List<RecommendedMovie>> activeBuckets = new ArrayList<>();
+        for (List<RecommendedMovie> bucket : buckets.values()) {
+            if (!bucket.isEmpty()) {
+                Collections.shuffle(bucket, random);
+                activeBuckets.add(bucket);
+            }
+        }
+
+        if (activeBuckets.isEmpty()) return inputList;
 
         List<RecommendedMovie> interleaved = new ArrayList<>();
         int totalSize = inputList.size();
-        String lastReason = "";
+        int bucketIndex = 0;
 
         while (interleaved.size() < totalSize) {
-            boolean placedInThisPass = false;
+            boolean addedAny = false;
+            int scanned = 0;
+            while (scanned < activeBuckets.size()) {
+                List<RecommendedMovie> currentBucket = activeBuckets.get(bucketIndex % activeBuckets.size());
+                bucketIndex++;
+                scanned++;
 
-            for (Map.Entry<String, List<RecommendedMovie>> entry : sortedBuckets) {
-                String reason = entry.getKey();
-                List<RecommendedMovie> bucket = entry.getValue();
-
-                if (!bucket.isEmpty() && !reason.equals(lastReason)) {
-                    RecommendedMovie rm = bucket.remove(0);
-                    interleaved.add(rm);
-                    lastReason = reason;
-                    placedInThisPass = true;
+                if (!currentBucket.isEmpty()) {
+                    interleaved.add(currentBucket.remove(0));
+                    addedAny = true;
                     break;
                 }
             }
-
-            if (!placedInThisPass) {
-                for (Map.Entry<String, List<RecommendedMovie>> entry : sortedBuckets) {
-                    List<RecommendedMovie> bucket = entry.getValue();
-                    if (!bucket.isEmpty()) {
-                        RecommendedMovie rm = bucket.remove(0);
-                        interleaved.add(rm);
-                        lastReason = (rm.getReasons() != null && !rm.getReasons().isEmpty())
-                                ? rm.getReasons().get(0) : "General";
-                        placedInThisPass = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!placedInThisPass) break;
+            if (!addedAny) break;
         }
 
         return interleaved;
