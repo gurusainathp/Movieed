@@ -317,7 +317,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                     seenMovieIds.add(dto.getId());
                                 }
                                 List<String> reasons = new ArrayList<>();
-                                reasons.add("Hall of Fame Classic (" + String.format(Locale.US, "%.1f★", dto.getVoteAverage()) + ")");
+                                reasons.add("Hall of Fame Classic");
                                 float score = (float) dto.getVoteAverage() + 1.2f + random.nextFloat();
                                 synchronized (accumulated) {
                                     accumulated.add(new RecommendedMovie(
@@ -363,11 +363,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                     seenMovieIds.add(dto.getId());
                                 }
                                 List<String> reasons = new ArrayList<>();
-                                if (dto.getVoteAverage() >= 7.5) {
-                                    reasons.add("Globally Acclaimed Hit (" + String.format(Locale.US, "%.1f★", dto.getVoteAverage()) + ")");
-                                } else {
-                                    reasons.add("Trending Today on Movieed");
-                                }
+                                reasons.add("Trending Today on Movieed");
 
                                 float score = (float) dto.getVoteAverage() + random.nextFloat();
                                 synchronized (accumulated) {
@@ -452,8 +448,8 @@ public class ExploreViewModel extends AndroidViewModel {
     }
 
     private List<RecommendedMovie> interleaveByReason(List<RecommendedMovie> inputList) {
-        if (inputList == null || inputList.size() <= 1) {
-            return inputList;
+        if (inputList == null || inputList.isEmpty()) {
+            return new ArrayList<>();
         }
 
         Map<String, List<RecommendedMovie>> buckets = new java.util.LinkedHashMap<>();
@@ -485,27 +481,33 @@ public class ExploreViewModel extends AndroidViewModel {
             }
         }
 
-        if (activeBuckets.isEmpty()) return inputList;
+        if (activeBuckets.isEmpty()) return new ArrayList<>();
 
         List<RecommendedMovie> interleaved = new ArrayList<>();
-        int totalSize = inputList.size();
-        int bucketIndex = 0;
+        String lastCategory = "";
 
-        while (interleaved.size() < totalSize) {
-            boolean addedAny = false;
-            int scanned = 0;
-            while (scanned < activeBuckets.size()) {
-                List<RecommendedMovie> currentBucket = activeBuckets.get(bucketIndex % activeBuckets.size());
-                bucketIndex++;
-                scanned++;
+        boolean progress = true;
+        while (progress) {
+            progress = false;
 
-                if (!currentBucket.isEmpty()) {
-                    interleaved.add(currentBucket.remove(0));
-                    addedAny = true;
+            for (List<RecommendedMovie> bucket : activeBuckets) {
+                if (bucket.isEmpty()) continue;
+
+                String category = "";
+                for (Map.Entry<String, List<RecommendedMovie>> entry : buckets.entrySet()) {
+                    if (entry.getValue() == bucket) {
+                        category = entry.getKey();
+                        break;
+                    }
+                }
+
+                if (!category.equals(lastCategory)) {
+                    interleaved.add(bucket.remove(0));
+                    lastCategory = category;
+                    progress = true;
                     break;
                 }
             }
-            if (!addedAny) break;
         }
 
         return interleaved;
@@ -533,11 +535,7 @@ public class ExploreViewModel extends AndroidViewModel {
                                     seenMovieIds.add(dto.getId());
                                 }
                                 List<String> reasons = new ArrayList<>();
-                                if (dto.getVoteAverage() >= 7.5) {
-                                    reasons.add("Globally Acclaimed Hit (" + String.format(Locale.US, "%.1f★", dto.getVoteAverage()) + ")");
-                                } else {
-                                    reasons.add("Trending Today on Movieed");
-                                }
+                                reasons.add("Trending Today on Movieed");
                                 currentList.add(new RecommendedMovie(
                                         dto,
                                         (float) dto.getVoteAverage(),
