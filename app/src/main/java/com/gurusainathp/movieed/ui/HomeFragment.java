@@ -34,8 +34,11 @@ public class HomeFragment extends Fragment {
     private HomeRecentLogAdapter recentLogAdapter;
     private HomeMovieAdapter recommendedAdapter;
     private HomeMovieAdapter classicsAdapter;
+    private HomeMovieAdapter classicsSeriesAdapter;
     private HomeMovieAdapter trendingAdapter;
+    private HomeMovieAdapter trendingSeriesAdapter;
     private HomeMovieAdapter nowPlayingAdapter;
+    private HomeMovieAdapter streamingSeriesAdapter;
 
     // Views
     private ProgressBar pbLoading;
@@ -61,8 +64,11 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvRecentlyLogged;
     private RecyclerView rvRecommendedMovies;
     private RecyclerView rvClassicsMovies;
+    private RecyclerView rvClassicsSeries;
     private RecyclerView rvTrendingMovies;
+    private RecyclerView rvTrendingSeries;
     private RecyclerView rvNowPlayingMovies;
+    private RecyclerView rvStreamingSeries;
 
     @Nullable
     @Override
@@ -110,8 +116,11 @@ public class HomeFragment extends Fragment {
         rvRecentlyLogged = view.findViewById(R.id.rv_recently_logged);
         rvRecommendedMovies = view.findViewById(R.id.rv_recommended_home_movies);
         rvClassicsMovies = view.findViewById(R.id.rv_classics_movies);
+        rvClassicsSeries = view.findViewById(R.id.rv_classics_series);
         rvTrendingMovies = view.findViewById(R.id.rv_trending_movies);
+        rvTrendingSeries = view.findViewById(R.id.rv_trending_series);
         rvNowPlayingMovies = view.findViewById(R.id.rv_now_playing_movies);
+        rvStreamingSeries = view.findViewById(R.id.rv_streaming_series);
     }
 
     private void setupRecyclerViews() {
@@ -139,15 +148,30 @@ public class HomeFragment extends Fragment {
         rvClassicsMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvClassicsMovies.setAdapter(classicsAdapter);
 
-        // Trending
+        // Hall of Fame Classic Series
+        classicsSeriesAdapter = new HomeMovieAdapter(this::openMovieDetails);
+        rvClassicsSeries.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvClassicsSeries.setAdapter(classicsSeriesAdapter);
+
+        // Trending Movies
         trendingAdapter = new HomeMovieAdapter(this::openMovieDetails);
         rvTrendingMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvTrendingMovies.setAdapter(trendingAdapter);
+
+        // Trending Series
+        trendingSeriesAdapter = new HomeMovieAdapter(this::openMovieDetails);
+        rvTrendingSeries.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvTrendingSeries.setAdapter(trendingSeriesAdapter);
 
         // Now Playing (In Theaters)
         nowPlayingAdapter = new HomeMovieAdapter(this::openMovieDetails);
         rvNowPlayingMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvNowPlayingMovies.setAdapter(nowPlayingAdapter);
+
+        // Streaming Series
+        streamingSeriesAdapter = new HomeMovieAdapter(this::openMovieDetails);
+        rvStreamingSeries.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvStreamingSeries.setAdapter(streamingSeriesAdapter);
     }
 
     private void openMovieDetails(Movie movie) {
@@ -246,9 +270,14 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Hall of Fame Classics
+        // Hall of Fame Classics (Movies)
         viewModel.getClassicsMovies().observe(getViewLifecycleOwner(), movies -> {
             classicsAdapter.setMovies(movies);
+        });
+
+        // Hall of Fame Classic Series (TV)
+        viewModel.getClassicsSeries().observe(getViewLifecycleOwner(), series -> {
+            classicsSeriesAdapter.setMovies(series);
         });
 
         // Trending movies
@@ -256,9 +285,19 @@ public class HomeFragment extends Fragment {
             trendingAdapter.setMovies(movies);
         });
 
+        // Trending series
+        viewModel.getTrendingSeries().observe(getViewLifecycleOwner(), series -> {
+            trendingSeriesAdapter.setMovies(series);
+        });
+
         // In Theaters
         viewModel.getNowPlayingMovies().observe(getViewLifecycleOwner(), movies -> {
             nowPlayingAdapter.setMovies(movies);
+        });
+
+        // Streaming Series
+        viewModel.getStreamingSeries().observe(getViewLifecycleOwner(), series -> {
+            streamingSeriesAdapter.setMovies(series);
         });
     }
 }

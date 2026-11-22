@@ -263,7 +263,7 @@
 
         </LinearLayout>
 
-        <!-- SECTION: YOU MAY LIKE THESE (RECOMMENDATIONS + EXPLORE MORE) -->
+        <!-- SECTION: YOU MAY LIKE THESE -->
         <LinearLayout
             android:id="@+id/section_recommended"
             android:layout_width="match_parent"
@@ -368,6 +368,45 @@
 
         </LinearLayout>
 
+        <!-- SECTION: HALL OF FAME CLASSIC SERIES -->
+        <LinearLayout
+            android:id="@+id/section_classics_series"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="28dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:letterSpacing="0.12"
+                android:text="HALL OF FAME CLASSIC SERIES"
+                android:textColor="@color/movieed_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="2dp"
+                android:text="Timeless television masterpieces to binge and log"
+                android:textColor="@color/movieed_text_secondary"
+                android:textSize="12sp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_classics_series"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="8dp" />
+
+        </LinearLayout>
+
         <!-- SECTION: TRENDING TODAY -->
         <LinearLayout
             android:id="@+id/section_trending"
@@ -407,6 +446,45 @@
 
         </LinearLayout>
 
+        <!-- SECTION: TRENDING SERIES TODAY -->
+        <LinearLayout
+            android:id="@+id/section_trending_series"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="28dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:letterSpacing="0.12"
+                android:text="TRENDING SERIES TODAY"
+                android:textColor="@color/movieed_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="2dp"
+                android:text="Top television shows generating buzz right now"
+                android:textColor="@color/movieed_text_secondary"
+                android:textSize="12sp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_trending_series"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="8dp" />
+
+        </LinearLayout>
+
         <!-- SECTION: IN THEATERS NOW -->
         <LinearLayout
             android:id="@+id/section_now_playing"
@@ -436,6 +514,45 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_now_playing_movies"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="8dp" />
+
+        </LinearLayout>
+
+        <!-- SECTION: STREAMING SERIES -->
+        <LinearLayout
+            android:id="@+id/section_streaming_series"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="28dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:letterSpacing="0.12"
+                android:text="STREAMING SERIES"
+                android:textColor="@color/movieed_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="2dp"
+                android:text="Popular binge-worthy shows on streaming"
+                android:textColor="@color/movieed_text_secondary"
+                android:textSize="12sp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_streaming_series"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"

@@ -26,8 +26,19 @@ public interface TmdbApiService {
             @Query("api_key") String apiKey
     );
 
+    @GET("trending/tv/day")
+    Call<TmdbMovieResponseDto> getTrendingTv(
+            @Query("api_key") String apiKey
+    );
+
     @GET("movie/top_rated")
     Call<TmdbMovieResponseDto> getTopRatedMovies(
+            @Query("api_key") String apiKey,
+            @Query("page") int page
+    );
+
+    @GET("tv/top_rated")
+    Call<TmdbMovieResponseDto> getTopRatedTv(
             @Query("api_key") String apiKey,
             @Query("page") int page
     );
@@ -40,6 +51,18 @@ public interface TmdbApiService {
 
     @GET("movie/popular")
     Call<TmdbMovieResponseDto> getPopularMovies(
+            @Query("api_key") String apiKey,
+            @Query("page") int page
+    );
+
+    @GET("tv/popular")
+    Call<TmdbMovieResponseDto> getPopularTv(
+            @Query("api_key") String apiKey,
+            @Query("page") int page
+    );
+
+    @GET("tv/on_the_air")
+    Call<TmdbMovieResponseDto> getOnTheAirTv(
             @Query("api_key") String apiKey,
             @Query("page") int page
     );

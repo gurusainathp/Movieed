@@ -32,18 +32,24 @@ public class HomeViewModel extends AndroidViewModel {
     private final RecommendationEngine recommendationEngine = new RecommendationEngine();
 
     private final MutableLiveData<List<Movie>> trendingMovies = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<Movie>> trendingSeries = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<Movie>> classicsMovies = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<Movie>> classicsSeries = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<Movie>> nowPlayingMovies = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<Movie>> recommendedMovies = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<Movie>> streamingSeries = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Movie> featuredMovie = new MutableLiveData<>(null);
 
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>(null);
 
     private Call<TmdbMovieResponseDto> trendingCall;
+    private Call<TmdbMovieResponseDto> trendingTvCall;
     private Call<TmdbMovieResponseDto> classicsCall;
+    private Call<TmdbMovieResponseDto> classicsTvCall;
     private Call<TmdbMovieResponseDto> nowPlayingCall;
     private Call<TmdbMovieResponseDto> recommendationsCall;
+    private Call<TmdbMovieResponseDto> streamingTvCall;
 
     private int activePendingRequests = 0;
     private boolean hadNetworkSuccess = false;
@@ -54,37 +60,17 @@ public class HomeViewModel extends AndroidViewModel {
         userLogs = repository.getAllLogsWithDetails();
     }
 
-    public LiveData<List<MovieLogWithDetails>> getUserLogs() {
-        return userLogs;
-    }
-
-    public LiveData<List<Movie>> getTrendingMovies() {
-        return trendingMovies;
-    }
-
-    public LiveData<List<Movie>> getClassicsMovies() {
-        return classicsMovies;
-    }
-
-    public LiveData<List<Movie>> getNowPlayingMovies() {
-        return nowPlayingMovies;
-    }
-
-    public LiveData<List<Movie>> getRecommendedMovies() {
-        return recommendedMovies;
-    }
-
-    public LiveData<Movie> getFeaturedMovie() {
-        return featuredMovie;
-    }
-
-    public LiveData<Boolean> getIsLoading() {
-        return isLoading;
-    }
-
-    public LiveData<String> getErrorMessage() {
-        return errorMessage;
-    }
+    public LiveData<List<MovieLogWithDetails>> getUserLogs() { return userLogs; }
+    public LiveData<List<Movie>> getTrendingMovies() { return trendingMovies; }
+    public LiveData<List<Movie>> getTrendingSeries() { return trendingSeries; }
+    public LiveData<List<Movie>> getClassicsMovies() { return classicsMovies; }
+    public LiveData<List<Movie>> getClassicsSeries() { return classicsSeries; }
+    public LiveData<List<Movie>> getNowPlayingMovies() { return nowPlayingMovies; }
+    public LiveData<List<Movie>> getRecommendedMovies() { return recommendedMovies; }
+    public LiveData<List<Movie>> getStreamingSeries() { return streamingSeries; }
+    public LiveData<Movie> getFeaturedMovie() { return featuredMovie; }
+    public LiveData<Boolean> getIsLoading() { return isLoading; }
+    public LiveData<String> getErrorMessage() { return errorMessage; }
 
     public void loadHomeContent(String apiKey) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
@@ -97,7 +83,7 @@ public class HomeViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         errorMessage.setValue(null);
         hadNetworkSuccess = false;
-        activePendingRequests = 4;
+        activePendingRequests = 7;
 
         TmdbApiService apiService = TmdbClient.getApiService();
 
@@ -105,11 +91,10 @@ public class HomeViewModel extends AndroidViewModel {
         trendingCall = apiService.getTrendingMovies(apiKey);
         trendingCall.enqueue(new Callback<TmdbMovieResponseDto>() {
             @Override
-            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                   @NonNull Response<TmdbMovieResponseDto> response) {
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     hadNetworkSuccess = true;
-                    List<Movie> list = mapDtosToMovies(response.body().getResults());
+                    List<Movie> list = mapDtosToMovies(response.body().getResults(), "movie");
                     trendingMovies.setValue(list);
                     if (!list.isEmpty() && featuredMovie.getValue() == null) {
                         featuredMovie.setValue(list.get(0));
@@ -117,39 +102,66 @@ public class HomeViewModel extends AndroidViewModel {
                 }
                 checkAllRequestsFinished();
             }
-
             @Override
             public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                if (!call.isCanceled()) {
-                    checkAllRequestsFinished();
-                }
+                if (!call.isCanceled()) checkAllRequestsFinished();
             }
         });
 
-        // 2. Hall of Fame Classics (Randomized top rated classics from page 1 or 2)
+        // 1b. Trending TV Series
+        trendingTvCall = apiService.getTrendingTv(apiKey);
+        trendingTvCall.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    hadNetworkSuccess = true;
+                    List<Movie> list = mapDtosToMovies(response.body().getResults(), "tv");
+                    trendingSeries.setValue(list);
+                }
+                checkAllRequestsFinished();
+            }
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                if (!call.isCanceled()) checkAllRequestsFinished();
+            }
+        });
+
+        // 2. Hall of Fame Classics (Movies)
         int randomPage = new Random().nextInt(2) + 1;
         classicsCall = apiService.getTopRatedMovies(apiKey, randomPage);
         classicsCall.enqueue(new Callback<TmdbMovieResponseDto>() {
             @Override
-            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                   @NonNull Response<TmdbMovieResponseDto> response) {
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     hadNetworkSuccess = true;
-                    List<TmdbMovieDto> rawDtos = response.body().getResults();
-                    if (rawDtos != null) {
-                        Collections.shuffle(rawDtos);
-                    }
-                    List<Movie> list = mapDtosToMovies(rawDtos);
-                    classicsMovies.setValue(list);
+                    List<TmdbMovieDto> raw = response.body().getResults();
+                    if (raw != null) Collections.shuffle(raw);
+                    classicsMovies.setValue(mapDtosToMovies(raw, "movie"));
                 }
                 checkAllRequestsFinished();
             }
-
             @Override
             public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                if (!call.isCanceled()) {
-                    checkAllRequestsFinished();
+                if (!call.isCanceled()) checkAllRequestsFinished();
+            }
+        });
+
+        // 2b. Hall of Fame Classic Series (TV)
+        classicsTvCall = apiService.getTopRatedTv(apiKey, randomPage);
+        classicsTvCall.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    hadNetworkSuccess = true;
+                    List<TmdbMovieDto> raw = response.body().getResults();
+                    if (raw != null) Collections.shuffle(raw);
+                    classicsSeries.setValue(mapDtosToMovies(raw, "tv"));
                 }
+                checkAllRequestsFinished();
+            }
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                if (!call.isCanceled()) checkAllRequestsFinished();
             }
         });
 
@@ -157,21 +169,33 @@ public class HomeViewModel extends AndroidViewModel {
         nowPlayingCall = apiService.getNowPlayingMovies(apiKey, 1);
         nowPlayingCall.enqueue(new Callback<TmdbMovieResponseDto>() {
             @Override
-            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                   @NonNull Response<TmdbMovieResponseDto> response) {
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     hadNetworkSuccess = true;
-                    List<Movie> list = mapDtosToMovies(response.body().getResults());
-                    nowPlayingMovies.setValue(list);
+                    nowPlayingMovies.setValue(mapDtosToMovies(response.body().getResults(), "movie"));
                 }
                 checkAllRequestsFinished();
             }
-
             @Override
             public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                if (!call.isCanceled()) {
-                    checkAllRequestsFinished();
+                if (!call.isCanceled()) checkAllRequestsFinished();
+            }
+        });
+
+        // 3b. Currently Airing TV Series (On The Air)
+        streamingTvCall = apiService.getOnTheAirTv(apiKey, 1);
+        streamingTvCall.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    hadNetworkSuccess = true;
+                    streamingSeries.setValue(mapDtosToMovies(response.body().getResults(), "tv"));
                 }
+                checkAllRequestsFinished();
+            }
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                if (!call.isCanceled()) checkAllRequestsFinished();
             }
         });
 
@@ -181,7 +205,6 @@ public class HomeViewModel extends AndroidViewModel {
 
     private void fetchPersonalizedRecommendations(String apiKey) {
         TmdbApiService apiService = TmdbClient.getApiService();
-
         List<MovieLogWithDetails> logs = userLogs.getValue();
         int seedMovieId = -1;
 
@@ -204,22 +227,18 @@ public class HomeViewModel extends AndroidViewModel {
 
         recommendationsCall.enqueue(new Callback<TmdbMovieResponseDto>() {
             @Override
-            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                   @NonNull Response<TmdbMovieResponseDto> response) {
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     hadNetworkSuccess = true;
                     List<TmdbMovieDto> raw = response.body().getResults();
                     List<TmdbMovieDto> filtered = recommendationEngine.filterAndRankRecommendations(raw, userLogs.getValue());
-                    recommendedMovies.setValue(mapDtosToMovies(filtered));
+                    recommendedMovies.setValue(mapDtosToMovies(filtered, "movie"));
                 }
                 checkAllRequestsFinished();
             }
-
             @Override
             public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                if (!call.isCanceled()) {
-                    checkAllRequestsFinished();
-                }
+                if (!call.isCanceled()) checkAllRequestsFinished();
             }
         });
     }
@@ -234,11 +253,12 @@ public class HomeViewModel extends AndroidViewModel {
         }
     }
 
-    private List<Movie> mapDtosToMovies(List<TmdbMovieDto> dtos) {
+    private List<Movie> mapDtosToMovies(List<TmdbMovieDto> dtos, String defaultMediaType) {
         List<Movie> result = new ArrayList<>();
         if (dtos != null) {
             for (TmdbMovieDto dto : dtos) {
                 if (dto.getPosterPath() != null) {
+                    String type = dto.getMediaType() != null ? dto.getMediaType() : defaultMediaType;
                     result.add(new Movie(
                             dto.getId(),
                             dto.getTitle(),
@@ -247,7 +267,7 @@ public class HomeViewModel extends AndroidViewModel {
                             dto.getPosterPath(),
                             dto.getBackdropPath(),
                             dto.getVoteAverage(),
-                            dto.getMediaType() != null ? dto.getMediaType() : "movie"
+                            type
                     ));
                 }
             }
@@ -257,9 +277,12 @@ public class HomeViewModel extends AndroidViewModel {
 
     private void cancelOngoingCalls() {
         if (trendingCall != null && !trendingCall.isCanceled()) trendingCall.cancel();
+        if (trendingTvCall != null && !trendingTvCall.isCanceled()) trendingTvCall.cancel();
         if (classicsCall != null && !classicsCall.isCanceled()) classicsCall.cancel();
+        if (classicsTvCall != null && !classicsTvCall.isCanceled()) classicsTvCall.cancel();
         if (nowPlayingCall != null && !nowPlayingCall.isCanceled()) nowPlayingCall.cancel();
         if (recommendationsCall != null && !recommendationsCall.isCanceled()) recommendationsCall.cancel();
+        if (streamingTvCall != null && !streamingTvCall.isCanceled()) streamingTvCall.cancel();
     }
 
     @Override
