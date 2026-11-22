@@ -198,11 +198,4 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
         });
         dialog.show(getChildFragmentManager(), "ExploreReactionPicker");
     }
-
-    @Override
-    public void onNotInterestedClick(TmdbMovieDto movie) {
-        if (movie == null) return;
-        viewModel.dismissMovie(movie.getId());
-        adapter.removeItem(movie.getId());
-    }
 }

@@ -29,7 +29,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
         void onReasonClick(RecommendedMovie recommendedMovie);
         void onWatchlistClick(TmdbMovieDto movie, MovieLogEntity currentLog);
         void onRateClick(TmdbMovieDto movie, MovieLogEntity currentLog);
-        void onNotInterestedClick(TmdbMovieDto movie);
     }
 
     private final List<RecommendedMovie> items = new ArrayList<>();
@@ -46,16 +45,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
             items.addAll(newItems);
         }
         notifyDataSetChanged();
-    }
-
-    public void removeItem(int movieId) {
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i) != null && items.get(i).getMovie() != null && items.get(i).getMovie().getId() == movieId) {
-                items.remove(i);
-                notifyItemRemoved(i);
-                break;
-            }
-        }
     }
 
     public void setLogsMap(Map<Long, MovieLogEntity> map) {
@@ -90,7 +79,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
         private final TextView tvOverview;
         private final ShapeableImageView ivReasonPoster;
         private final TextView tvReasonText;
-        private final MaterialButton btnNotInterested;
         private final MaterialButton btnWatchlist;
         private final MaterialButton btnRate;
 
@@ -105,7 +93,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
             tvOverview = itemView.findViewById(R.id.tv_explore_overview);
             ivReasonPoster = itemView.findViewById(R.id.iv_explore_reason_poster);
             tvReasonText = itemView.findViewById(R.id.tv_explore_reason_text);
-            btnNotInterested = itemView.findViewById(R.id.btn_action_not_interested);
             btnWatchlist = itemView.findViewById(R.id.btn_action_watchlist);
             btnRate = itemView.findViewById(R.id.btn_action_rate);
         }
@@ -183,14 +170,6 @@ public class ExploreAdapter extends RecyclerView.Adapter<ExploreAdapter.ExploreV
                 cardReason.setOnClickListener(v -> {
                     if (actionListener != null) {
                         actionListener.onReasonClick(item);
-                    }
-                });
-            }
-
-            if (btnNotInterested != null) {
-                btnNotInterested.setOnClickListener(v -> {
-                    if (actionListener != null) {
-                        actionListener.onNotInterestedClick(movie);
                     }
                 });
             }

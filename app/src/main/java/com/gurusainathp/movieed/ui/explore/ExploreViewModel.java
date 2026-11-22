@@ -104,13 +104,6 @@ public class ExploreViewModel extends AndroidViewModel {
         logsMapLiveData.setValue(map);
     }
 
-    public void dismissMovie(int tmdbId) {
-        repository.dismissMovie(tmdbId);
-        synchronized (seenMovieIds) {
-            seenMovieIds.add(tmdbId);
-        }
-    }
-
     private void trackCall(Call<?> call) {
         if (call != null) {
             inFlightCalls.add(call);
