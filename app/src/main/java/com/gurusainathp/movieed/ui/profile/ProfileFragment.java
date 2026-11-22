@@ -82,9 +82,9 @@ public class ProfileFragment extends Fragment {
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             if (position == 0) {
-                tab.setText("Watched");
-            } else {
                 tab.setText("Watchlist");
+            } else {
+                tab.setText("Watched");
             }
         }).attach();
 

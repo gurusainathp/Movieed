@@ -145,7 +145,7 @@ public class DiaryTabFragment extends Fragment {
                         item.movie.getPosterPath()
                 );
             }
-        });
+        }, tabType == TAB_WATCHLIST);
         rvGrid.setAdapter(adapter);
 
         observeViewModel();
@@ -202,8 +202,6 @@ public class DiaryTabFragment extends Fragment {
             if (isRelevant && item.movie != null) {
                 long movieId = item.movie.getTmdbId();
                 if (!movieProvidersMap.containsKey(movieId)) {
-                    movieProvidersMap.put(movieId, new HashSet<>());
-
                     Call<TmdbWatchProvidersResponseDto> call = TmdbClient.getApiService()
                             .getMovieWatchProviders((int) movieId, BuildConfig.TMDB_API_KEY);
 
@@ -211,17 +209,17 @@ public class DiaryTabFragment extends Fragment {
                         @Override
                         public void onResponse(@NonNull Call<TmdbWatchProvidersResponseDto> call,
                                                @NonNull Response<TmdbWatchProvidersResponseDto> response) {
+                            Set<Integer> icons = new HashSet<>();
                             if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
                                 TmdbCountryWatchProvidersDto in = response.body().getResults().get("IN");
                                 if (in != null) {
-                                    Set<Integer> icons = new HashSet<>();
                                     addProvidersToSet(in.getFlatrate(), icons);
                                     addProvidersToSet(in.getRent(), icons);
                                     addProvidersToSet(in.getBuy(), icons);
-                                    movieProvidersMap.put(movieId, icons);
-                                    applyFilterAndRender();
                                 }
                             }
+                            movieProvidersMap.put(movieId, icons);
+                            applyFilterAndRender();
                         }
 
                         @Override

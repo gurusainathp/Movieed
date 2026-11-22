@@ -25,9 +25,19 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
 
     private final List<MovieLogWithDetails> items = new ArrayList<>();
     private final OnDiaryClickListener listener;
+    private boolean isWatchlistTab;
 
     public DiaryAdapter(OnDiaryClickListener listener) {
+        this(listener, false);
+    }
+
+    public DiaryAdapter(OnDiaryClickListener listener, boolean isWatchlistTab) {
         this.listener = listener;
+        this.isWatchlistTab = isWatchlistTab;
+    }
+
+    public void setWatchlistTab(boolean watchlistTab) {
+        this.isWatchlistTab = watchlistTab;
     }
 
     public void setItems(List<MovieLogWithDetails> newItems) {
@@ -48,7 +58,7 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
 
     @Override
     public void onBindViewHolder(@NonNull DiaryViewHolder holder, int position) {
-        holder.bind(items.get(position), listener);
+        holder.bind(items.get(position), isWatchlistTab, listener);
     }
 
     @Override
@@ -69,8 +79,8 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
             tvBadge = itemView.findViewById(R.id.tv_diary_badge);
         }
 
-        public void bind(MovieLogWithDetails item, OnDiaryClickListener listener) {
-            if (item == null) return;
+        public void bind(MovieLogWithDetails item, boolean isWatchlistTab, OnDiaryClickListener listener) {
+            if (item == null || item.log == null) return;
 
             if (item.movie != null && item.movie.getPosterPath() != null) {
                 Glide.with(itemView.getContext())
@@ -82,14 +92,13 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
             }
 
             boolean hasReaction = item.log.getReaction() != null && !item.log.getReaction().isEmpty();
-            boolean isWatchlist = item.log.isWatchlist();
 
-            if (hasReaction) {
-                cardBadge.setVisibility(View.VISIBLE);
-                tvBadge.setText(MovieLogEntity.getEmojiForReaction(item.log.getReaction()));
-            } else if (isWatchlist) {
+            if (isWatchlistTab) {
                 cardBadge.setVisibility(View.VISIBLE);
                 tvBadge.setText("+");
+            } else if (hasReaction) {
+                cardBadge.setVisibility(View.VISIBLE);
+                tvBadge.setText(MovieLogEntity.getEmojiForReaction(item.log.getReaction()));
             } else {
                 cardBadge.setVisibility(View.GONE);
             }

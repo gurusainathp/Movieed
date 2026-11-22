@@ -40,9 +40,9 @@ public class DiaryFragment extends Fragment {
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             if (position == 0) {
-                tab.setText("Watchlist");
-            } else {
                 tab.setText("Watched");
+            } else {
+                tab.setText("Watchlist");
             }
         }).attach();
     }
