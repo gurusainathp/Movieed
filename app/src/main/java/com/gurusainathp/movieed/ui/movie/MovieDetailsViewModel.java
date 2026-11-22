@@ -21,7 +21,6 @@ import com.gurusainathp.movieed.data.remote.dto.TmdbProviderDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbWatchProvidersResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.WatchProviderItem;
 import com.gurusainathp.movieed.data.repository.MovieRepository;
-import com.gurusainathp.movieed.domain.recommendation.RecommendationEngine;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +41,6 @@ public class MovieDetailsViewModel extends AndroidViewModel {
     private final MutableLiveData<List<WatchProviderItem>> providerList = new MutableLiveData<>();
     private final MutableLiveData<List<TmdbMovieDto>> recommendationList = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
-    private final RecommendationEngine recommendationEngine = new RecommendationEngine();
 
     public MovieDetailsViewModel(@NonNull Application application) {
         super(application);
@@ -205,12 +203,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             @Override
             public void onResponse(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Response<TmdbMovieResponseDto> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
-                    List<TmdbMovieDto> rawList = response.body().getResults();
-                    List<TmdbMovieDto> filtered = recommendationEngine.filterAndRankRecommendations(
-                            rawList,
-                            repository.getAllLogsWithDetails().getValue()
-                    );
-                    recommendationList.setValue(filtered);
+                    recommendationList.setValue(response.body().getResults());
                 } else {
                     recommendationList.setValue(new ArrayList<>());
                 }
@@ -222,8 +215,6 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             }
         });
     }
-
-
 
     public void toggleWatchlist(TmdbMovieDto dto, MovieLogEntity existingLog) {
         if (dto == null) return;

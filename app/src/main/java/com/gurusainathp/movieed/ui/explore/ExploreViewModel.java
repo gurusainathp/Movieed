@@ -62,10 +62,7 @@ public class ExploreViewModel extends AndroidViewModel {
     private boolean isFetchingMore = false;
     private final Set<Integer> seenMovieIds = new HashSet<>();
     private final Set<Integer> usedSeedIds = new HashSet<>();
-    private final Set<Integer> usedDirectorIds = new HashSet<>();
-
     private final Map<MovieEntity, List<TmdbMovieDto>> activeSeedCandidatesMap = new HashMap<>();
-    private final Map<Integer, List<TmdbPersonCastCreditDto>> directorCreditsCache = new HashMap<>();
 
     public ExploreViewModel(@NonNull Application application) {
         super(application);
@@ -168,9 +165,6 @@ public class ExploreViewModel extends AndroidViewModel {
         synchronized (usedSeedIds) {
             usedSeedIds.clear();
         }
-        synchronized (usedDirectorIds) {
-            usedDirectorIds.clear();
-        }
         synchronized (activeSeedCandidatesMap) {
             activeSeedCandidatesMap.clear();
         }
@@ -183,25 +177,13 @@ public class ExploreViewModel extends AndroidViewModel {
             usedSeedIds.add(seed.getTmdbId());
         }
 
-        List<MovieEntity> directorSourceMovies = seedSampler.sampleDirectorSourceMovies(profile, 2, 3);
-        for (MovieEntity dSource : directorSourceMovies) {
-            usedDirectorIds.add(dSource.getTmdbId());
-        }
-
         boolean hasTopGenre = !profile.genreAffinities.isEmpty();
-        int initialCallCount = seedMovies.size() + directorSourceMovies.size() + 2 + (hasTopGenre ? 1 : 0);
+        int initialCallCount = seedMovies.size() + 2 + (hasTopGenre ? 1 : 0);
         AtomicInteger pendingCalls = new AtomicInteger(Math.max(1, initialCallCount));
 
         if (!seedMovies.isEmpty()) {
             for (MovieEntity seedMovie : seedMovies) {
                 fetchSeedRecommendations(seedMovie, profile, accumulated, pendingCalls, requestId);
-            }
-        }
-
-        if (!directorSourceMovies.isEmpty()) {
-            Set<Integer> collectedDirectorIds = new HashSet<>();
-            for (MovieEntity sourceMovie : directorSourceMovies) {
-                fetchAndPoolDirector(sourceMovie, profile, accumulated, collectedDirectorIds, pendingCalls, requestId);
             }
         }
 
@@ -251,155 +233,7 @@ public class ExploreViewModel extends AndroidViewModel {
         });
     }
 
-    private void fetchAndPoolDirector(MovieEntity sourceMovie,
-                                      TasteProfile profile,
-                                      List<RecommendedMovie> accumulated,
-                                      Set<Integer> collectedDirectorIds,
-                                      AtomicInteger pendingCalls,
-                                      long requestId) {
-        Call<TmdbCreditsResponseDto> call = TmdbClient.getApiService().getMovieCredits(sourceMovie.getTmdbId(), BuildConfig.TMDB_API_KEY);
-        trackCall(call);
-        call.enqueue(new Callback<TmdbCreditsResponseDto>() {
-            @Override
-            public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call,
-                                   @NonNull Response<TmdbCreditsResponseDto> response) {
-                untrackCall(call);
-                if (requestId != currentRequestId.get()) return;
 
-                if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
-                    for (TmdbCrewDto crew : response.body().getCrew()) {
-                        if (crew != null && "Director".equalsIgnoreCase(crew.getJob())) {
-                            synchronized (collectedDirectorIds) {
-                                if (!collectedDirectorIds.contains(crew.getId())) {
-                                    collectedDirectorIds.add(crew.getId());
-                                    pendingCalls.incrementAndGet();
-                                    fetchDirectorMovies(crew.getId(), crew.getName(), sourceMovie, profile, accumulated, pendingCalls, requestId);
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {
-                untrackCall(call);
-                if (requestId != currentRequestId.get()) return;
-                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
-            }
-        });
-    }
-
-    private void fetchDirectorMovies(int directorId, String directorName, MovieEntity sourceMovie,
-                                     TasteProfile profile,
-                                     List<RecommendedMovie> accumulated,
-                                     AtomicInteger pendingCalls,
-                                     long requestId) {
-        synchronized (directorCreditsCache) {
-            if (directorCreditsCache.containsKey(directorId)) {
-                List<TmdbPersonCastCreditDto> cached = directorCreditsCache.get(directorId);
-                if (cached != null) {
-                    processDirectorCredits(cached, directorId, directorName, sourceMovie, profile, accumulated);
-                    checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
-                    return;
-                }
-            }
-        }
-
-        Call<TmdbCombinedCreditsResponseDto> call = TmdbClient.getApiService().getPersonMovieCredits(directorId, BuildConfig.TMDB_API_KEY);
-        trackCall(call);
-        call.enqueue(new Callback<TmdbCombinedCreditsResponseDto>() {
-            @Override
-            public void onResponse(@NonNull Call<TmdbCombinedCreditsResponseDto> call,
-                                   @NonNull Response<TmdbCombinedCreditsResponseDto> response) {
-                untrackCall(call);
-                if (requestId != currentRequestId.get()) return;
-
-                if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
-                    List<TmdbPersonCastCreditDto> crewMovies = new ArrayList<>();
-                    for (TmdbPersonCastCreditDto crew : response.body().getCrew()) {
-                        if (crew != null && "Director".equalsIgnoreCase(crew.getJob())) {
-                            if (!"tv".equalsIgnoreCase(crew.getMediaType())) {
-                                crewMovies.add(crew);
-                            }
-                        }
-                    }
-                    Collections.sort(crewMovies, (a, b) -> Double.compare(b.getVoteAverage(), a.getVoteAverage()));
-
-                    synchronized (directorCreditsCache) {
-                        directorCreditsCache.put(directorId, crewMovies);
-                    }
-
-                    processDirectorCredits(crewMovies, directorId, directorName, sourceMovie, profile, accumulated);
-                }
-                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<TmdbCombinedCreditsResponseDto> call, @NonNull Throwable t) {
-                untrackCall(call);
-                if (requestId != currentRequestId.get()) return;
-                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
-            }
-        });
-    }
-
-    private void processDirectorCredits(List<TmdbPersonCastCreditDto> crewMovies, int directorId, String directorName, MovieEntity sourceMovie,
-                                        TasteProfile profile, List<RecommendedMovie> accumulated) {
-        int count = 0;
-        List<RecommendedMovie> directorBatch = new ArrayList<>();
-        for (TmdbPersonCastCreditDto item : crewMovies) {
-            if (item == null || item.getTitle() == null) continue;
-            if ("tv".equalsIgnoreCase(item.getMediaType())) continue;
-            if (profile.loggedMovieIds.contains((long) item.getId())) continue;
-
-            TmdbMovieDto dto = new TmdbMovieDto(
-                    item.getId(),
-                    item.getTitle(),
-                    item.getOverview(),
-                    item.getReleaseDate(),
-                    item.getPosterPath(),
-                    item.getBackdropPath(),
-                    item.getVoteAverage(),
-                    item.getVoteCount(),
-                    "movie",
-                    item.getGenreIds(),
-                    null
-            );
-
-            if (!feedPlanner.isValidMovie(dto, profile)) continue;
-
-            synchronized (seenMovieIds) {
-                if (seenMovieIds.contains(item.getId())) continue;
-                seenMovieIds.add(item.getId());
-            }
-
-            List<String> reasons = new ArrayList<>();
-            reasons.add("Directed by " + directorName + " (from your history)");
-            float score = (float) item.getVoteAverage() + 3.5f;
-
-            directorBatch.add(new RecommendedMovie(
-                    dto,
-                    score,
-                    reasons,
-                    sourceMovie != null ? sourceMovie.getPosterPath() : dto.getPosterPath(),
-                    RecommendedMovie.Category.DIRECTOR,
-                    RecommendedMovie.SourceType.PERSON,
-                    directorId,
-                    directorName
-            ));
-
-            if (++count >= 2) break;
-        }
-
-        if (!directorBatch.isEmpty()) {
-            synchronized (accumulated) {
-                accumulated.addAll(directorBatch);
-            }
-        }
-    }
 
     private void fetchTopGenrePool(TasteProfile profile,
                                    List<RecommendedMovie> accumulated,
