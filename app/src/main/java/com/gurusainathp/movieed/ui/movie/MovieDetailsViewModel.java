@@ -79,7 +79,30 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         return repository.getLogsForMovie(movieId);
     }
 
-    public void fetchMovieDetails(int tmdbId, boolean isTv) {
+    public void fetchMovieDetails(int tmdbId, boolean isTvPassed) {
+        if (isTvPassed) {
+            loadDetails(tmdbId, true);
+        } else {
+            // Intelligently check if it's a TV show or movie for items opened from Profile / Diary where media type is unknown
+            TmdbClient.getApiService().getTvDetails(tmdbId, BuildConfig.TMDB_API_KEY).enqueue(new Callback<TmdbMovieDto>() {
+                @Override
+                public void onResponse(@NonNull Call<TmdbMovieDto> call, @NonNull Response<TmdbMovieDto> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        loadDetails(tmdbId, true);
+                    } else {
+                        loadDetails(tmdbId, false);
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<TmdbMovieDto> call, @NonNull Throwable t) {
+                    loadDetails(tmdbId, false);
+                }
+            });
+        }
+    }
+
+    private void loadDetails(int tmdbId, boolean isTv) {
         Call<TmdbMovieDto> detailsCall = isTv ?
                 TmdbClient.getApiService().getTvDetails(tmdbId, BuildConfig.TMDB_API_KEY) :
                 TmdbClient.getApiService().getMovieDetails(tmdbId, BuildConfig.TMDB_API_KEY);
