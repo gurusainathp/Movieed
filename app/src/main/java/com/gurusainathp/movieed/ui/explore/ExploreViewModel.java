@@ -22,18 +22,20 @@ import com.gurusainathp.movieed.data.remote.dto.TmdbMovieResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbPersonCastCreditDto;
 import com.gurusainathp.movieed.data.repository.MovieRepository;
 import com.gurusainathp.movieed.domain.model.RecommendedMovie;
-import com.gurusainathp.movieed.domain.recommendation.RecommendationEngine;
+import com.gurusainathp.movieed.domain.recommendation.FeedPlanner;
+import com.gurusainathp.movieed.domain.recommendation.SeedSampler;
+import com.gurusainathp.movieed.domain.recommendation.TasteProfile;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,22 +44,34 @@ import retrofit2.Response;
 public class ExploreViewModel extends AndroidViewModel {
 
     private final MovieRepository repository;
-    private final RecommendationEngine recommendationEngine = new RecommendationEngine();
+    private final FeedPlanner feedPlanner;
+    private final SeedSampler seedSampler;
+
     private final MutableLiveData<List<RecommendedMovie>> exploreFeed = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+    private final MutableLiveData<ExploreViewState> viewState = new MutableLiveData<>(ExploreViewState.LOADING);
     private final MutableLiveData<Map<Long, MovieLogEntity>> logsMapLiveData = new MutableLiveData<>(new HashMap<>());
 
     private final Random random = new Random();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final AtomicLong currentRequestId = new AtomicLong(0);
+    private final Set<Call<?>> inFlightCalls = Collections.synchronizedSet(new HashSet<>());
+
     private int currentTrendingPage = 1;
+    private int currentDiscoverPage = 1;
     private boolean isFetchingMore = false;
     private final Set<Integer> seenMovieIds = new HashSet<>();
+    private final Set<Integer> usedSeedIds = new HashSet<>();
+    private final Set<Integer> usedDirectorIds = new HashSet<>();
+
     private final Map<MovieEntity, List<TmdbMovieDto>> activeSeedCandidatesMap = new HashMap<>();
     private final Map<Integer, List<TmdbPersonCastCreditDto>> directorCreditsCache = new HashMap<>();
 
     public ExploreViewModel(@NonNull Application application) {
         super(application);
-        repository = new MovieRepository(application);
+        this.repository = new MovieRepository(application);
+        this.feedPlanner = new FeedPlanner(random);
+        this.seedSampler = new SeedSampler(random);
     }
 
     public LiveData<List<RecommendedMovie>> getExploreFeed() {
@@ -66,6 +80,10 @@ public class ExploreViewModel extends AndroidViewModel {
 
     public LiveData<Boolean> getIsLoading() {
         return isLoading;
+    }
+
+    public LiveData<ExploreViewState> getViewState() {
+        return viewState;
     }
 
     public LiveData<Map<Long, MovieLogEntity>> getLogsMap() {
@@ -86,174 +104,263 @@ public class ExploreViewModel extends AndroidViewModel {
         logsMapLiveData.setValue(map);
     }
 
+    public void dismissMovie(int tmdbId) {
+        repository.dismissMovie(tmdbId);
+        synchronized (seenMovieIds) {
+            seenMovieIds.add(tmdbId);
+        }
+    }
+
+    private void trackCall(Call<?> call) {
+        if (call != null) {
+            inFlightCalls.add(call);
+        }
+    }
+
+    private void untrackCall(Call<?> call) {
+        if (call != null) {
+            inFlightCalls.remove(call);
+        }
+    }
+
+    private void cancelInFlightCalls() {
+        synchronized (inFlightCalls) {
+            for (Call<?> call : inFlightCalls) {
+                if (call != null && !call.isCanceled()) {
+                    call.cancel();
+                }
+            }
+            inFlightCalls.clear();
+        }
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        cancelInFlightCalls();
+        mainHandler.removeCallbacksAndMessages(null);
+    }
+
     public void loadExploreMovies(List<MovieLogWithDetails> userLogs) {
         loadExploreMovies(userLogs, false);
     }
 
     public void loadExploreMovies(List<MovieLogWithDetails> userLogs, boolean forceReload) {
         if (!forceReload && Boolean.TRUE.equals(isLoading.getValue())) return;
-        isLoading.setValue(true);
-        currentTrendingPage = 1 + random.nextInt(3);
 
-        // Failsafe timeout guarantee: never hang loading for more than 3 seconds
+        cancelInFlightCalls();
+        long requestId = currentRequestId.incrementAndGet();
+
+        isLoading.setValue(true);
+        viewState.setValue(ExploreViewState.LOADING);
+        currentTrendingPage = 1 + random.nextInt(3);
+        currentDiscoverPage = 1;
+
         mainHandler.removeCallbacksAndMessages(null);
         mainHandler.postDelayed(() -> {
-            if (Boolean.TRUE.equals(isLoading.getValue())) {
+            if (requestId == currentRequestId.get() && Boolean.TRUE.equals(isLoading.getValue())) {
+                List<RecommendedMovie> current = exploreFeed.getValue();
+                if (current == null || current.isEmpty()) {
+                    viewState.setValue(ExploreViewState.EMPTY);
+                } else {
+                    viewState.setValue(ExploreViewState.CONTENT);
+                }
                 isLoading.setValue(false);
             }
-        }, 3000);
+        }, 3500);
 
         synchronized (seenMovieIds) {
             seenMovieIds.clear();
+        }
+        synchronized (usedSeedIds) {
+            usedSeedIds.clear();
+        }
+        synchronized (usedDirectorIds) {
+            usedDirectorIds.clear();
         }
         synchronized (activeSeedCandidatesMap) {
             activeSeedCandidatesMap.clear();
         }
 
         List<RecommendedMovie> accumulated = new ArrayList<>();
-        RecommendationEngine.UserTasteProfile profile = RecommendationEngine.UserTasteProfile.build(userLogs);
+        TasteProfile profile = TasteProfile.build(userLogs, random);
 
-        List<MovieEntity> preferredMovies = new ArrayList<>(profile.lovedMovies);
-        if (preferredMovies.isEmpty()) {
-            preferredMovies.addAll(profile.likedMovies);
+        List<MovieEntity> seedMovies = seedSampler.sampleMovieSeeds(profile, 3, 5);
+        for (MovieEntity seed : seedMovies) {
+            usedSeedIds.add(seed.getTmdbId());
         }
 
-        if (!preferredMovies.isEmpty()) {
-            Collections.shuffle(preferredMovies, random);
-            int seedCount = Math.min(preferredMovies.size(), 2 + random.nextInt(2));
-            List<MovieEntity> seedMovies = preferredMovies.subList(0, seedCount);
+        List<MovieEntity> directorSourceMovies = seedSampler.sampleDirectorSourceMovies(profile, 2, 3);
+        for (MovieEntity dSource : directorSourceMovies) {
+            usedDirectorIds.add(dSource.getTmdbId());
+        }
 
-            List<MovieEntity> directorSourcePool = new ArrayList<>(profile.lovedMovies);
-            if (directorSourcePool.isEmpty()) {
-                directorSourcePool.addAll(profile.likedMovies);
-            }
-            Collections.shuffle(directorSourcePool, random);
-            int directorScanLimit = Math.min(2, directorSourcePool.size());
-            List<MovieEntity> directorSourceMovies = directorSourcePool.subList(0, directorScanLimit);
+        boolean hasTopGenre = !profile.genreAffinities.isEmpty();
+        int initialCallCount = seedMovies.size() + directorSourceMovies.size() + 2 + (hasTopGenre ? 1 : 0);
+        AtomicInteger pendingCalls = new AtomicInteger(Math.max(1, initialCallCount));
 
-            // Primary loading count = seeds + classics + trending (2)
-            AtomicInteger pendingCalls = new AtomicInteger(seedMovies.size() + 2);
-
+        if (!seedMovies.isEmpty()) {
             for (MovieEntity seedMovie : seedMovies) {
-                fetchSeedRecommendations(seedMovie, profile, accumulated, pendingCalls);
+                fetchSeedRecommendations(seedMovie, profile, accumulated, pendingCalls, requestId);
             }
+        }
 
+        if (!directorSourceMovies.isEmpty()) {
             Set<Integer> collectedDirectorIds = new HashSet<>();
             for (MovieEntity sourceMovie : directorSourceMovies) {
-                fetchAndPoolDirector(sourceMovie, profile, accumulated, collectedDirectorIds);
+                fetchAndPoolDirector(sourceMovie, profile, accumulated, collectedDirectorIds, pendingCalls, requestId);
             }
-
-            fetchClassicsPool(profile, accumulated, pendingCalls);
-            fetchTrendingPool(currentTrendingPage, profile, accumulated, pendingCalls);
-        } else {
-            AtomicInteger pendingCalls = new AtomicInteger(2);
-            fetchClassicsPool(profile, accumulated, pendingCalls);
-            fetchTrendingPool(currentTrendingPage, profile, accumulated, pendingCalls);
         }
+
+        if (hasTopGenre) {
+            fetchTopGenrePool(profile, accumulated, pendingCalls, requestId);
+        }
+
+        fetchClassicsPool(profile, accumulated, pendingCalls, requestId);
+        fetchTrendingPool(currentTrendingPage, profile, accumulated, pendingCalls, requestId);
     }
 
     private void fetchSeedRecommendations(MovieEntity seedMovie,
-                                          RecommendationEngine.UserTasteProfile profile,
+                                          TasteProfile profile,
                                           List<RecommendedMovie> accumulated,
-                                          AtomicInteger pendingCalls) {
-        TmdbClient.getApiService().getMovieRecommendations(seedMovie.getTmdbId(), BuildConfig.TMDB_API_KEY)
-                .enqueue(new Callback<TmdbMovieResponseDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                           @NonNull Response<TmdbMovieResponseDto> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
-                            List<TmdbMovieDto> results = response.body().getResults();
-                            synchronized (activeSeedCandidatesMap) {
-                                activeSeedCandidatesMap.put(seedMovie, results);
-                            }
-                        }
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
-                    }
+                                          AtomicInteger pendingCalls,
+                                          long requestId) {
+        Call<TmdbMovieResponseDto> call = TmdbClient.getApiService().getMovieRecommendations(seedMovie.getTmdbId(), BuildConfig.TMDB_API_KEY);
+        trackCall(call);
+        call.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
+                                   @NonNull Response<TmdbMovieResponseDto> response) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
+                if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
+                    List<TmdbMovieDto> results = response.body().getResults();
+                    List<TmdbMovieDto> movieOnlyResults = new ArrayList<>();
+                    for (TmdbMovieDto dto : results) {
+                        if (dto != null && !"tv".equalsIgnoreCase(dto.getMediaType())) {
+                            movieOnlyResults.add(dto);
+                        }
                     }
-                });
+                    synchronized (activeSeedCandidatesMap) {
+                        activeSeedCandidatesMap.put(seedMovie, movieOnlyResults);
+                    }
+                }
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+        });
     }
 
     private void fetchAndPoolDirector(MovieEntity sourceMovie,
-                                      RecommendationEngine.UserTasteProfile profile,
+                                      TasteProfile profile,
                                       List<RecommendedMovie> accumulated,
-                                      Set<Integer> collectedDirectorIds) {
-        TmdbClient.getApiService().getMovieCredits(sourceMovie.getTmdbId(), BuildConfig.TMDB_API_KEY)
-                .enqueue(new Callback<TmdbCreditsResponseDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call,
-                                           @NonNull Response<TmdbCreditsResponseDto> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
-                            for (TmdbCrewDto crew : response.body().getCrew()) {
-                                if (crew != null && "Director".equalsIgnoreCase(crew.getJob())) {
-                                    synchronized (collectedDirectorIds) {
-                                        if (!collectedDirectorIds.contains(crew.getId())) {
-                                            collectedDirectorIds.add(crew.getId());
-                                            fetchDirectorMovies(crew.getId(), crew.getName(), sourceMovie, profile, accumulated);
-                                        }
-                                    }
-                                    break;
+                                      Set<Integer> collectedDirectorIds,
+                                      AtomicInteger pendingCalls,
+                                      long requestId) {
+        Call<TmdbCreditsResponseDto> call = TmdbClient.getApiService().getMovieCredits(sourceMovie.getTmdbId(), BuildConfig.TMDB_API_KEY);
+        trackCall(call);
+        call.enqueue(new Callback<TmdbCreditsResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbCreditsResponseDto> call,
+                                   @NonNull Response<TmdbCreditsResponseDto> response) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+
+                if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
+                    for (TmdbCrewDto crew : response.body().getCrew()) {
+                        if (crew != null && "Director".equalsIgnoreCase(crew.getJob())) {
+                            synchronized (collectedDirectorIds) {
+                                if (!collectedDirectorIds.contains(crew.getId())) {
+                                    collectedDirectorIds.add(crew.getId());
+                                    pendingCalls.incrementAndGet();
+                                    fetchDirectorMovies(crew.getId(), crew.getName(), sourceMovie, profile, accumulated, pendingCalls, requestId);
                                 }
                             }
+                            break;
                         }
                     }
+                }
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {}
-                });
+            @Override
+            public void onFailure(@NonNull Call<TmdbCreditsResponseDto> call, @NonNull Throwable t) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+        });
     }
 
     private void fetchDirectorMovies(int directorId, String directorName, MovieEntity sourceMovie,
-                                     RecommendationEngine.UserTasteProfile profile,
-                                     List<RecommendedMovie> accumulated) {
+                                     TasteProfile profile,
+                                     List<RecommendedMovie> accumulated,
+                                     AtomicInteger pendingCalls,
+                                     long requestId) {
         synchronized (directorCreditsCache) {
             if (directorCreditsCache.containsKey(directorId)) {
                 List<TmdbPersonCastCreditDto> cached = directorCreditsCache.get(directorId);
                 if (cached != null) {
                     processDirectorCredits(cached, directorId, directorName, sourceMovie, profile, accumulated);
+                    checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
                     return;
                 }
             }
         }
 
-        TmdbClient.getApiService().getCombinedCredits(directorId, BuildConfig.TMDB_API_KEY)
-                .enqueue(new Callback<TmdbCombinedCreditsResponseDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbCombinedCreditsResponseDto> call,
-                                           @NonNull Response<TmdbCombinedCreditsResponseDto> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
-                            List<TmdbPersonCastCreditDto> crewMovies = new ArrayList<>(response.body().getCrew());
-                            Collections.sort(crewMovies, (a, b) -> Double.compare(b.getVoteAverage(), a.getVoteAverage()));
+        Call<TmdbCombinedCreditsResponseDto> call = TmdbClient.getApiService().getPersonMovieCredits(directorId, BuildConfig.TMDB_API_KEY);
+        trackCall(call);
+        call.enqueue(new Callback<TmdbCombinedCreditsResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbCombinedCreditsResponseDto> call,
+                                   @NonNull Response<TmdbCombinedCreditsResponseDto> response) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
 
-                            synchronized (directorCreditsCache) {
-                                directorCreditsCache.put(directorId, crewMovies);
+                if (response.isSuccessful() && response.body() != null && response.body().getCrew() != null) {
+                    List<TmdbPersonCastCreditDto> crewMovies = new ArrayList<>();
+                    for (TmdbPersonCastCreditDto crew : response.body().getCrew()) {
+                        if (crew != null && "Director".equalsIgnoreCase(crew.getJob())) {
+                            if (!"tv".equalsIgnoreCase(crew.getMediaType())) {
+                                crewMovies.add(crew);
                             }
-
-                            processDirectorCredits(crewMovies, directorId, directorName, sourceMovie, profile, accumulated);
                         }
                     }
+                    Collections.sort(crewMovies, (a, b) -> Double.compare(b.getVoteAverage(), a.getVoteAverage()));
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbCombinedCreditsResponseDto> call, @NonNull Throwable t) {}
-                });
+                    synchronized (directorCreditsCache) {
+                        directorCreditsCache.put(directorId, crewMovies);
+                    }
+
+                    processDirectorCredits(crewMovies, directorId, directorName, sourceMovie, profile, accumulated);
+                }
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbCombinedCreditsResponseDto> call, @NonNull Throwable t) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+        });
     }
 
     private void processDirectorCredits(List<TmdbPersonCastCreditDto> crewMovies, int directorId, String directorName, MovieEntity sourceMovie,
-                                        RecommendationEngine.UserTasteProfile profile, List<RecommendedMovie> accumulated) {
+                                        TasteProfile profile, List<RecommendedMovie> accumulated) {
         int count = 0;
         List<RecommendedMovie> directorBatch = new ArrayList<>();
         for (TmdbPersonCastCreditDto item : crewMovies) {
             if (item == null || item.getTitle() == null) continue;
+            if ("tv".equalsIgnoreCase(item.getMediaType())) continue;
             if (profile.loggedMovieIds.contains((long) item.getId())) continue;
-            if (item.getBackdropPath() == null && item.getPosterPath() == null) continue;
-
-            synchronized (seenMovieIds) {
-                if (seenMovieIds.contains(item.getId())) continue;
-                seenMovieIds.add(item.getId());
-            }
 
             TmdbMovieDto dto = new TmdbMovieDto(
                     item.getId(),
@@ -263,18 +370,29 @@ public class ExploreViewModel extends AndroidViewModel {
                     item.getPosterPath(),
                     item.getBackdropPath(),
                     item.getVoteAverage(),
-                    item.getMediaType()
+                    item.getVoteCount(),
+                    "movie",
+                    item.getGenreIds(),
+                    null
             );
+
+            if (!feedPlanner.isValidMovie(dto, profile)) continue;
+
+            synchronized (seenMovieIds) {
+                if (seenMovieIds.contains(item.getId())) continue;
+                seenMovieIds.add(item.getId());
+            }
 
             List<String> reasons = new ArrayList<>();
             reasons.add("Directed by " + directorName + " (from your history)");
-            float score = (float) item.getVoteAverage() + 3.5f + random.nextFloat();
+            float score = (float) item.getVoteAverage() + 3.5f;
 
             directorBatch.add(new RecommendedMovie(
                     dto,
                     score,
                     reasons,
-                    sourceMovie.getPosterPath(),
+                    sourceMovie != null ? sourceMovie.getPosterPath() : dto.getPosterPath(),
+                    RecommendedMovie.Category.DIRECTOR,
                     RecommendedMovie.SourceType.PERSON,
                     directorId,
                     directorName
@@ -287,295 +405,308 @@ public class ExploreViewModel extends AndroidViewModel {
             synchronized (accumulated) {
                 accumulated.addAll(directorBatch);
             }
-            List<RecommendedMovie> currentFeed = exploreFeed.getValue();
-            if (currentFeed != null) {
-                List<RecommendedMovie> updated = new ArrayList<>(currentFeed);
-                updated.addAll(directorBatch);
-                Collections.sort(updated, (a, b) -> Float.compare(b.getScore(), a.getScore()));
-                exploreFeed.setValue(updated);
-            }
         }
     }
 
-    private void fetchClassicsPool(RecommendationEngine.UserTasteProfile profile,
-                                  List<RecommendedMovie> accumulated,
-                                  AtomicInteger pendingCalls) {
-        int randomPage = 1 + random.nextInt(8);
-        TmdbClient.getApiService().getTopRatedMovies(BuildConfig.TMDB_API_KEY, randomPage)
-                .enqueue(new Callback<TmdbMovieResponseDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                           @NonNull Response<TmdbMovieResponseDto> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
-                            List<TmdbMovieDto> results = response.body().getResults();
-                            Collections.shuffle(results);
-                            int count = 0;
-                            for (TmdbMovieDto dto : results) {
-                                if (!isValidMovie(dto, profile)) continue;
-                                synchronized (seenMovieIds) {
-                                    if (seenMovieIds.contains(dto.getId())) continue;
-                                    seenMovieIds.add(dto.getId());
-                                }
-                                List<String> reasons = new ArrayList<>();
-                                reasons.add("Hall of Fame Classic");
-                                float score = (float) dto.getVoteAverage() + 1.2f + random.nextFloat();
-                                synchronized (accumulated) {
-                                    accumulated.add(new RecommendedMovie(
-                                            dto,
-                                            score,
-                                            reasons,
-                                            dto.getPosterPath(),
-                                            RecommendedMovie.SourceType.MOVIE,
-                                            dto.getId(),
-                                            dto.getTitle()
-                                    ));
-                                }
-                                if (++count >= 6) break;
-                            }
-                        }
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
-                    }
+    private void fetchTopGenrePool(TasteProfile profile,
+                                   List<RecommendedMovie> accumulated,
+                                   AtomicInteger pendingCalls,
+                                   long requestId) {
+        int topGenreId = -1;
+        float maxAffinity = 0f;
+        for (Map.Entry<Integer, Float> entry : profile.genreAffinities.entrySet()) {
+            if (entry.getValue() > maxAffinity) {
+                maxAffinity = entry.getValue();
+                topGenreId = entry.getKey();
+            }
+        }
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
+        if (topGenreId <= 0) {
+            checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            return;
+        }
+
+        Call<TmdbMovieResponseDto> call = TmdbClient.getApiService().discoverMovies(
+                BuildConfig.TMDB_API_KEY,
+                "popularity.desc",
+                6.5f,
+                200,
+                String.valueOf(topGenreId),
+                null,
+                null,
+                false,
+                1
+        );
+        trackCall(call);
+        call.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
+                                   @NonNull Response<TmdbMovieResponseDto> response) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+
+                if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
+                    List<TmdbMovieDto> results = response.body().getResults();
+                    int count = 0;
+                    for (TmdbMovieDto dto : results) {
+                        if (dto == null || "tv".equalsIgnoreCase(dto.getMediaType())) continue;
+                        if (!feedPlanner.isValidMovie(dto, profile)) continue;
+                        synchronized (seenMovieIds) {
+                            if (seenMovieIds.contains(dto.getId())) continue;
+                            seenMovieIds.add(dto.getId());
+                        }
+                        List<String> reasons = new ArrayList<>();
+                        reasons.add("Fits your top genre interest");
+                        float score = (float) dto.getVoteAverage() + 1.5f;
+                        synchronized (accumulated) {
+                            accumulated.add(new RecommendedMovie(
+                                    dto,
+                                    score,
+                                    reasons,
+                                    dto.getPosterPath(),
+                                    RecommendedMovie.Category.PERSONAL,
+                                    RecommendedMovie.SourceType.MOVIE,
+                                    dto.getId(),
+                                    dto.getTitle()
+                            ));
+                        }
+                        if (++count >= 4) break;
                     }
-                });
+                }
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+        });
+    }
+
+    private void fetchClassicsPool(TasteProfile profile,
+                                  List<RecommendedMovie> accumulated,
+                                  AtomicInteger pendingCalls,
+                                  long requestId) {
+        int randomPage = 1 + random.nextInt(5);
+        Call<TmdbMovieResponseDto> call = TmdbClient.getApiService().discoverMovies(
+                BuildConfig.TMDB_API_KEY,
+                "vote_average.desc",
+                7.8f,
+                500,
+                null,
+                null,
+                "2015-12-31",
+                false,
+                randomPage
+        );
+        trackCall(call);
+        call.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
+                                   @NonNull Response<TmdbMovieResponseDto> response) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+
+                if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
+                    List<TmdbMovieDto> results = response.body().getResults();
+                    Collections.shuffle(results, random);
+                    int count = 0;
+                    for (TmdbMovieDto dto : results) {
+                        if (dto == null || "tv".equalsIgnoreCase(dto.getMediaType())) continue;
+                        if (!feedPlanner.isValidMovie(dto, profile)) continue;
+                        synchronized (seenMovieIds) {
+                            if (seenMovieIds.contains(dto.getId())) continue;
+                            seenMovieIds.add(dto.getId());
+                        }
+                        List<String> reasons = new ArrayList<>();
+                        reasons.add("Hall of Fame Classic");
+                        float score = (float) dto.getVoteAverage() + 1.2f;
+                        synchronized (accumulated) {
+                            accumulated.add(new RecommendedMovie(
+                                    dto,
+                                    score,
+                                    reasons,
+                                    dto.getPosterPath(),
+                                    RecommendedMovie.Category.CLASSIC,
+                                    RecommendedMovie.SourceType.MOVIE,
+                                    dto.getId(),
+                                    dto.getTitle()
+                            ));
+                        }
+                        if (++count >= 6) break;
+                    }
+                }
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+        });
     }
 
     private void fetchTrendingPool(int page,
-                                   RecommendationEngine.UserTasteProfile profile,
+                                   TasteProfile profile,
                                    List<RecommendedMovie> accumulated,
-                                   AtomicInteger pendingCalls) {
-        TmdbClient.getApiService().getPopularMovies(BuildConfig.TMDB_API_KEY, page)
-                .enqueue(new Callback<TmdbMovieResponseDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                           @NonNull Response<TmdbMovieResponseDto> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
-                            List<TmdbMovieDto> results = response.body().getResults();
-                            Collections.shuffle(results);
-                            int count = 0;
-                            for (TmdbMovieDto dto : results) {
-                                if (!isValidMovie(dto, profile)) continue;
-                                synchronized (seenMovieIds) {
-                                    if (seenMovieIds.contains(dto.getId())) continue;
-                                    seenMovieIds.add(dto.getId());
-                                }
-                                List<String> reasons = new ArrayList<>();
-                                reasons.add("Trending Today on Movieed");
+                                   AtomicInteger pendingCalls,
+                                   long requestId) {
+        Call<TmdbMovieResponseDto> call = TmdbClient.getApiService().getTrendingMovies(BuildConfig.TMDB_API_KEY);
+        trackCall(call);
+        call.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
+                                   @NonNull Response<TmdbMovieResponseDto> response) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
 
-                                float score = (float) dto.getVoteAverage() + random.nextFloat();
-                                synchronized (accumulated) {
-                                    accumulated.add(new RecommendedMovie(
-                                            dto,
-                                            score,
-                                            reasons,
-                                            dto.getPosterPath(),
-                                            RecommendedMovie.SourceType.MOVIE,
-                                            dto.getId(),
-                                            dto.getTitle()
-                                    ));
-                                }
-                                if (++count >= 10) break;
-                            }
+                if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
+                    List<TmdbMovieDto> results = response.body().getResults();
+                    int count = 0;
+                    for (TmdbMovieDto dto : results) {
+                        if (dto == null || "tv".equalsIgnoreCase(dto.getMediaType())) continue;
+                        if (!feedPlanner.isValidMovie(dto, profile)) continue;
+                        synchronized (seenMovieIds) {
+                            if (seenMovieIds.contains(dto.getId())) continue;
+                            seenMovieIds.add(dto.getId());
                         }
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
-                    }
+                        List<String> reasons = new ArrayList<>();
+                        reasons.add("Trending today on Movieed");
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                        checkAndProcessMultiSeed(pendingCalls, accumulated, profile);
+                        float score = (float) dto.getVoteAverage();
+                        synchronized (accumulated) {
+                            accumulated.add(new RecommendedMovie(
+                                    dto,
+                                    score,
+                                    reasons,
+                                    dto.getPosterPath(),
+                                    RecommendedMovie.Category.TRENDING,
+                                    RecommendedMovie.SourceType.MOVIE,
+                                    dto.getId(),
+                                    dto.getTitle()
+                            ));
+                        }
+                        if (++count >= 10) break;
                     }
-                });
+                }
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                untrackCall(call);
+                if (requestId != currentRequestId.get()) return;
+                checkAndProcessMultiSeed(pendingCalls, accumulated, profile, requestId);
+            }
+        });
     }
 
     private void checkAndProcessMultiSeed(AtomicInteger pendingCalls,
                                            List<RecommendedMovie> accumulated,
-                                           RecommendationEngine.UserTasteProfile profile) {
-        if (pendingCalls.decrementAndGet() == 0) {
+                                           TasteProfile profile,
+                                           long requestId) {
+        if (pendingCalls.decrementAndGet() <= 0) {
+            if (requestId != currentRequestId.get()) return;
+
             mainHandler.removeCallbacksAndMessages(null);
-            isLoading.setValue(false);
 
+            List<RecommendedMovie> finalFeed;
             synchronized (activeSeedCandidatesMap) {
-                if (!activeSeedCandidatesMap.isEmpty()) {
-                    List<RecommendedMovie> multiSeedList = recommendationEngine.aggregateMultiSeedRecommendations(
-                            activeSeedCandidatesMap,
-                            profile
-                    );
-
-                    for (RecommendedMovie rm : multiSeedList) {
-                        synchronized (seenMovieIds) {
-                            if (!seenMovieIds.contains(rm.getMovie().getId())) {
-                                seenMovieIds.add(rm.getMovie().getId());
-                                synchronized (accumulated) {
-                                    accumulated.add(rm);
-                                }
-                            }
-                        }
-                    }
-                }
+                finalFeed = feedPlanner.processAndPlanFeed(
+                        activeSeedCandidatesMap,
+                        accumulated,
+                        profile,
+                        seenMovieIds
+                );
             }
 
-            List<RecommendedMovie> jitteredList = new ArrayList<>();
-            for (RecommendedMovie rm : accumulated) {
-                float jitteredScore = rm.getScore() + (random.nextFloat() * 6.0f) - 2.0f;
-                jitteredList.add(new RecommendedMovie(
-                        rm.getMovie(),
-                        jitteredScore,
-                        rm.getReasons(),
-                        rm.getReasonPosterPath(),
-                        rm.getSourceType(),
-                        rm.getSourceId(),
-                        rm.getSourceName()
-                ));
-            }
-
-            Collections.sort(jitteredList, (a, b) -> Float.compare(b.getScore(), a.getScore()));
-
-            List<RecommendedMovie> blendedList = new ArrayList<>();
-            int chunkSize = 5;
-            for (int i = 0; i < jitteredList.size(); i += chunkSize) {
-                int end = Math.min(i + chunkSize, jitteredList.size());
-                List<RecommendedMovie> chunk = new ArrayList<>(jitteredList.subList(i, end));
-                Collections.shuffle(chunk, random);
-                blendedList.addAll(chunk);
-            }
-
-            List<RecommendedMovie> interleavedList = interleaveByReason(blendedList);
-            exploreFeed.setValue(interleavedList);
-        }
-    }
-
-    private List<RecommendedMovie> interleaveByReason(List<RecommendedMovie> inputList) {
-        if (inputList == null || inputList.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        Map<String, List<RecommendedMovie>> buckets = new java.util.LinkedHashMap<>();
-        buckets.put("MOVIE", new ArrayList<>());
-        buckets.put("DIRECTOR", new ArrayList<>());
-        buckets.put("CLASSIC", new ArrayList<>());
-        buckets.put("TRENDING", new ArrayList<>());
-
-        for (RecommendedMovie rm : inputList) {
-            String reason = (rm.getReasons() != null && !rm.getReasons().isEmpty())
-                    ? rm.getReasons().get(0) : "";
-
-            if (reason.startsWith("Because you loved") || reason.startsWith("Because you liked")) {
-                buckets.get("MOVIE").add(rm);
-            } else if (reason.startsWith("Directed by")) {
-                buckets.get("DIRECTOR").add(rm);
-            } else if (reason.startsWith("Hall of Fame Classic")) {
-                buckets.get("CLASSIC").add(rm);
+            exploreFeed.setValue(finalFeed);
+            if (finalFeed == null || finalFeed.isEmpty()) {
+                viewState.setValue(ExploreViewState.EMPTY);
             } else {
-                buckets.get("TRENDING").add(rm);
+                viewState.setValue(ExploreViewState.CONTENT);
             }
+            isLoading.setValue(false);
         }
-
-        List<List<RecommendedMovie>> activeBuckets = new ArrayList<>();
-        for (List<RecommendedMovie> bucket : buckets.values()) {
-            if (!bucket.isEmpty()) {
-                Collections.shuffle(bucket, random);
-                activeBuckets.add(bucket);
-            }
-        }
-
-        if (activeBuckets.isEmpty()) return new ArrayList<>();
-
-        List<RecommendedMovie> interleaved = new ArrayList<>();
-        String lastCategory = "";
-
-        boolean progress = true;
-        while (progress) {
-            progress = false;
-
-            for (List<RecommendedMovie> bucket : activeBuckets) {
-                if (bucket.isEmpty()) continue;
-
-                String category = "";
-                for (Map.Entry<String, List<RecommendedMovie>> entry : buckets.entrySet()) {
-                    if (entry.getValue() == bucket) {
-                        category = entry.getKey();
-                        break;
-                    }
-                }
-
-                if (!category.equals(lastCategory)) {
-                    interleaved.add(bucket.remove(0));
-                    lastCategory = category;
-                    progress = true;
-                    break;
-                }
-            }
-        }
-
-        return interleaved;
     }
 
     public void loadNextPage(List<MovieLogWithDetails> userLogs) {
         if (isFetchingMore) return;
         isFetchingMore = true;
         currentTrendingPage++;
+        currentDiscoverPage++;
 
-        RecommendationEngine.UserTasteProfile profile = RecommendationEngine.UserTasteProfile.build(userLogs);
+        long requestId = currentRequestId.get();
+        TasteProfile profile = TasteProfile.build(userLogs, random);
         List<RecommendedMovie> currentList = exploreFeed.getValue() != null ? new ArrayList<>(exploreFeed.getValue()) : new ArrayList<>();
+        List<RecommendedMovie> nextPageCandidates = new ArrayList<>();
 
-        TmdbClient.getApiService().getPopularMovies(BuildConfig.TMDB_API_KEY, currentTrendingPage)
-                .enqueue(new Callback<TmdbMovieResponseDto>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
-                                           @NonNull Response<TmdbMovieResponseDto> response) {
-                        isFetchingMore = false;
-                        if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
-                            for (TmdbMovieDto dto : response.body().getResults()) {
-                                if (!isValidMovie(dto, profile)) continue;
-                                synchronized (seenMovieIds) {
-                                    if (seenMovieIds.contains(dto.getId())) continue;
-                                    seenMovieIds.add(dto.getId());
-                                }
-                                List<String> reasons = new ArrayList<>();
-                                reasons.add("Trending Today on Movieed");
-                                currentList.add(new RecommendedMovie(
-                                        dto,
-                                        (float) dto.getVoteAverage(),
-                                        reasons,
-                                        dto.getPosterPath(),
-                                        RecommendedMovie.SourceType.MOVIE,
-                                        dto.getId(),
-                                        dto.getTitle()
-                                ));
-                            }
-                            exploreFeed.setValue(currentList);
+        Call<TmdbMovieResponseDto> call = TmdbClient.getApiService().discoverMovies(
+                BuildConfig.TMDB_API_KEY,
+                "popularity.desc",
+                6.0f,
+                150,
+                null,
+                null,
+                null,
+                false,
+                currentDiscoverPage
+        );
+        trackCall(call);
+        call.enqueue(new Callback<TmdbMovieResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<TmdbMovieResponseDto> call,
+                                   @NonNull Response<TmdbMovieResponseDto> response) {
+                untrackCall(call);
+                isFetchingMore = false;
+                if (requestId != currentRequestId.get()) return;
+
+                if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
+                    for (TmdbMovieDto dto : response.body().getResults()) {
+                        if (dto == null || "tv".equalsIgnoreCase(dto.getMediaType())) continue;
+                        if (!feedPlanner.isValidMovie(dto, profile)) continue;
+                        synchronized (seenMovieIds) {
+                            if (seenMovieIds.contains(dto.getId())) continue;
+                            seenMovieIds.add(dto.getId());
                         }
+                        List<String> reasons = new ArrayList<>();
+                        reasons.add("Trending today on Movieed");
+                        nextPageCandidates.add(new RecommendedMovie(
+                                dto,
+                                (float) dto.getVoteAverage(),
+                                reasons,
+                                dto.getPosterPath(),
+                                RecommendedMovie.Category.TRENDING,
+                                RecommendedMovie.SourceType.MOVIE,
+                                dto.getId(),
+                                dto.getTitle()
+                        ));
                     }
 
-                    @Override
-                    public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
-                        isFetchingMore = false;
-                    }
-                });
-    }
+                    List<RecommendedMovie> interleavedNew = feedPlanner.getInterleaver().interleaveByReason(
+                            nextPageCandidates,
+                            feedPlanner.getLastCategory()
+                    );
+                    currentList.addAll(interleavedNew);
+                    exploreFeed.setValue(currentList);
+                }
+            }
 
-    private boolean isValidMovie(TmdbMovieDto dto, RecommendationEngine.UserTasteProfile profile) {
-        if (dto == null || dto.getTitle() == null || dto.getTitle().trim().isEmpty()) return false;
-        if (profile != null && profile.loggedMovieIds.contains((long) dto.getId())) return false;
-        if (dto.getBackdropPath() == null && dto.getPosterPath() == null) return false;
-        if (dto.getOverview() == null || dto.getOverview().trim().isEmpty()) return false;
-
-        String titleLower = dto.getTitle().toLowerCase(Locale.US);
-        if (titleLower.contains("making of") ||
-            titleLower.contains("behind the scenes") ||
-            titleLower.contains("featurette") ||
-            titleLower.contains("deleted scenes") ||
-            titleLower.contains("bloopers")) {
-            return false;
-        }
-        return true;
+            @Override
+            public void onFailure(@NonNull Call<TmdbMovieResponseDto> call, @NonNull Throwable t) {
+                untrackCall(call);
+                isFetchingMore = false;
+            }
+        });
     }
 
     public void toggleWatchlist(TmdbMovieDto dto, MovieLogEntity existingLog) {
         if (dto == null) return;
+        String genreString = dto.getGenreIds() != null ? dto.getGenreIds().toString().replaceAll("[\\[\\] ]", "") : null;
         MovieEntity movieEntity = new MovieEntity(
                 dto.getId(),
                 dto.getTitle(),
@@ -584,13 +715,16 @@ public class ExploreViewModel extends AndroidViewModel {
                 dto.getPosterPath(),
                 dto.getBackdropPath(),
                 0,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                genreString,
+                dto.getOriginalLanguage()
         );
         repository.toggleWatchlist(movieEntity, existingLog);
     }
 
     public void saveReaction(TmdbMovieDto dto, String reaction, MovieLogEntity existingLog) {
         if (dto == null) return;
+        String genreString = dto.getGenreIds() != null ? dto.getGenreIds().toString().replaceAll("[\\[\\] ]", "") : null;
         MovieEntity movieEntity = new MovieEntity(
                 dto.getId(),
                 dto.getTitle(),
@@ -599,7 +733,9 @@ public class ExploreViewModel extends AndroidViewModel {
                 dto.getPosterPath(),
                 dto.getBackdropPath(),
                 0,
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                genreString,
+                dto.getOriginalLanguage()
         );
         repository.saveReaction(movieEntity, reaction, existingLog);
     }

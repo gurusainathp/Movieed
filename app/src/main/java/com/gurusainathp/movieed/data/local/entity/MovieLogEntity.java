@@ -5,6 +5,8 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+import com.gurusainathp.movieed.domain.model.Reaction;
+
 @Entity(
         tableName = "movie_logs",
         foreignKeys = @ForeignKey(
@@ -52,26 +54,12 @@ public class MovieLogEntity {
     public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
 
     public static String getEmojiForReaction(String reaction) {
-        if (reaction == null) return "";
-        switch (reaction) {
-            case "LOVE": return "😍";
-            case "LIKE": return "🙂";
-            case "UMM": return "😐";
-            case "DISLIKE": return "🙁";
-            case "HATE": return "😡";
-            default: return "";
-        }
+        Reaction r = Reaction.fromRawString(reaction);
+        return r != null ? r.getEmoji() : "";
     }
 
     public static String getLabelForReaction(String reaction) {
-        if (reaction == null) return "";
-        switch (reaction) {
-            case "LOVE": return "😍 Love";
-            case "LIKE": return "🙂 Like";
-            case "UMM": return "😐 Umm";
-            case "DISLIKE": return "🙁 Dislike";
-            case "HATE": return "😡 Hate";
-            default: return "";
-        }
+        Reaction r = Reaction.fromRawString(reaction);
+        return r != null ? r.getLabel() : "";
     }
 }

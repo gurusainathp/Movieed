@@ -4,9 +4,11 @@ import android.app.Application;
 
 import androidx.lifecycle.LiveData;
 
+import com.gurusainathp.movieed.data.local.dao.DismissedMovieDao;
 import com.gurusainathp.movieed.data.local.dao.MovieDao;
 import com.gurusainathp.movieed.data.local.dao.MovieLogDao;
 import com.gurusainathp.movieed.data.local.database.AppDatabase;
+import com.gurusainathp.movieed.data.local.entity.DismissedMovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogWithDetails;
@@ -19,6 +21,7 @@ public class MovieRepository {
 
     private final MovieDao movieDao;
     private final MovieLogDao movieLogDao;
+    private final DismissedMovieDao dismissedMovieDao;
     private final LiveData<List<MovieEntity>> allMovies;
     private final LiveData<List<MovieLogEntity>> allLogs;
     private final LiveData<List<MovieLogWithDetails>> allLogsWithDetails;
@@ -28,6 +31,7 @@ public class MovieRepository {
         AppDatabase database = AppDatabase.getInstance(application);
         movieDao = database.movieDao();
         movieLogDao = database.movieLogDao();
+        dismissedMovieDao = database.dismissedMovieDao();
         allMovies = movieDao.getAllMovies();
         allLogs = movieLogDao.getAllLogs();
         allLogsWithDetails = movieLogDao.getAllLogsWithDetails();
@@ -52,6 +56,10 @@ public class MovieRepository {
 
     public LiveData<List<MovieLogEntity>> getLogsForMovie(long movieId) {
         return movieLogDao.getLogsForMovie(movieId);
+    }
+
+    public void dismissMovie(int tmdbId) {
+        executor.execute(() -> dismissedMovieDao.insert(new DismissedMovieEntity(tmdbId, System.currentTimeMillis())));
     }
 
     public void toggleWatchlist(MovieEntity movie, MovieLogEntity existingLog) {
@@ -85,7 +93,6 @@ public class MovieRepository {
             movieDao.insert(movie);
             long now = System.currentTimeMillis();
             if (existingLog != null) {
-                // If movie was in Watchlist and user adds a reaction for the first time, remove from Watchlist
                 if (existingLog.isWatchlist() && existingLog.getReaction() == null && reaction != null) {
                     existingLog.setWatchlist(false);
                 }

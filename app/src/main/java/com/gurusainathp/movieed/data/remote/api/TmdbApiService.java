@@ -103,4 +103,23 @@ public interface TmdbApiService {
             @Path("person_id") int personId,
             @Query("api_key") String apiKey
     );
+
+    @GET("person/{person_id}/movie_credits")
+    Call<TmdbCombinedCreditsResponseDto> getPersonMovieCredits(
+            @Path("person_id") int personId,
+            @Query("api_key") String apiKey
+    );
+
+    @GET("discover/movie")
+    Call<TmdbMovieResponseDto> discoverMovies(
+            @Query("api_key") String apiKey,
+            @Query("sort_by") String sortBy,
+            @Query("vote_average.gte") Float voteAverageGte,
+            @Query("vote_count.gte") Integer voteCountGte,
+            @Query("with_genres") String withGenres,
+            @Query("with_original_language") String withOriginalLanguage,
+            @Query("primary_release_date.lte") String primaryReleaseDateLte,
+            @Query("include_adult") Boolean includeAdult,
+            @Query("page") Integer page
+    );
 }

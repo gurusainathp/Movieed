@@ -7,6 +7,13 @@ import java.util.List;
 
 public class RecommendedMovie {
 
+    public enum Category {
+        PERSONAL,
+        DIRECTOR,
+        CLASSIC,
+        TRENDING
+    }
+
     public enum SourceType {
         NONE,
         MOVIE,
@@ -18,27 +25,34 @@ public class RecommendedMovie {
     private final List<String> reasons;
     private String reasonPosterPath;
 
+    private Category category = Category.PERSONAL;
     private SourceType sourceType = SourceType.NONE;
     private int sourceId = -1;
     private String sourceName;
 
     public RecommendedMovie(TmdbMovieDto movie, float score, List<String> reasons) {
-        this.movie = movie;
-        this.score = score;
-        this.reasons = reasons != null ? reasons : new ArrayList<>();
+        this(movie, score, reasons, null, Category.PERSONAL, SourceType.NONE, -1, null);
     }
 
     public RecommendedMovie(TmdbMovieDto movie, float score, List<String> reasons, String reasonPosterPath) {
-        this(movie, score, reasons);
+        this(movie, score, reasons, reasonPosterPath, Category.PERSONAL, SourceType.NONE, -1, null);
+    }
+
+    public RecommendedMovie(TmdbMovieDto movie, float score, List<String> reasons, String reasonPosterPath,
+                            Category category, SourceType sourceType, int sourceId, String sourceName) {
+        this.movie = movie;
+        this.score = score;
+        this.reasons = reasons != null ? reasons : new ArrayList<>();
         this.reasonPosterPath = reasonPosterPath;
+        this.category = category != null ? category : Category.PERSONAL;
+        this.sourceType = sourceType != null ? sourceType : SourceType.NONE;
+        this.sourceId = sourceId;
+        this.sourceName = sourceName;
     }
 
     public RecommendedMovie(TmdbMovieDto movie, float score, List<String> reasons, String reasonPosterPath,
                             SourceType sourceType, int sourceId, String sourceName) {
-        this(movie, score, reasons, reasonPosterPath);
-        this.sourceType = sourceType != null ? sourceType : SourceType.NONE;
-        this.sourceId = sourceId;
-        this.sourceName = sourceName;
+        this(movie, score, reasons, reasonPosterPath, Category.PERSONAL, sourceType, sourceId, sourceName);
     }
 
     public TmdbMovieDto getMovie() {
@@ -66,6 +80,14 @@ public class RecommendedMovie {
 
     public void setReasonPosterPath(String reasonPosterPath) {
         this.reasonPosterPath = reasonPosterPath;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public SourceType getSourceType() {

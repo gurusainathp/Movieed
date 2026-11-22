@@ -49,16 +49,14 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
         progressBar = view.findViewById(R.id.progress_explore);
         tvEmpty = view.findViewById(R.id.tv_explore_empty);
 
-        // Preload next 2 pages in memory for buttery smooth swipe
         viewPager.setOffscreenPageLimit(2);
 
         adapter = new ExploreAdapter(this);
         viewPager.setAdapter(adapter);
 
-        // Infinite reel pagination & seed rotation every 10-15 scrolls
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             private int pagesViewedSinceLastReset = 0;
-            private int targetResetThreshold = 10 + new java.util.Random().nextInt(6); // 10 to 15 scrolls
+            private int targetResetThreshold = 10 + new java.util.Random().nextInt(6);
 
             @Override
             public void onPageSelected(int position) {
@@ -68,7 +66,7 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
                 if (pagesViewedSinceLastReset >= targetResetThreshold) {
                     pagesViewedSinceLastReset = 0;
                     targetResetThreshold = 10 + new java.util.Random().nextInt(6);
-                    viewModel.loadExploreMovies(cachedUserLogs, true); // Rotate seeds & fresh feed!
+                    viewModel.loadExploreMovies(cachedUserLogs, true);
                 } else if (position >= adapter.getItemCount() - 5 && adapter.getItemCount() > 0) {
                     viewModel.loadNextPage(cachedUserLogs);
                 }
@@ -81,18 +79,36 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
     }
 
     private void observeViewModel() {
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
-            progressBar.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE);
+        viewModel.getViewState().observe(getViewLifecycleOwner(), state -> {
+            if (state == null) return;
+            switch (state) {
+                case LOADING:
+                    progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case CONTENT:
+                    progressBar.setVisibility(View.GONE);
+                    tvEmpty.setVisibility(View.GONE);
+                    viewPager.setVisibility(View.VISIBLE);
+                    break;
+                case EMPTY:
+                    progressBar.setVisibility(View.GONE);
+                    tvEmpty.setText("Log at least 5 movies with reactions to unlock hyper-personalized recommendations!");
+                    tvEmpty.setVisibility(View.VISIBLE);
+                    viewPager.setVisibility(View.GONE);
+                    break;
+                case ERROR:
+                    progressBar.setVisibility(View.GONE);
+                    tvEmpty.setText("Unable to load recommendations. Tap to retry.");
+                    tvEmpty.setVisibility(View.VISIBLE);
+                    tvEmpty.setOnClickListener(v -> viewModel.loadExploreMovies(cachedUserLogs, true));
+                    viewPager.setVisibility(View.GONE);
+                    break;
+            }
         });
 
         viewModel.getExploreFeed().observe(getViewLifecycleOwner(), items -> {
             if (items != null && !items.isEmpty()) {
                 adapter.setItems(items);
-                tvEmpty.setVisibility(View.GONE);
-                viewPager.setVisibility(View.VISIBLE);
-            } else if (!Boolean.TRUE.equals(viewModel.getIsLoading().getValue())) {
-                tvEmpty.setVisibility(View.VISIBLE);
-                viewPager.setVisibility(View.GONE);
             }
         });
 
@@ -181,5 +197,12 @@ public class ExploreFragment extends Fragment implements ExploreAdapter.OnExplor
             }
         });
         dialog.show(getChildFragmentManager(), "ExploreReactionPicker");
+    }
+
+    @Override
+    public void onNotInterestedClick(TmdbMovieDto movie) {
+        if (movie == null) return;
+        viewModel.dismissMovie(movie.getId());
+        adapter.removeItem(movie.getId());
     }
 }
