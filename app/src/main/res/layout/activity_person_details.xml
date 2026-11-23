@@ -7,47 +7,46 @@
     android:layout_height="match_parent"
     android:background="@color/movieed_background">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Full-bleed movie backdrop background -->
+    <ImageView
+        android:id="@+id/iv_person_backdrop"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/movieed_surface">
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:background="@color/movieed_surface_elevated"
+        tools:src="@tools:sample/backgrounds/scenic" />
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/person_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+    <!-- Dark gradient overlay for readability -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#B30F1015" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:clipToPadding="false"
+        android:paddingBottom="100dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="20dp"
+            android:paddingTop="70dp">
 
+            <!-- Person Info Header with Profile Photo on the Right -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="top"
                 android:orientation="horizontal">
 
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/iv_person_profile"
-                    android:layout_width="110dp"
-                    android:layout_height="160dp"
-                    android:scaleType="centerCrop"
-                    android:background="@color/movieed_surface_elevated"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
-                    tools:src="@tools:sample/backgrounds/scenic" />
-
+                <!-- Left Details -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -56,26 +55,62 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/movieed_text_primary"
-                        android:textSize="22sp"
+                        android:textSize="26sp"
                         android:textStyle="bold"
                         tools:text="Christian Bale" />
+
+                    <TextView
+                        android:id="@+id/tv_person_department"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/movieed_accent"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        tools:text="Acting" />
 
                     <TextView
                         android:id="@+id/tv_person_info"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="@color/movieed_primary"
-                        android:textSize="13sp"
+                        android:lineSpacingExtra="2dp"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="12sp"
                         tools:text="Born: Jan 30, 1974\nHaverfordwest, Wales" />
 
                 </LinearLayout>
+
+                <!-- Right Profile Photo Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_person_profile"
+                    android:layout_width="120dp"
+                    android:layout_height="170dp"
+                    android:layout_marginStart="16dp"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="6dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/iv_person_profile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:background="@color/movieed_surface_elevated"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+
+                </com.google.android.material.card.MaterialCardView>
+
             </LinearLayout>
 
+            <!-- BIOGRAPHY -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:letterSpacing="0.12"
                 android:text="BIOGRAPHY"
                 android:textColor="@color/movieed_primary"
                 android:textSize="12sp"
@@ -97,17 +132,20 @@
                 android:id="@+id/tv_read_more"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="6dp"
                 android:text="Read More"
-                android:textColor="@color/movieed_primary"
+                android:textColor="@color/movieed_accent"
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
 
+            <!-- KNOWN FOR -->
             <TextView
+                android:id="@+id/tv_known_for_header"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="28dp"
+                android:letterSpacing="0.12"
                 android:text="KNOWN FOR"
                 android:textColor="@color/movieed_primary"
                 android:textSize="12sp"
@@ -119,14 +157,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_person_credit" />
+                tools:listitem="@layout/item_home_movie_card" />
 
+            <!-- FILMOGRAPHY -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="28dp"
+                android:letterSpacing="0.12"
                 android:text="FILMOGRAPHY"
                 android:textColor="@color/movieed_primary"
                 android:textSize="12sp"
@@ -146,12 +186,13 @@
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:text="Show All Filmography"
-                android:textColor="@color/movieed_primary"
+                android:textColor="@color/movieed_accent"
                 android:visibility="gone" />
 
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

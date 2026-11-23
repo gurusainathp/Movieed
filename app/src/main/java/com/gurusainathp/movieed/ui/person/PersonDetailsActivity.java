@@ -10,18 +10,19 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.gurusainathp.movieed.R;
+import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbPersonCastCreditDto;
 import com.gurusainathp.movieed.domain.model.Movie;
+import com.gurusainathp.movieed.ui.HomeMovieAdapter;
 import com.gurusainathp.movieed.ui.movie.MovieDetailsActivity;
-import com.gurusainathp.movieed.ui.search.SearchMovieAdapter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class PersonDetailsActivity extends AppCompatActivity {
@@ -40,14 +41,16 @@ public class PersonDetailsActivity extends AppCompatActivity {
     private int personId;
     private String personName;
 
+    private ImageView ivBackdrop;
     private ImageView ivProfile;
     private TextView tvName;
+    private TextView tvDepartment;
     private TextView tvInfo;
     private TextView tvBiography;
     private TextView tvReadMore;
 
     private RecyclerView rvKnownFor;
-    private PersonFilmographyAdapter knownForAdapter;
+    private HomeMovieAdapter knownForAdapter;
 
     private RecyclerView rvFilmography;
     private PersonFilmographyAdapter filmographyAdapter;
@@ -67,8 +70,10 @@ public class PersonDetailsActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(PersonViewModel.class);
 
+        ivBackdrop = findViewById(R.id.iv_person_backdrop);
         ivProfile = findViewById(R.id.iv_person_profile);
         tvName = findViewById(R.id.tv_person_name);
+        tvDepartment = findViewById(R.id.tv_person_department);
         tvInfo = findViewById(R.id.tv_person_info);
         tvBiography = findViewById(R.id.tv_person_biography);
         tvReadMore = findViewById(R.id.tv_read_more);
@@ -90,16 +95,22 @@ public class PersonDetailsActivity extends AppCompatActivity {
 
         tvName.setText(personName != null ? personName : "");
 
-        knownForAdapter = new PersonFilmographyAdapter(credit -> {
-            boolean isTv = "tv".equals(credit.getMediaType());
-            MovieDetailsActivity.launch(this, credit.getId(), credit.getTitle(), credit.getPosterPath(), isTv);
+        knownForAdapter = new HomeMovieAdapter(movie -> {
+            if (movie != null) {
+                boolean isTv = "tv".equals(movie.getMediaType());
+                MovieDetailsActivity.launch(this, movie.getId(), movie.getTitle(), movie.getPosterPath(), isTv);
+            }
         });
+        rvKnownFor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvKnownFor.setAdapter(knownForAdapter);
 
         filmographyAdapter = new PersonFilmographyAdapter(credit -> {
-            boolean isTv = "tv".equals(credit.getMediaType());
-            MovieDetailsActivity.launch(this, credit.getId(), credit.getTitle(), credit.getPosterPath(), isTv);
+            if (credit != null) {
+                boolean isTv = "tv".equals(credit.getMediaType());
+                MovieDetailsActivity.launch(this, credit.getId(), credit.getTitle(), credit.getPosterPath(), isTv);
+            }
         });
+        rvFilmography.setLayoutManager(new LinearLayoutManager(this));
         rvFilmography.setAdapter(filmographyAdapter);
 
         btnShowAll.setOnClickListener(v -> {
@@ -119,6 +130,13 @@ public class PersonDetailsActivity extends AppCompatActivity {
         viewModel.getPersonDetails().observe(this, dto -> {
             if (dto != null) {
                 tvName.setText(dto.getName());
+
+                if (dto.getKnownForDepartment() != null && !dto.getKnownForDepartment().isEmpty()) {
+                    tvDepartment.setText(formatDepartment(dto.getKnownForDepartment()));
+                    tvDepartment.setVisibility(View.VISIBLE);
+                } else {
+                    tvDepartment.setVisibility(View.GONE);
+                }
 
                 StringBuilder info = new StringBuilder();
                 if (dto.getBirthday() != null && !dto.getBirthday().isEmpty()) {
@@ -143,12 +161,33 @@ public class PersonDetailsActivity extends AppCompatActivity {
                             .placeholder(R.color.movieed_surface_elevated)
                             .into(ivProfile);
                 }
+
+                // Known For from TMDB DTO if available
+                if (dto.getKnownFor() != null && !dto.getKnownFor().isEmpty()) {
+                    List<Movie> knownForList = new ArrayList<>();
+                    for (TmdbMovieDto movieDto : dto.getKnownFor()) {
+                        if (movieDto != null && movieDto.getPosterPath() != null) {
+                            knownForList.add(new Movie(
+                                    movieDto.getId(),
+                                    movieDto.getTitle(),
+                                    movieDto.getOverview(),
+                                    movieDto.getReleaseDate(),
+                                    movieDto.getPosterPath(),
+                                    movieDto.getBackdropPath(),
+                                    movieDto.getVoteAverage(),
+                                    movieDto.getMediaType() != null ? movieDto.getMediaType() : "movie"
+                            ));
+                        }
+                    }
+                    if (!knownForList.isEmpty()) {
+                        knownForAdapter.setMovies(knownForList);
+                    }
+                }
             }
         });
 
         viewModel.getFilmography().observe(this, list -> {
             if (list != null) {
-                // Sort reverse chronological by release date
                 fullCreditsList = new ArrayList<>(list);
                 fullCreditsList.sort((o1, o2) -> {
                     String d1 = o1.getReleaseDate() != null ? o1.getReleaseDate() : "";
@@ -156,16 +195,41 @@ public class PersonDetailsActivity extends AppCompatActivity {
                     return d2.compareTo(d1);
                 });
 
-                // Known For: Top 5 by vote average (highest rated first)
-                List<TmdbPersonCastCreditDto> sortedByRating = new ArrayList<>(fullCreditsList);
-                sortedByRating.sort((o1, o2) -> Double.compare(o2.getVoteAverage(), o1.getVoteAverage()));
-
-                List<TmdbPersonCastCreditDto> knownForCredits = new ArrayList<>();
-                int topCount = Math.min(5, sortedByRating.size());
-                for (int i = 0; i < topCount; i++) {
-                    knownForCredits.add(sortedByRating.get(i));
+                // Load movie backdrop for the person from their highest rated film
+                for (TmdbPersonCastCreditDto credit : fullCreditsList) {
+                    if (credit != null && credit.getBackdropPath() != null && !credit.getBackdropPath().isEmpty()) {
+                        Glide.with(this)
+                                .load("https://image.tmdb.org/t/p/w780" + credit.getBackdropPath())
+                                .placeholder(R.color.movieed_surface_elevated)
+                                .into(ivBackdrop);
+                        break;
+                    }
                 }
-                knownForAdapter.setCredits(knownForCredits);
+
+                // If TMDB person DTO knownFor was empty, fallback to top 5 rated films
+                if (knownForAdapter.getItemCount() == 0) {
+                    List<TmdbPersonCastCreditDto> sortedByRating = new ArrayList<>(fullCreditsList);
+                    sortedByRating.sort((o1, o2) -> Double.compare(o2.getVoteAverage(), o1.getVoteAverage()));
+
+                    List<Movie> knownForFallback = new ArrayList<>();
+                    int topCount = Math.min(6, sortedByRating.size());
+                    for (int i = 0; i < topCount; i++) {
+                        TmdbPersonCastCreditDto credit = sortedByRating.get(i);
+                        if (credit != null && credit.getPosterPath() != null) {
+                            knownForFallback.add(new Movie(
+                                    credit.getId(),
+                                    credit.getTitle(),
+                                    credit.getOverview(),
+                                    credit.getReleaseDate(),
+                                    credit.getPosterPath(),
+                                    credit.getBackdropPath(),
+                                    credit.getVoteAverage(),
+                                    credit.getMediaType() != null ? credit.getMediaType() : "movie"
+                            ));
+                        }
+                    }
+                    knownForAdapter.setMovies(knownForFallback);
+                }
 
                 displayFilmography();
             }
@@ -176,6 +240,21 @@ public class PersonDetailsActivity extends AppCompatActivity {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private String formatDepartment(String department) {
+        if (department == null) return "";
+        switch (department.trim().toLowerCase()) {
+            case "acting": return "Actor";
+            case "directing": return "Director";
+            case "writing": return "Writer";
+            case "production": return "Producer";
+            case "editing": return "Editor";
+            case "camera": return "Cinematographer";
+            case "sound":
+            case "music": return "Composer";
+            default: return department;
+        }
     }
 
     private void displayFilmography() {

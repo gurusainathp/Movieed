@@ -2,6 +2,8 @@ package com.gurusainathp.movieed.data.remote.dto;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class TmdbPersonDto {
 
     @SerializedName("id")
@@ -22,10 +24,18 @@ public class TmdbPersonDto {
     @SerializedName("profile_path")
     private String profilePath;
 
+    @SerializedName("known_for_department")
+    private String knownForDepartment;
+
+    @SerializedName("known_for")
+    private List<TmdbMovieDto> knownFor;
+
     public int getId() { return id; }
     public String getName() { return name; }
     public String getBiography() { return biography; }
     public String getBirthday() { return birthday; }
     public String getPlaceOfBirth() { return placeOfBirth; }
     public String getProfilePath() { return profilePath; }
+    public String getKnownForDepartment() { return knownForDepartment; }
+    public List<TmdbMovieDto> getKnownFor() { return knownFor; }
 }
