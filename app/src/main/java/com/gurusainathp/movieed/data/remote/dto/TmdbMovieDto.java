@@ -45,7 +45,8 @@ public class TmdbMovieDto {
     @SerializedName("original_language")
     private String originalLanguage;
 
-    public TmdbMovieDto() {}
+    public TmdbMovieDto() {
+    }
 
     public TmdbMovieDto(int id, String title, String overview, String releaseDate,
                         String posterPath, String backdropPath, double voteAverage, String mediaType) {
@@ -68,15 +69,47 @@ public class TmdbMovieDto {
         this.originalLanguage = originalLanguage;
     }
 
-    public int getId() { return id; }
-    public String getTitle() { return title != null ? title : name; }
-    public String getOverview() { return overview; }
-    public String getReleaseDate() { return releaseDate != null ? releaseDate : firstAirDate; }
-    public String getPosterPath() { return posterPath; }
-    public String getBackdropPath() { return backdropPath; }
-    public double getVoteAverage() { return voteAverage; }
-    public int getVoteCount() { return voteCount; }
-    public String getMediaType() { return mediaType; }
-    public List<Integer> getGenreIds() { return genreIds; }
-    public String getOriginalLanguage() { return originalLanguage; }
+    public int getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title != null ? title : name;
+    }
+
+    public String getOverview() {
+        return overview;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate != null ? releaseDate : firstAirDate;
+    }
+
+    public String getPosterPath() {
+        return posterPath;
+    }
+
+    public String getBackdropPath() {
+        return backdropPath;
+    }
+
+    public double getVoteAverage() {
+        return voteAverage;
+    }
+
+    public int getVoteCount() {
+        return voteCount;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public List<Integer> getGenreIds() {
+        return genreIds;
+    }
+
+    public String getOriginalLanguage() {
+        return originalLanguage;
+    }
 }
