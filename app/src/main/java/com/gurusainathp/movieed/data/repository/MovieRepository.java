@@ -85,6 +85,9 @@ public class MovieRepository {
             movieDao.insert(movie);
             long now = System.currentTimeMillis();
             if (existingLog != null) {
+                if (existingLog.isWatchlist() && existingLog.getReaction() == null && reaction != null) {
+                    existingLog.setWatchlist(false);
+                }
                 existingLog.setReaction(reaction);
                 existingLog.setUpdatedAt(now);
 
