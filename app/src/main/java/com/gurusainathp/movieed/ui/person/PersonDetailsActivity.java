@@ -206,15 +206,19 @@ public class PersonDetailsActivity extends AppCompatActivity {
                     }
                 }
 
-                // If TMDB person DTO knownFor was empty, fallback to top 5 rated films
+                // If TMDB person DTO knownFor was empty, rank by popularity & vote count weight
                 if (knownForAdapter.getItemCount() == 0) {
-                    List<TmdbPersonCastCreditDto> sortedByRating = new ArrayList<>(fullCreditsList);
-                    sortedByRating.sort((o1, o2) -> Double.compare(o2.getVoteAverage(), o1.getVoteAverage()));
+                    List<TmdbPersonCastCreditDto> sortedByPopularity = new ArrayList<>(fullCreditsList);
+                    sortedByPopularity.sort((o1, o2) -> {
+                        double s1 = o1.getVoteAverage() * Math.log10(Math.max(1, o1.getVoteCount()));
+                        double s2 = o2.getVoteAverage() * Math.log10(Math.max(1, o2.getVoteCount()));
+                        return Double.compare(s2, s1);
+                    });
 
                     List<Movie> knownForFallback = new ArrayList<>();
-                    int topCount = Math.min(6, sortedByRating.size());
+                    int topCount = Math.min(8, sortedByPopularity.size());
                     for (int i = 0; i < topCount; i++) {
-                        TmdbPersonCastCreditDto credit = sortedByRating.get(i);
+                        TmdbPersonCastCreditDto credit = sortedByPopularity.get(i);
                         if (credit != null && credit.getPosterPath() != null) {
                             knownForFallback.add(new Movie(
                                     credit.getId(),
