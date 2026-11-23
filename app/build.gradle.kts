@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.core.splashscreen)
 
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler)

@@ -28,6 +28,11 @@
 
     <style name="Theme.Movieed" parent="Base.Theme.Movieed" />
 
+    <style name="Theme.Movieed.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/movieed_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.Movieed</item>
+    </style>
+
     <!-- Bottom Navigation Active Indicator Style -->
     <style name="Widget.Movieed.BottomNavigationView.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">@color/movieed_surface_elevated</item>
