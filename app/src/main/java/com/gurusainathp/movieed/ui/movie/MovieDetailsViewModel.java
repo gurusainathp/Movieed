@@ -79,30 +79,11 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         return repository.getLogsForMovie(movieId);
     }
 
-    public void fetchMovieDetails(int tmdbId, boolean isTvPassed) {
-        if (isTvPassed) {
-            loadDetails(tmdbId, true);
-        } else {
-            // Intelligently check if it's a TV show or movie for items opened from Profile / Diary where media type is unknown
-            TmdbClient.getApiService().getTvDetails(tmdbId, BuildConfig.TMDB_API_KEY).enqueue(new Callback<TmdbMovieDto>() {
-                @Override
-                public void onResponse(@NonNull Call<TmdbMovieDto> call, @NonNull Response<TmdbMovieDto> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        loadDetails(tmdbId, true);
-                    } else {
-                        loadDetails(tmdbId, false);
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<TmdbMovieDto> call, @NonNull Throwable t) {
-                    loadDetails(tmdbId, false);
-                }
-            });
-        }
+    public void fetchMovieDetails(int tmdbId, boolean isTv) {
+        loadDetails(tmdbId, isTv, true);
     }
 
-    private void loadDetails(int tmdbId, boolean isTv) {
+    private void loadDetails(int tmdbId, boolean isTv, boolean allowFallback) {
         Call<TmdbMovieDto> detailsCall = isTv ?
                 TmdbClient.getApiService().getTvDetails(tmdbId, BuildConfig.TMDB_API_KEY) :
                 TmdbClient.getApiService().getMovieDetails(tmdbId, BuildConfig.TMDB_API_KEY);
@@ -112,6 +93,8 @@ public class MovieDetailsViewModel extends AndroidViewModel {
             public void onResponse(@NonNull Call<TmdbMovieDto> call, @NonNull Response<TmdbMovieDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     tmdbMovieDetails.setValue(response.body());
+                } else if (allowFallback) {
+                    loadDetails(tmdbId, !isTv, false);
                 } else {
                     errorMessage.setValue("Failed to load details (" + response.code() + ")");
                 }
@@ -119,7 +102,11 @@ public class MovieDetailsViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(@NonNull Call<TmdbMovieDto> call, @NonNull Throwable t) {
-                errorMessage.setValue("Error: " + t.getLocalizedMessage());
+                if (allowFallback) {
+                    loadDetails(tmdbId, !isTv, false);
+                } else {
+                    errorMessage.setValue("Error: " + t.getLocalizedMessage());
+                }
             }
         });
 
