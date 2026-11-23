@@ -94,7 +94,7 @@
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
                     app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="14dp"
+                    app:cardCornerRadius="12dp"
                     app:cardElevation="4dp"
                     app:strokeColor="@color/movieed_border"
                     app:strokeWidth="1dp">
@@ -103,23 +103,23 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="8dp"
                         android:gravity="center_horizontal">
 
                         <com.google.android.material.imageview.ShapeableImageView
                             android:id="@+id/iv_explore_reason_poster"
-                            android:layout_width="80dp"
-                            android:layout_height="110dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            android:contentDescription="@null"
                             android:scaleType="centerCrop"
                             android:background="@color/movieed_surface_elevated"
-                            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
                             tools:src="@tools:sample/backgrounds/scenic" />
 
                         <TextView
                             android:id="@+id/tv_explore_reason_text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:padding="8dp"
                             android:gravity="center"
                             android:maxLines="3"
                             android:ellipsize="end"
