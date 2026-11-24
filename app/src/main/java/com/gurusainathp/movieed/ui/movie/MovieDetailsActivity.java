@@ -45,6 +45,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private int tmdbId;
     private String movieTitle;
     private String posterPath;
+    private boolean isTv;
 
     private ImageView ivBackdrop;
     private ImageView ivPoster;
@@ -77,7 +78,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         tmdbId = getIntent().getIntExtra(EXTRA_TMDB_ID, -1);
         movieTitle = getIntent().getStringExtra(EXTRA_TITLE);
         posterPath = getIntent().getStringExtra(EXTRA_POSTER);
-        boolean isTv = getIntent().getBooleanExtra(EXTRA_IS_TV, false);
+        isTv = getIntent().getBooleanExtra(EXTRA_IS_TV, false);
 
         viewModel = new ViewModelProvider(this).get(MovieDetailsViewModel.class);
 
@@ -120,7 +121,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             if (currentMovieDto == null && tmdbId != -1) {
                 currentMovieDto = new TmdbMovieDto();
             }
-            viewModel.toggleWatchlist(currentMovieDto, currentLogEntity);
+            viewModel.toggleWatchlist(currentMovieDto, isTv, currentLogEntity);
         });
 
         btnActionRate.setOnClickListener(v -> openReactionPicker());
@@ -245,12 +246,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         dialog.setOnReactionSelectedListener(new ReactionPickerBottomSheetDialogFragment.OnReactionSelectedListener() {
             @Override
             public void onReactionSelected(String reaction) {
-                viewModel.saveReaction(currentMovieDto, reaction, currentLogEntity);
+                viewModel.saveReaction(currentMovieDto, reaction, isTv, currentLogEntity);
             }
 
             @Override
             public void onReactionCleared() {
-                viewModel.saveReaction(currentMovieDto, null, currentLogEntity);
+                viewModel.saveReaction(currentMovieDto, null, isTv, currentLogEntity);
             }
         });
         dialog.show(getSupportFragmentManager(), "ReactionPicker");

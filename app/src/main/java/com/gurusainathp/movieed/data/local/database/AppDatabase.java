@@ -14,7 +14,7 @@ import com.gurusainathp.movieed.data.local.dao.MovieLogDao;
 import com.gurusainathp.movieed.data.local.entity.MovieEntity;
 import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 
-@Database(entities = {MovieEntity.class, MovieLogEntity.class}, version = 5, exportSchema = false)
+@Database(entities = {MovieEntity.class, MovieLogEntity.class}, version = 6, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "movieed_database";
@@ -38,6 +38,13 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE movies ADD COLUMN isTv INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
     public static AppDatabase getInstance(final Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
@@ -47,7 +54,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             DATABASE_NAME
                     )
-                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build();
                 }
             }

@@ -226,7 +226,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
         });
     }
 
-    public void toggleWatchlist(TmdbMovieDto dto, MovieLogEntity existingLog) {
+    public void toggleWatchlist(TmdbMovieDto dto, boolean isTv, MovieLogEntity existingLog) {
         if (dto == null) return;
         MovieEntity movieEntity = new MovieEntity(
                 dto.getId(),
@@ -241,10 +241,11 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 null,
                 dto.getVoteAverage()
         );
+        movieEntity.setTv(isTv);
         repository.toggleWatchlist(movieEntity, existingLog);
     }
 
-    public void saveReaction(TmdbMovieDto dto, String reaction, MovieLogEntity existingLog) {
+    public void saveReaction(TmdbMovieDto dto, String reaction, boolean isTv, MovieLogEntity existingLog) {
         if (dto == null) return;
         MovieEntity movieEntity = new MovieEntity(
                 dto.getId(),
@@ -259,6 +260,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 null,
                 dto.getVoteAverage()
         );
+        movieEntity.setTv(isTv);
         repository.saveReaction(movieEntity, reaction, existingLog);
     }
 

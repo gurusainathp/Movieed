@@ -204,8 +204,8 @@ public class ProfileViewModel extends AndroidViewModel {
             return;
         }
 
-        // Compute Decade Stats & Movies
-        computeDecadeStats(logs);
+        // Compute Decade Stats & Movies (only watched movies and shows, excluding watchlist)
+        computeDecadeStats(watchedLogs);
 
         // Fetch credits for all watched movies asynchronously, then calculate favorites
         AtomicInteger pendingCalls = new AtomicInteger(watchedLogs.size());
@@ -243,11 +243,11 @@ public class ProfileViewModel extends AndroidViewModel {
         }
     }
 
-    private void computeDecadeStats(List<MovieLogWithDetails> logs) {
+    private void computeDecadeStats(List<MovieLogWithDetails> watchedLogs) {
         Map<String, Float> decadeWeights = new HashMap<>();
         Map<String, List<Movie>> decadeMoviesMap = new HashMap<>();
 
-        for (MovieLogWithDetails item : logs) {
+        for (MovieLogWithDetails item : watchedLogs) {
             if (item == null || item.movie == null) continue;
 
             String releaseDate = item.movie.getReleaseDate();
@@ -260,6 +260,8 @@ public class ProfileViewModel extends AndroidViewModel {
                     float weight = (item.log != null && item.log.getReaction() != null) ? getReactionVibeWeight(item.log.getReaction()) : 0.5f;
                     decadeWeights.put(decadeStr, decadeWeights.getOrDefault(decadeStr, 0f) + weight);
 
+                    String mediaType = item.movie.isTv() ? "tv" : "movie";
+
                     List<Movie> mList = decadeMoviesMap.computeIfAbsent(decadeStr, k -> new ArrayList<>());
                     mList.add(new Movie(
                             item.movie.getTmdbId(),
@@ -269,7 +271,7 @@ public class ProfileViewModel extends AndroidViewModel {
                             item.movie.getPosterPath(),
                             item.movie.getBackdropPath(),
                             item.movie.getVoteAverage(),
-                            "movie"
+                            mediaType
                     ));
                 } catch (Exception ignored) {}
             }

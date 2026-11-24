@@ -21,10 +21,11 @@ public class MovieEntity {
     private String genreIds;
     private String originalLanguage;
     private double voteAverage;
+    private boolean isTv;
 
     public MovieEntity(int tmdbId, String title, String overview, String releaseDate,
                        String posterPath, String backdropPath, int runtime, long lastUpdated,
-                       String genreIds, String originalLanguage, double voteAverage) {
+                       String genreIds, String originalLanguage, double voteAverage, boolean isTv) {
         this.tmdbId = tmdbId;
         this.title = title;
         this.overview = overview;
@@ -36,19 +37,27 @@ public class MovieEntity {
         this.genreIds = genreIds;
         this.originalLanguage = originalLanguage;
         this.voteAverage = voteAverage;
+        this.isTv = isTv;
+    }
+
+    @Ignore
+    public MovieEntity(int tmdbId, String title, String overview, String releaseDate,
+                       String posterPath, String backdropPath, int runtime, long lastUpdated,
+                       String genreIds, String originalLanguage, double voteAverage) {
+        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, genreIds, originalLanguage, voteAverage, false);
     }
 
     @Ignore
     public MovieEntity(int tmdbId, String title, String overview, String releaseDate,
                        String posterPath, String backdropPath, int runtime, long lastUpdated,
                        String genreIds, String originalLanguage) {
-        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, genreIds, originalLanguage, 0.0);
+        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, genreIds, originalLanguage, 0.0, false);
     }
 
     @Ignore
     public MovieEntity(int tmdbId, String title, String overview, String releaseDate,
                        String posterPath, String backdropPath, int runtime, long lastUpdated) {
-        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, null, null, 0.0);
+        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, null, null, 0.0, false);
     }
 
     public int getTmdbId() { return tmdbId; }
@@ -83,6 +92,9 @@ public class MovieEntity {
 
     public double getVoteAverage() { return voteAverage; }
     public void setVoteAverage(double voteAverage) { this.voteAverage = voteAverage; }
+
+    public boolean isTv() { return isTv; }
+    public void setTv(boolean tv) { isTv = tv; }
 
     @Override
     public boolean equals(Object o) {
