@@ -235,7 +235,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 dto.getReleaseDate(),
                 dto.getPosterPath(),
                 dto.getBackdropPath(),
-                0,
+                dto.getRuntime(),
                 System.currentTimeMillis()
         );
         repository.toggleWatchlist(movieEntity, existingLog);
@@ -250,7 +250,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 dto.getReleaseDate(),
                 dto.getPosterPath(),
                 dto.getBackdropPath(),
-                0,
+                dto.getRuntime(),
                 System.currentTimeMillis()
         );
         repository.saveReaction(movieEntity, reaction, existingLog);

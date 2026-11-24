@@ -45,6 +45,15 @@ public class TmdbMovieDto {
     @SerializedName("original_language")
     private String originalLanguage;
 
+    @SerializedName("runtime")
+    private int runtime;
+
+    @SerializedName("episode_run_time")
+    private List<Integer> episodeRunTime;
+
+    @SerializedName("number_of_episodes")
+    private int numberOfEpisodes;
+
     public TmdbMovieDto() {
     }
 
@@ -111,5 +120,21 @@ public class TmdbMovieDto {
 
     public String getOriginalLanguage() {
         return originalLanguage;
+    }
+
+    public int getRuntime() {
+        if (runtime > 0) {
+            return runtime;
+        }
+        if (episodeRunTime != null && !episodeRunTime.isEmpty()) {
+            int total = 0;
+            for (Integer t : episodeRunTime) {
+                if (t != null && t > 0) {
+                    total += t;
+                }
+            }
+            return total;
+        }
+        return 0;
     }
 }

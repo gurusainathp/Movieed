@@ -29,7 +29,7 @@ public class ProfileViewModel extends AndroidViewModel {
 
         public String getFormattedWatchTime() {
             if (totalRuntimeHours == 0) return "0 hrs";
-            return totalRuntimeHours + " hrs";
+            return "~" + totalRuntimeHours + " hrs";
         }
     }
 
@@ -45,7 +45,7 @@ public class ProfileViewModel extends AndroidViewModel {
                 return new ProfileStats(0, 0, new HashMap<>());
             }
 
-            int count = logs.size();
+            int count = 0;
             int totalRuntimeMinutes = 0;
             Map<String, Integer> reactionCounts = new HashMap<>();
             reactionCounts.put("LOVE", 0);
@@ -55,17 +55,21 @@ public class ProfileViewModel extends AndroidViewModel {
             reactionCounts.put("HATE", 0);
 
             for (MovieLogWithDetails item : logs) {
-                String reaction = item.log.getReaction();
-                if (reaction != null && reactionCounts.containsKey(reaction)) {
-                    reactionCounts.put(reaction, reactionCounts.get(reaction) + 1);
-                }
+                if (item.log == null) continue;
 
-                if (item.movie != null && item.movie.getRuntime() > 0) {
-                    totalRuntimeMinutes += item.movie.getRuntime();
+                String reaction = item.log.getReaction();
+                if (reaction != null && !reaction.isEmpty()) {
+                    count++;
+                    if (reactionCounts.containsKey(reaction)) {
+                        reactionCounts.put(reaction, reactionCounts.get(reaction) + 1);
+                    }
+
+                    int runtime = (item.movie != null && item.movie.getRuntime() > 0) ? item.movie.getRuntime() : 110;
+                    totalRuntimeMinutes += runtime;
                 }
             }
 
-            int hours = totalRuntimeMinutes / 60;
+            int hours = Math.max(0, Math.round((float) totalRuntimeMinutes / 60f));
 
             return new ProfileStats(count, hours, reactionCounts);
         });
