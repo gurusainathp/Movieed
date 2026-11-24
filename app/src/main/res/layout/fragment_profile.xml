@@ -657,7 +657,7 @@
                             android:layout_height="1dp"
                             android:background="@color/movieed_border" />
 
-                        <!-- Genre -->
+                        <!-- Composer -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -669,12 +669,12 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Genre"
+                                android:text="Composer"
                                 android:textColor="@color/movieed_text_secondary"
                                 android:textSize="13sp" />
 
                             <TextView
-                                android:id="@+id/tv_fav_genre"
+                                android:id="@+id/tv_fav_composer"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1.6"
@@ -684,7 +684,7 @@
                                 android:textColor="@color/movieed_text_primary"
                                 android:textSize="14sp"
                                 android:textStyle="bold"
-                                tools:text="Drama" />
+                                tools:text="Hans Zimmer" />
                         </LinearLayout>
 
                         <View
@@ -759,95 +759,6 @@
                             android:layout_marginTop="12dp"
                             app:chipSpacingHorizontal="8dp"
                             app:chipSpacingVertical="8dp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- ============ Monthly activity ============ -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="12dp"
-                    app:strokeColor="@color/movieed_border"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="MONTHLY ACTIVITY"
-                                android:textColor="@color/movieed_primary"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-
-                            <!-- Tap to pick a year (popup menu / bottom sheet) -->
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chip_year_filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="12sp"
-                                app:chipBackgroundColor="@color/movieed_surface_elevated"
-                                app:chipStrokeColor="@color/movieed_border"
-                                app:chipStrokeWidth="1dp"
-                                tools:text="2026 ▾" />
-                        </LinearLayout>
-
-                        <com.gurusainathp.movieed.ui.profile.MonthlyBarChartView
-                            android:id="@+id/chart_monthly_activity"
-                            android:layout_width="match_parent"
-                            android:layout_height="140dp"
-                            android:layout_marginTop="12dp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- ============ Recently watched ============ -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="12dp"
-                    app:strokeColor="@color/movieed_border"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="RECENTLY WATCHED"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_recent_films"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:nestedScrollingEnabled="false"
-                            android:orientation="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            tools:itemCount="5"
-                            tools:listitem="@layout/item_home_movie_card" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
