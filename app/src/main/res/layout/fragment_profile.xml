@@ -334,21 +334,20 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
                             android:text="REACTION BREAKDOWN"
                             android:textColor="@color/movieed_primary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
-                        <!-- Vibe headline, set in code from the dominant reaction -->
                         <TextView
                             android:id="@+id/tv_taste_summary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:textColor="@color/movieed_text_primary"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            tools:text="You mostly love what you watch" />
+                            android:layout_marginTop="4dp"
+                            android:text="Your emotional distribution across every logged story"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="12sp" />
 
                         <!-- Love Row -->
                         <LinearLayout
