@@ -76,6 +76,11 @@ public class ProfileFragment extends Fragment {
         tabLayout = view.findViewById(R.id.tl_profile_diary_tabs);
         viewPager = view.findViewById(R.id.vp_profile_diary_pager);
 
+        MonthlyBarChartView chartMonthly = view.findViewById(R.id.chart_monthly_activity);
+        if (chartMonthly != null) {
+            chartMonthly.setMonthlyData(new int[]{2, 4, 6, 3, 5, 8, 4, 7, 5, 9, 6, 4});
+        }
+
         // Setup Diary Pager inside ProfileFragment
         DiaryPagerAdapter diaryPagerAdapter = new DiaryPagerAdapter(this);
         viewPager.setAdapter(diaryPagerAdapter);

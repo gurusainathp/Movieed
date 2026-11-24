@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,13 +13,14 @@
         android:background="@color/movieed_background"
         app:elevation="0dp">
 
+        <!-- NOTE: "snap" removed. With a header this tall it would jump the header
+             fully open/closed every time the finger lifts. -->
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/collapsing_profile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <!-- Profile Stats & Breakdown (Collapses on scroll up) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -30,24 +30,80 @@
                 android:paddingBottom="8dp"
                 app:layout_collapseMode="none">
 
-                <TextView
-                    android:id="@+id/tv_profile_header"
-                    android:layout_width="wrap_content"
+                <!-- ============ Header: avatar, name, member since, settings ============ -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/nav_diary"
-                    android:textColor="@color/movieed_text_primary"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        app:cardBackgroundColor="@color/movieed_surface_elevated"
+                        app:cardCornerRadius="28dp"
+                        app:strokeColor="@color/movieed_primary"
+                        app:strokeWidth="2dp">
+
+                        <TextView
+                            android:id="@+id/tv_avatar_initial"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            tools:text="A" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <!-- Same id as before; now shows the user's display name -->
+                        <TextView
+                            android:id="@+id/tv_profile_header"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/movieed_text_primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            tools:text="Alex" />
+
+                        <TextView
+                            android:id="@+id/tv_member_since"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="12sp"
+                            tools:text="Member since Mar 2026" />
+                    </LinearLayout>
+
+                    <!-- Swap for your own gear icon (e.g. @drawable/ic_settings) if you have one -->
+                    <ImageButton
+                        android:id="@+id/btn_settings"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Settings"
+                        android:src="@android:drawable/ic_menu_preferences"
+                        app:tint="@color/movieed_text_primary" />
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="8dp"
                     android:text="Your story, one film at a time."
                     android:textColor="@color/movieed_text_secondary"
                     android:textSize="14sp" />
 
+                <!-- ============ Stats row 1 (unchanged) ============ -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -128,9 +184,138 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
-
                 </LinearLayout>
 
+                <!-- ============ Stats row 2: this month + streak ============ -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="@color/movieed_surface"
+                        app:cardCornerRadius="12dp"
+                        app:strokeColor="@color/movieed_border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tv_stat_this_month"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/movieed_primary"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                tools:text="5" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="THIS MONTH"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="@color/movieed_surface"
+                        app:cardCornerRadius="12dp"
+                        app:strokeColor="@color/movieed_border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/tv_stat_streak"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/movieed_primary"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                tools:text="3 wks" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="WATCH STREAK"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- ============ Favorite films (pinned posters) ============ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="FAVORITE FILMS"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Pin up to four films that define you"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="12sp" />
+
+                        <!-- Item layout: item_poster_small.xml (provided separately) -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_favorite_films"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:nestedScrollingEnabled="false"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:itemCount="4"
+                            tools:listitem="@layout/item_home_movie_card" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============ Reaction breakdown (average rating removed) ============ -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -153,6 +338,17 @@
                             android:textColor="@color/movieed_primary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
+
+                        <!-- Vibe headline, set in code from the dominant reaction -->
+                        <TextView
+                            android:id="@+id/tv_taste_summary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="@color/movieed_text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            tools:text="You mostly love what you watch" />
 
                         <!-- Love Row -->
                         <LinearLayout
@@ -332,11 +528,335 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- ============ All-time favorites: people + other favorites ============ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ALL-TIME FAVORITES"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <!-- Actor -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:gravity="center_vertical"
+                            android:minHeight="44dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Actor"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/tv_fav_actor"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.6"
+                                android:ellipsize="end"
+                                android:gravity="end"
+                                android:maxLines="1"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                tools:text="Name · 4 films" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/movieed_border" />
+
+                        <!-- Actress -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:minHeight="44dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Actress"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/tv_fav_actress"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.6"
+                                android:ellipsize="end"
+                                android:gravity="end"
+                                android:maxLines="1"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                tools:text="Name · 3 films" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/movieed_border" />
+
+                        <!-- Director -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:minHeight="44dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Director"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/tv_fav_director"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.6"
+                                android:ellipsize="end"
+                                android:gravity="end"
+                                android:maxLines="1"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                tools:text="Name · 2 films" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/movieed_border" />
+
+                        <!-- Genre -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:minHeight="44dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Genre"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/tv_fav_genre"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.6"
+                                android:ellipsize="end"
+                                android:gravity="end"
+                                android:maxLines="1"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                tools:text="Drama" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/movieed_border" />
+
+                        <!-- Decade -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:minHeight="44dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Decade"
+                                android:textColor="@color/movieed_text_secondary"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/tv_fav_decade"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.6"
+                                android:ellipsize="end"
+                                android:gravity="end"
+                                android:maxLines="1"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                tools:text="2010s" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============ Top genres ============ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TOP GENRES"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <!-- Add one Chip per genre in code, e.g. "Drama 40%".
+                             Style each: chipBackgroundColor = movieed_surface_elevated,
+                             chipStrokeColor = movieed_border, text = movieed_text_primary -->
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/cg_top_genres"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            app:chipSpacingHorizontal="8dp"
+                            app:chipSpacingVertical="8dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============ Monthly activity ============ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="MONTHLY ACTIVITY"
+                                android:textColor="@color/movieed_primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <!-- Tap to pick a year (popup menu / bottom sheet) -->
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_year_filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="12sp"
+                                app:chipBackgroundColor="@color/movieed_surface_elevated"
+                                app:chipStrokeColor="@color/movieed_border"
+                                app:chipStrokeWidth="1dp"
+                                tools:text="2026 ▾" />
+                        </LinearLayout>
+
+                        <com.gurusainathp.movieed.ui.profile.MonthlyBarChartView
+                            android:id="@+id/chart_monthly_activity"
+                            android:layout_width="match_parent"
+                            android:layout_height="140dp"
+                            android:layout_marginTop="12dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============ Recently watched ============ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RECENTLY WATCHED"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_recent_films"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:nestedScrollingEnabled="false"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:itemCount="5"
+                            tools:listitem="@layout/item_home_movie_card" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
             </LinearLayout>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-        <!-- Pinned Tabs for Watched & Watchlist (Remains visible as Diary header) -->
+        <!-- Pinned Tabs for Watched & Watchlist (unchanged) -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tl_profile_diary_tabs"
             android:layout_width="match_parent"
@@ -354,7 +874,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- ViewPager for Diary Tabs (Watched & Watchlist grids + Filter bars) -->
+    <!-- ViewPager for Diary Tabs (unchanged; watched / watchlist fetched separately) -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vp_profile_diary_pager"
         android:layout_width="match_parent"
