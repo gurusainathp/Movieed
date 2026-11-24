@@ -28,6 +28,8 @@ public class ProfileFragment extends Fragment {
 
     private TextView tvTotalFilms;
     private TextView tvWatchTime;
+    private TextView tvInWatchlist;
+    private TextView tvWatchedCount;
 
     private LinearProgressIndicator progressLove;
     private LinearProgressIndicator progressLike;
@@ -60,6 +62,8 @@ public class ProfileFragment extends Fragment {
 
         tvTotalFilms = view.findViewById(R.id.tv_stat_total_films);
         tvWatchTime = view.findViewById(R.id.tv_stat_watch_time);
+        tvInWatchlist = view.findViewById(R.id.tv_stat_in_watchlist);
+        tvWatchedCount = view.findViewById(R.id.tv_stat_watched_count);
 
         progressLove = view.findViewById(R.id.progress_reaction_love);
         progressLike = view.findViewById(R.id.progress_reaction_like);
@@ -101,6 +105,13 @@ public class ProfileFragment extends Fragment {
             if (stats != null) {
                 tvTotalFilms.setText(String.valueOf(stats.totalFilms));
                 tvWatchTime.setText(stats.getFormattedWatchTime());
+
+                if (tvInWatchlist != null) {
+                    tvInWatchlist.setText(String.valueOf(stats.inWatchlistCount));
+                }
+                if (tvWatchedCount != null) {
+                    tvWatchedCount.setText(String.valueOf(stats.watchedCount));
+                }
 
                 int maxCount = Math.max(1, stats.totalFilms);
                 Map<String, Integer> counts = stats.reactionCounts;

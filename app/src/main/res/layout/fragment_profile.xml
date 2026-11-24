@@ -141,7 +141,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="FILMS LOGGED"
+                                android:text="LOGGED"
                                 android:textColor="@color/movieed_text_secondary"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
@@ -212,7 +212,7 @@
                             android:padding="16dp">
 
                             <TextView
-                                android:id="@+id/tv_stat_this_month"
+                                android:id="@+id/tv_stat_in_watchlist"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/movieed_primary"
@@ -224,7 +224,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="THIS MONTH"
+                                android:text="IN WATCHLIST"
                                 android:textColor="@color/movieed_text_secondary"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
@@ -249,19 +249,19 @@
                             android:padding="16dp">
 
                             <TextView
-                                android:id="@+id/tv_stat_streak"
+                                android:id="@+id/tv_stat_watched_count"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/movieed_primary"
                                 android:textSize="26sp"
                                 android:textStyle="bold"
-                                tools:text="3 wks" />
+                                tools:text="14" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="WATCH STREAK"
+                                android:text="WATCHED"
                                 android:textColor="@color/movieed_text_secondary"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
