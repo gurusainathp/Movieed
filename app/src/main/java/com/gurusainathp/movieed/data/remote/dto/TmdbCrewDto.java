@@ -19,9 +19,13 @@ public class TmdbCrewDto {
     @SerializedName("profile_path")
     private String profilePath;
 
+    @SerializedName("gender")
+    private int gender;
+
     public int getId() { return id; }
     public String getName() { return name; }
     public String getJob() { return job; }
     public String getDepartment() { return department; }
     public String getProfilePath() { return profilePath; }
+    public int getGender() { return gender; }
 }

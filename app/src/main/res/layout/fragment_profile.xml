@@ -527,7 +527,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- ============ All-time favorites: people + other favorites ============ -->
+                <!-- ============ All-time favorites: people + decade ============ -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -543,184 +543,160 @@
                         android:orientation="vertical"
                         android:padding="16dp">
 
+                        <!-- Top Actors -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="ALL-TIME FAVORITES"
+                            android:letterSpacing="0.12"
+                            android:text="YOUR TOP ACTORS"
                             android:textColor="@color/movieed_primary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
-                        <!-- Actor -->
-                        <LinearLayout
+                        <TextView
+                            android:id="@+id/tv_empty_actors"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Log a few more films"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="13sp"
+                            android:visibility="gone" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_fav_actors"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:gravity="center_vertical"
-                            android:minHeight="44dp"
-                            android:orientation="horizontal">
+                            android:layout_marginTop="8dp"
+                            android:clipToPadding="false"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_cast" />
 
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Actor"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="13sp" />
+                        <!-- Top Actresses -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:letterSpacing="0.12"
+                            android:text="YOUR TOP ACTRESSES"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/tv_fav_actor"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.6"
-                                android:ellipsize="end"
-                                android:gravity="end"
-                                android:maxLines="1"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                tools:text="Name · 4 films" />
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/tv_empty_actresses"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Log a few more films"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="13sp"
+                            android:visibility="gone" />
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="@color/movieed_border" />
-
-                        <!-- Actress -->
-                        <LinearLayout
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_fav_actresses"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:minHeight="44dp"
-                            android:orientation="horizontal">
+                            android:layout_marginTop="8dp"
+                            android:clipToPadding="false"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_cast" />
 
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Actress"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="13sp" />
+                        <!-- Top Directors -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:letterSpacing="0.12"
+                            android:text="YOUR TOP DIRECTORS"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/tv_fav_actress"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.6"
-                                android:ellipsize="end"
-                                android:gravity="end"
-                                android:maxLines="1"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                tools:text="Name · 3 films" />
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/tv_empty_directors"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Log a few more films"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="13sp"
+                            android:visibility="gone" />
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="@color/movieed_border" />
-
-                        <!-- Director -->
-                        <LinearLayout
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_fav_directors"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:minHeight="44dp"
-                            android:orientation="horizontal">
+                            android:layout_marginTop="8dp"
+                            android:clipToPadding="false"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_cast" />
 
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Director"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="13sp" />
+                        <!-- Top Composers -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:letterSpacing="0.12"
+                            android:text="YOUR TOP COMPOSERS"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/tv_fav_director"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.6"
-                                android:ellipsize="end"
-                                android:gravity="end"
-                                android:maxLines="1"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                tools:text="Name · 2 films" />
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/tv_empty_composers"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Log a few more films"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="13sp"
+                            android:visibility="gone" />
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="@color/movieed_border" />
-
-                        <!-- Composer -->
-                        <LinearLayout
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_fav_composers"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:minHeight="44dp"
-                            android:orientation="horizontal">
+                            android:layout_marginTop="8dp"
+                            android:clipToPadding="false"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_cast" />
 
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Composer"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="13sp" />
+                        <!-- Favorite Decade -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:letterSpacing="0.12"
+                            android:text="FAVORITE DECADE"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/tv_fav_composer"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.6"
-                                android:ellipsize="end"
-                                android:gravity="end"
-                                android:maxLines="1"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                tools:text="Hans Zimmer" />
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/tv_fav_decade"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/movieed_accent"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            tools:text="2010s" />
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="@color/movieed_border" />
-
-                        <!-- Decade -->
-                        <LinearLayout
+                        <!-- Scrollable List of 5 Highest Rated Movies from Top Decade -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_decade_movies"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:minHeight="44dp"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Decade"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="13sp" />
-
-                            <TextView
-                                android:id="@+id/tv_fav_decade"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.6"
-                                android:ellipsize="end"
-                                android:gravity="end"
-                                android:maxLines="1"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                tools:text="2010s" />
-                        </LinearLayout>
+                            android:layout_marginTop="12dp"
+                            android:clipToPadding="false"
+                            android:orientation="horizontal"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_home_movie_card" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
