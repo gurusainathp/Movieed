@@ -236,7 +236,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 dto.getPosterPath(),
                 dto.getBackdropPath(),
                 dto.getRuntime(),
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                null,
+                null,
+                dto.getVoteAverage()
         );
         repository.toggleWatchlist(movieEntity, existingLog);
     }
@@ -251,7 +254,10 @@ public class MovieDetailsViewModel extends AndroidViewModel {
                 dto.getPosterPath(),
                 dto.getBackdropPath(),
                 dto.getRuntime(),
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                null,
+                null,
+                dto.getVoteAverage()
         );
         repository.saveReaction(movieEntity, reaction, existingLog);
     }

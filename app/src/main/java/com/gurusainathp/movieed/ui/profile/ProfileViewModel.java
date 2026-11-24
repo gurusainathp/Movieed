@@ -268,7 +268,7 @@ public class ProfileViewModel extends AndroidViewModel {
                             item.movie.getReleaseDate(),
                             item.movie.getPosterPath(),
                             item.movie.getBackdropPath(),
-                            0.0,
+                            item.movie.getVoteAverage(),
                             "movie"
                     ));
                 } catch (Exception ignored) {}

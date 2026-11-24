@@ -20,10 +20,11 @@ public class MovieEntity {
     private long lastUpdated;
     private String genreIds;
     private String originalLanguage;
+    private double voteAverage;
 
     public MovieEntity(int tmdbId, String title, String overview, String releaseDate,
                        String posterPath, String backdropPath, int runtime, long lastUpdated,
-                       String genreIds, String originalLanguage) {
+                       String genreIds, String originalLanguage, double voteAverage) {
         this.tmdbId = tmdbId;
         this.title = title;
         this.overview = overview;
@@ -34,12 +35,20 @@ public class MovieEntity {
         this.lastUpdated = lastUpdated;
         this.genreIds = genreIds;
         this.originalLanguage = originalLanguage;
+        this.voteAverage = voteAverage;
+    }
+
+    @Ignore
+    public MovieEntity(int tmdbId, String title, String overview, String releaseDate,
+                       String posterPath, String backdropPath, int runtime, long lastUpdated,
+                       String genreIds, String originalLanguage) {
+        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, genreIds, originalLanguage, 0.0);
     }
 
     @Ignore
     public MovieEntity(int tmdbId, String title, String overview, String releaseDate,
                        String posterPath, String backdropPath, int runtime, long lastUpdated) {
-        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, null, null);
+        this(tmdbId, title, overview, releaseDate, posterPath, backdropPath, runtime, lastUpdated, null, null, 0.0);
     }
 
     public int getTmdbId() { return tmdbId; }
@@ -71,6 +80,9 @@ public class MovieEntity {
 
     public String getOriginalLanguage() { return originalLanguage; }
     public void setOriginalLanguage(String originalLanguage) { this.originalLanguage = originalLanguage; }
+
+    public double getVoteAverage() { return voteAverage; }
+    public void setVoteAverage(double voteAverage) { this.voteAverage = voteAverage; }
 
     @Override
     public boolean equals(Object o) {

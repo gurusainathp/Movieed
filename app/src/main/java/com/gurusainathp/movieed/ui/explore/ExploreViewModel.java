@@ -544,7 +544,8 @@ public class ExploreViewModel extends AndroidViewModel {
                 0,
                 System.currentTimeMillis(),
                 genreString,
-                dto.getOriginalLanguage()
+                dto.getOriginalLanguage(),
+                dto.getVoteAverage()
         );
         repository.toggleWatchlist(movieEntity, existingLog);
     }
@@ -562,7 +563,8 @@ public class ExploreViewModel extends AndroidViewModel {
                 0,
                 System.currentTimeMillis(),
                 genreString,
-                dto.getOriginalLanguage()
+                dto.getOriginalLanguage(),
+                dto.getVoteAverage()
         );
         repository.saveReaction(movieEntity, reaction, existingLog);
     }
