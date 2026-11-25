@@ -225,14 +225,14 @@ public class ProfileFragment extends Fragment {
     private void observeViewModel() {
         viewModel.getProfileStats().observe(getViewLifecycleOwner(), stats -> {
             if (stats != null) {
-                tvTotalFilms.setText(String.valueOf(stats.totalFilms));
-                tvWatchTime.setText(stats.getFormattedWatchTime());
+                animateCounter(tvTotalFilms, stats.totalFilms, null, null);
+                animateCounter(tvWatchTime, stats.totalRuntimeHours, "~", " hrs");
 
                 if (tvInWatchlist != null) {
-                    tvInWatchlist.setText(String.valueOf(stats.inWatchlistCount));
+                    animateCounter(tvInWatchlist, stats.inWatchlistCount, null, null);
                 }
                 if (tvWatchedCount != null) {
-                    tvWatchedCount.setText(String.valueOf(stats.watchedCount));
+                    animateCounter(tvWatchedCount, stats.watchedCount, null, null);
                 }
 
                 int maxCount = Math.max(1, stats.totalFilms);
@@ -336,9 +336,29 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    private void animateCounter(TextView textView, int targetValue, String prefix, String suffix) {
+        if (textView == null) return;
+        if (textView.getTag() instanceof ValueAnimator) {
+            ((ValueAnimator) textView.getTag()).cancel();
+        }
+        ValueAnimator animator = ValueAnimator.ofInt(0, targetValue);
+        animator.setDuration(1000L);
+        animator.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        animator.addUpdateListener(animation -> {
+            int current = (int) animation.getAnimatedValue();
+            StringBuilder sb = new StringBuilder();
+            if (prefix != null) sb.append(prefix);
+            sb.append(current);
+            if (suffix != null) sb.append(suffix);
+            textView.setText(sb.toString());
+        });
+        textView.setTag(animator);
+        animator.start();
+    }
+
     private void updateReactionRow(LinearProgressIndicator progress, TextView tvCount, Integer countObj, int maxCount) {
         int count = countObj != null ? countObj : 0;
-        tvCount.setText(String.valueOf(count));
+        animateCounter(tvCount, count, null, null);
         int targetPercentage = Math.round(((float) count / maxCount) * 100);
 
         if (progress.getTag() instanceof ValueAnimator) {
