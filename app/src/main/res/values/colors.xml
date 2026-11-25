@@ -21,4 +21,10 @@
     <!-- Original Android defaults -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Bubble palette: muted tones that sit alongside sage + sand -->
+    <color name="movieed_bubble_clay">#C98B6B</color>   <!-- terracotta -->
+    <color name="movieed_bubble_slate">#8FA6BF</color>  <!-- dusty blue -->
+    <color name="movieed_bubble_mauve">#B494AA</color>  <!-- soft mauve -->
+    <color name="movieed_bubble_glass">#7FADA3</color>  <!-- sea glass -->
 </resources>

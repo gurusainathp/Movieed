@@ -29,7 +29,9 @@ import com.gurusainathp.movieed.ui.diary.DiaryViewModel;
 import com.gurusainathp.movieed.ui.movie.MovieDetailsActivity;
 import com.gurusainathp.movieed.ui.person.PersonDetailsActivity;
 
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.List;
 
 public class ProfileFragment extends Fragment {
 
@@ -58,7 +60,7 @@ public class ProfileFragment extends Fragment {
     private ProfileCastAdapter directorAdapter;
     private ProfileCastAdapter composerAdapter;
     private HomeMovieAdapter decadeMoviesAdapter;
-    private com.google.android.material.chip.ChipGroup cgTopGenres;
+    private com.gurusainathp.movieed.ui.profile.GenreBubbleView bubbleTopGenres;
 
     private LinearProgressIndicator progressLove;
     private LinearProgressIndicator progressLike;
@@ -139,7 +141,7 @@ public class ProfileFragment extends Fragment {
 
         tabLayout = view.findViewById(R.id.tl_profile_diary_tabs);
         viewPager = view.findViewById(R.id.vp_profile_diary_pager);
-        cgTopGenres = view.findViewById(R.id.cg_top_genres);
+        bubbleTopGenres = view.findViewById(R.id.bubble_top_genres);
     }
 
     private void setupRecyclerViews() {
@@ -279,36 +281,14 @@ public class ProfileFragment extends Fragment {
         });
 
         viewModel.getTopGenres().observe(getViewLifecycleOwner(), genres -> {
-            if (cgTopGenres != null) {
-                cgTopGenres.removeAllViews();
-                if (genres != null && !genres.isEmpty()) {
-                    for (ProfileViewModel.GenreStat stat : genres) {
-                        com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip)
-                                LayoutInflater.from(requireContext()).inflate(R.layout.item_top_genre_chip, cgTopGenres, false);
-
-                        String text = stat.name + "  •  " + stat.percentage + "%";
-                        SpannableString spannable = new SpannableString(text);
-                        int dotIndex = text.indexOf("•");
-                        if (dotIndex != -1) {
-                            spannable.setSpan(
-                                    new ForegroundColorSpan(getResources().getColor(R.color.movieed_accent, null)),
-                                    dotIndex + 1,
-                                    text.length(),
-                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                            );
-                            spannable.setSpan(
-                                    new StyleSpan(Typeface.BOLD),
-                                    dotIndex + 1,
-                                    text.length(),
-                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                            );
-                        }
-
-                        chip.setText(spannable);
-                        cgTopGenres.addView(chip);
-                    }
+            if (bubbleTopGenres == null) return;
+            List<GenreBubbleView.Bubble> bubbles = new ArrayList<>();
+            if (genres != null) {
+                for (ProfileViewModel.GenreStat stat : genres) {
+                    bubbles.add(new GenreBubbleView.Bubble(stat.name, (float) stat.percentage));
                 }
             }
+            bubbleTopGenres.setData(bubbles);
         });
     }
 
