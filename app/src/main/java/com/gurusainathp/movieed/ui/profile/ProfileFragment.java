@@ -1,5 +1,6 @@
 package com.gurusainathp.movieed.ui.profile;
 
+import android.animation.ValueAnimator;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -338,7 +339,20 @@ public class ProfileFragment extends Fragment {
     private void updateReactionRow(LinearProgressIndicator progress, TextView tvCount, Integer countObj, int maxCount) {
         int count = countObj != null ? countObj : 0;
         tvCount.setText(String.valueOf(count));
-        int percentage = Math.round(((float) count / maxCount) * 100);
-        progress.setProgress(percentage);
+        int targetPercentage = Math.round(((float) count / maxCount) * 100);
+
+        if (progress.getTag() instanceof ValueAnimator) {
+            ((ValueAnimator) progress.getTag()).cancel();
+        }
+
+        ValueAnimator animator = ValueAnimator.ofInt(0, targetPercentage);
+        animator.setDuration(800L);
+        animator.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        animator.addUpdateListener(animation -> {
+            int current = (int) animation.getAnimatedValue();
+            progress.setProgress(current);
+        });
+        progress.setTag(animator);
+        animator.start();
     }
 }
