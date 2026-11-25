@@ -38,4 +38,7 @@ public interface MovieLogDao {
     @Transaction
     @Query("SELECT * FROM movie_logs ORDER BY createdAt DESC, id DESC")
     LiveData<List<MovieLogWithDetails>> getAllLogsWithDetails();
+
+    @Query("SELECT MIN(createdAt) FROM movie_logs")
+    LiveData<Long> getFirstLogTimestamp();
 }

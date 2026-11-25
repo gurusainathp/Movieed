@@ -117,6 +117,7 @@ public class ProfileViewModel extends AndroidViewModel {
     private final MutableLiveData<String> topDecadeLiveData = new MutableLiveData<>("2020s");
     private final MutableLiveData<List<Movie>> topDecadeMoviesLiveData = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<GenreStat>> topGenresLiveData = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<String> memberSinceLiveData = new MutableLiveData<>("Member recently");
 
     private final Map<Integer, TmdbCreditsResponseDto> creditsCache = new ConcurrentHashMap<>();
 
@@ -134,6 +135,7 @@ public class ProfileViewModel extends AndroidViewModel {
                 topDecadeLiveData.setValue("2020s");
                 topDecadeMoviesLiveData.setValue(new ArrayList<>());
                 topGenresLiveData.setValue(new ArrayList<>());
+                memberSinceLiveData.setValue("Member recently");
                 return;
             }
 
@@ -149,6 +151,7 @@ public class ProfileViewModel extends AndroidViewModel {
     public LiveData<String> getTopDecade() { return topDecadeLiveData; }
     public LiveData<List<Movie>> getTopDecadeMovies() { return topDecadeMoviesLiveData; }
     public LiveData<List<GenreStat>> getTopGenres() { return topGenresLiveData; }
+    public LiveData<String> getMemberSince() { return memberSinceLiveData; }
 
     public static float getReactionVibeWeight(String reaction) {
         if (reaction == null) return 0.4f;
@@ -163,6 +166,22 @@ public class ProfileViewModel extends AndroidViewModel {
     }
 
     private void computeProfileStatsWithCredits(List<MovieLogWithDetails> logs) {
+        long minCreatedAt = Long.MAX_VALUE;
+        for (MovieLogWithDetails item : logs) {
+            if (item.log != null) {
+                long t = item.log.getCreatedAt();
+                if (t > 0 && t < minCreatedAt) {
+                    minCreatedAt = t;
+                }
+            }
+        }
+        if (minCreatedAt != Long.MAX_VALUE) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.getDefault());
+            memberSinceLiveData.setValue("Member since " + sdf.format(new java.util.Date(minCreatedAt)));
+        } else {
+            memberSinceLiveData.setValue("Member recently");
+        }
+
         int inWatchlistCount = 0;
         int watchedCount = 0;
         int totalRuntimeMinutes = 0;

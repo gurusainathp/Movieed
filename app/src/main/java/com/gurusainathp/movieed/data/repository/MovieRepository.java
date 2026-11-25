@@ -46,6 +46,10 @@ public class MovieRepository {
         return allLogsWithDetails;
     }
 
+    public LiveData<Long> getFirstLogTimestamp() {
+        return movieLogDao.getFirstLogTimestamp();
+    }
+
     public LiveData<MovieEntity> getMovieByTmdbId(int tmdbId) {
         return movieDao.getMovieByTmdbId(tmdbId);
     }

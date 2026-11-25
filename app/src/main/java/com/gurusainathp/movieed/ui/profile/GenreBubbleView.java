@@ -153,28 +153,20 @@ public class GenreBubbleView extends View {
             }
         }
 
-        // The ViewModel may re-emit identical data; don't replay the animation for that.
-        boolean unchanged = sameData(next, data);
         data.clear();
         data.addAll(next);
         updateContentDescription();
         computeLayout();
 
-        if (!unchanged) {
-            if (animator != null) animator.cancel();
-            animProgress = data.isEmpty() ? 1f : 0f;
-            animationPending = !data.isEmpty();   // starts when scrolled into view
+        if (!data.isEmpty()) {
+            animationPending = true;
+            animProgress = 0f;
+            invalidate();
+        } else {
+            animationPending = false;
+            animProgress = 1f;
+            invalidate();
         }
-        invalidate();
-    }
-
-    private static boolean sameData(List<Bubble> a, List<Bubble> b) {
-        if (a.size() != b.size()) return false;
-        for (int i = 0; i < a.size(); i++) {
-            if (!a.get(i).label.equals(b.get(i).label)
-                    || Math.round(a.get(i).value) != Math.round(b.get(i).value)) return false;
-        }
-        return true;
     }
 
     // ---- Measure / layout ----------------------------------------------

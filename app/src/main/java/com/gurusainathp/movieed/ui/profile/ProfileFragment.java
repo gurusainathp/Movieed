@@ -38,6 +38,11 @@ public class ProfileFragment extends Fragment {
     private ProfileViewModel viewModel;
     private DiaryViewModel diaryViewModel;
 
+    private View cardAvatar;
+    private TextView tvAvatarInitial;
+    private TextView tvProfileHeader;
+    private TextView tvMemberSince;
+
     private TextView tvTotalFilms;
     private TextView tvWatchTime;
     private TextView tvInWatchlist;
@@ -60,7 +65,7 @@ public class ProfileFragment extends Fragment {
     private ProfileCastAdapter directorAdapter;
     private ProfileCastAdapter composerAdapter;
     private HomeMovieAdapter decadeMoviesAdapter;
-    private com.gurusainathp.movieed.ui.profile.GenreBubbleView bubbleTopGenres;
+    private GenreBubbleView bubbleTopGenres;
 
     private LinearProgressIndicator progressLove;
     private LinearProgressIndicator progressLike;
@@ -93,6 +98,13 @@ public class ProfileFragment extends Fragment {
 
         initViews(view);
         setupRecyclerViews();
+        loadUserData();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadUserData();
 
         // Setup Diary Pager inside ProfileFragment
         DiaryPagerAdapter diaryPagerAdapter = new DiaryPagerAdapter(this);
@@ -110,6 +122,18 @@ public class ProfileFragment extends Fragment {
     }
 
     private void initViews(View view) {
+        cardAvatar = view.findViewById(R.id.card_avatar);
+        tvAvatarInitial = view.findViewById(R.id.tv_avatar_initial);
+        tvProfileHeader = view.findViewById(R.id.tv_profile_header);
+        tvMemberSince = view.findViewById(R.id.tv_member_since);
+
+        if (cardAvatar != null) {
+            cardAvatar.setOnClickListener(v -> EditProfileActivity.launch(requireContext()));
+        }
+        if (tvProfileHeader != null) {
+            tvProfileHeader.setOnClickListener(v -> EditProfileActivity.launch(requireContext()));
+        }
+
         tvTotalFilms = view.findViewById(R.id.tv_stat_total_films);
         tvWatchTime = view.findViewById(R.id.tv_stat_watch_time);
         tvInWatchlist = view.findViewById(R.id.tv_stat_in_watchlist);
@@ -290,6 +314,25 @@ public class ProfileFragment extends Fragment {
             }
             bubbleTopGenres.setData(bubbles);
         });
+
+        viewModel.getMemberSince().observe(getViewLifecycleOwner(), memberSince -> {
+            if (tvMemberSince != null && memberSince != null) {
+                tvMemberSince.setText(memberSince);
+            }
+        });
+    }
+
+    private void loadUserData() {
+        if (getContext() == null) return;
+        android.content.SharedPreferences prefs = getContext().getSharedPreferences(EditProfileActivity.PREF_NAME, android.content.Context.MODE_PRIVATE);
+        String name = prefs.getString(EditProfileActivity.KEY_USER_NAME, "Alex");
+        if (tvProfileHeader != null) {
+            tvProfileHeader.setText(name);
+        }
+        if (tvAvatarInitial != null) {
+            String initial = !name.isEmpty() ? name.substring(0, 1).toUpperCase() : "A";
+            tvAvatarInitial.setText(initial);
+        }
     }
 
     private void updateReactionRow(LinearProgressIndicator progress, TextView tvCount, Integer countObj, int maxCount) {

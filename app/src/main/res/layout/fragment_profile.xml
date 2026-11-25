@@ -39,6 +39,7 @@
                     android:orientation="horizontal">
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_avatar"
                         android:layout_width="56dp"
                         android:layout_height="56dp"
                         app:cardBackgroundColor="@color/movieed_surface_elevated"
