@@ -1,6 +1,11 @@
 package com.gurusainathp.movieed.ui.profile;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +58,7 @@ public class ProfileFragment extends Fragment {
     private ProfileCastAdapter directorAdapter;
     private ProfileCastAdapter composerAdapter;
     private HomeMovieAdapter decadeMoviesAdapter;
+    private com.google.android.material.chip.ChipGroup cgTopGenres;
 
     private LinearProgressIndicator progressLove;
     private LinearProgressIndicator progressLike;
@@ -133,6 +139,7 @@ public class ProfileFragment extends Fragment {
 
         tabLayout = view.findViewById(R.id.tl_profile_diary_tabs);
         viewPager = view.findViewById(R.id.vp_profile_diary_pager);
+        cgTopGenres = view.findViewById(R.id.cg_top_genres);
     }
 
     private void setupRecyclerViews() {
@@ -268,6 +275,39 @@ public class ProfileFragment extends Fragment {
                 if (rvDecadeMovies != null) rvDecadeMovies.setVisibility(View.VISIBLE);
             } else {
                 if (rvDecadeMovies != null) rvDecadeMovies.setVisibility(View.GONE);
+            }
+        });
+
+        viewModel.getTopGenres().observe(getViewLifecycleOwner(), genres -> {
+            if (cgTopGenres != null) {
+                cgTopGenres.removeAllViews();
+                if (genres != null && !genres.isEmpty()) {
+                    for (ProfileViewModel.GenreStat stat : genres) {
+                        com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip)
+                                LayoutInflater.from(requireContext()).inflate(R.layout.item_top_genre_chip, cgTopGenres, false);
+
+                        String text = stat.name + "  •  " + stat.percentage + "%";
+                        SpannableString spannable = new SpannableString(text);
+                        int dotIndex = text.indexOf("•");
+                        if (dotIndex != -1) {
+                            spannable.setSpan(
+                                    new ForegroundColorSpan(getResources().getColor(R.color.movieed_accent, null)),
+                                    dotIndex + 1,
+                                    text.length(),
+                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            );
+                            spannable.setSpan(
+                                    new StyleSpan(Typeface.BOLD),
+                                    dotIndex + 1,
+                                    text.length(),
+                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            );
+                        }
+
+                        chip.setText(spannable);
+                        cgTopGenres.addView(chip);
+                    }
+                }
             }
         });
     }

@@ -32,6 +32,16 @@ import retrofit2.Response;
 
 public class ProfileViewModel extends AndroidViewModel {
 
+    public static class GenreStat {
+        public final String name;
+        public final int percentage;
+
+        public GenreStat(String name, int percentage) {
+            this.name = name;
+            this.percentage = percentage;
+        }
+    }
+
     public static class ProfileStats {
         public final int totalFilms;
         public final int totalRuntimeHours;
@@ -106,6 +116,7 @@ public class ProfileViewModel extends AndroidViewModel {
 
     private final MutableLiveData<String> topDecadeLiveData = new MutableLiveData<>("2020s");
     private final MutableLiveData<List<Movie>> topDecadeMoviesLiveData = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<GenreStat>> topGenresLiveData = new MutableLiveData<>(new ArrayList<>());
 
     private final Map<Integer, TmdbCreditsResponseDto> creditsCache = new ConcurrentHashMap<>();
 
@@ -122,6 +133,7 @@ public class ProfileViewModel extends AndroidViewModel {
                 composerListLiveData.setValue(new ArrayList<>());
                 topDecadeLiveData.setValue("2020s");
                 topDecadeMoviesLiveData.setValue(new ArrayList<>());
+                topGenresLiveData.setValue(new ArrayList<>());
                 return;
             }
 
@@ -136,6 +148,7 @@ public class ProfileViewModel extends AndroidViewModel {
     public LiveData<List<TmdbCastDto>> getComposerList() { return composerListLiveData; }
     public LiveData<String> getTopDecade() { return topDecadeLiveData; }
     public LiveData<List<Movie>> getTopDecadeMovies() { return topDecadeMoviesLiveData; }
+    public LiveData<List<GenreStat>> getTopGenres() { return topGenresLiveData; }
 
     public static float getReactionVibeWeight(String reaction) {
         if (reaction == null) return 0.4f;
@@ -204,8 +217,9 @@ public class ProfileViewModel extends AndroidViewModel {
             return;
         }
 
-        // Compute Decade Stats & Movies (only watched movies and shows, excluding watchlist)
+        // Compute Decade Stats & Top Genres (only watched movies and shows, excluding watchlist)
         computeDecadeStats(watchedLogs);
+        computeTopGenres(watchedLogs);
 
         // Fetch credits for all watched movies asynchronously, then calculate favorites
         AtomicInteger pendingCalls = new AtomicInteger(watchedLogs.size());
@@ -295,6 +309,77 @@ public class ProfileViewModel extends AndroidViewModel {
             topDecadeMoviesLiveData.setValue(new ArrayList<>(decadeMovies.subList(0, limit)));
         } else {
             topDecadeMoviesLiveData.setValue(new ArrayList<>());
+        }
+    }
+
+    private void computeTopGenres(List<MovieLogWithDetails> watchedLogs) {
+        if (watchedLogs == null || watchedLogs.isEmpty()) {
+            topGenresLiveData.setValue(new ArrayList<>());
+            return;
+        }
+
+        Map<Integer, Integer> genreCounts = new HashMap<>();
+        int totalWatched = watchedLogs.size();
+
+        for (MovieLogWithDetails item : watchedLogs) {
+            if (item.movie == null || item.movie.getGenreIds() == null) continue;
+            String genreStr = item.movie.getGenreIds();
+            String[] parts = genreStr.split(",");
+            for (String part : parts) {
+                try {
+                    int genreId = Integer.parseInt(part.trim());
+                    genreCounts.put(genreId, genreCounts.getOrDefault(genreId, 0) + 1);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        List<Map.Entry<Integer, Integer>> sortedGenres = new ArrayList<>(genreCounts.entrySet());
+        Collections.sort(sortedGenres, (a, b) -> Integer.compare(b.getValue(), a.getValue()));
+
+        List<GenreStat> stats = new ArrayList<>();
+        int limit = Math.min(6, sortedGenres.size());
+        for (int i = 0; i < limit; i++) {
+            Map.Entry<Integer, Integer> entry = sortedGenres.get(i);
+            int genreId = entry.getKey();
+            int count = entry.getValue();
+            int percentage = Math.round(((float) count / totalWatched) * 100);
+            String name = getGenreName(genreId);
+            stats.add(new GenreStat(name, percentage));
+        }
+
+        topGenresLiveData.setValue(stats);
+    }
+
+    private String getGenreName(int genreId) {
+        switch (genreId) {
+            case 28: return "Action";
+            case 12: return "Adventure";
+            case 16: return "Animation";
+            case 35: return "Comedy";
+            case 80: return "Crime";
+            case 99: return "Documentary";
+            case 18: return "Drama";
+            case 10751: return "Family";
+            case 14: return "Fantasy";
+            case 36: return "History";
+            case 27: return "Horror";
+            case 10402: return "Music";
+            case 9648: return "Mystery";
+            case 10749: return "Romance";
+            case 878: return "Sci-Fi";
+            case 10770: return "TV Movie";
+            case 53: return "Thriller";
+            case 10752: return "War";
+            case 37: return "Western";
+            case 10759: return "Action & Adventure";
+            case 10762: return "Kids";
+            case 10763: return "News";
+            case 10764: return "Reality";
+            case 10765: return "Sci-Fi & Fantasy";
+            case 10766: return "Soap";
+            case 10767: return "Talk";
+            case 10768: return "War & Politics";
+            default: return "Genre";
         }
     }
 
