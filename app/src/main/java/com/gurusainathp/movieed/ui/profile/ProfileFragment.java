@@ -36,8 +36,13 @@ import java.util.List;
 
 public class ProfileFragment extends Fragment {
 
+    private static boolean hasAnimatedStatsThisSession = false;
+
     private ProfileViewModel viewModel;
     private DiaryViewModel diaryViewModel;
+
+    private ProfileViewModel.ProfileStats pendingStats;
+    private final android.graphics.Rect statVisibleRect = new android.graphics.Rect();
 
     private View cardAvatar;
     private TextView tvAvatarInitial;
@@ -94,7 +99,7 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
         diaryViewModel = new ViewModelProvider(this).get(DiaryViewModel.class);
 
         initViews(view);
@@ -167,6 +172,23 @@ public class ProfileFragment extends Fragment {
         tabLayout = view.findViewById(R.id.tl_profile_diary_tabs);
         viewPager = view.findViewById(R.id.vp_profile_diary_pager);
         bubbleTopGenres = view.findViewById(R.id.bubble_top_genres);
+
+        if (tvTotalFilms != null) tvTotalFilms.setText("0");
+        if (tvWatchTime != null) tvWatchTime.setText("0 hrs");
+        if (tvInWatchlist != null) tvInWatchlist.setText("0");
+        if (tvWatchedCount != null) tvWatchedCount.setText("0");
+
+        if (tvCountLove != null) tvCountLove.setText("0");
+        if (tvCountLike != null) tvCountLike.setText("0");
+        if (tvCountUmm != null) tvCountUmm.setText("0");
+        if (tvCountDislike != null) tvCountDislike.setText("0");
+        if (tvCountHate != null) tvCountHate.setText("0");
+
+        if (progressLove != null) progressLove.setProgress(0);
+        if (progressLike != null) progressLike.setProgress(0);
+        if (progressUmm != null) progressUmm.setProgress(0);
+        if (progressDislike != null) progressDislike.setProgress(0);
+        if (progressHate != null) progressHate.setProgress(0);
     }
 
     private void setupRecyclerViews() {
@@ -224,26 +246,9 @@ public class ProfileFragment extends Fragment {
 
     private void observeViewModel() {
         viewModel.getProfileStats().observe(getViewLifecycleOwner(), stats -> {
-            if (stats != null) {
-                animateCounter(tvTotalFilms, stats.totalFilms, null, null);
-                animateCounter(tvWatchTime, stats.totalRuntimeHours, "~", " hrs");
-
-                if (tvInWatchlist != null) {
-                    animateCounter(tvInWatchlist, stats.inWatchlistCount, null, null);
-                }
-                if (tvWatchedCount != null) {
-                    animateCounter(tvWatchedCount, stats.watchedCount, null, null);
-                }
-
-                int maxCount = Math.max(1, stats.totalFilms);
-                Map<String, Integer> counts = stats.reactionCounts;
-
-                updateReactionRow(progressLove, tvCountLove, counts.get("LOVE"), maxCount);
-                updateReactionRow(progressLike, tvCountLike, counts.get("LIKE"), maxCount);
-                updateReactionRow(progressUmm, tvCountUmm, counts.get("UMM"), maxCount);
-                updateReactionRow(progressDislike, tvCountDislike, counts.get("DISLIKE"), maxCount);
-                updateReactionRow(progressHate, tvCountHate, counts.get("HATE"), maxCount);
-            }
+            if (stats == null) return;
+            pendingStats = stats;
+            updateStatsUi();
         });
 
         viewModel.getActorList().observe(getViewLifecycleOwner(), list -> {
@@ -334,6 +339,88 @@ public class ProfileFragment extends Fragment {
             String initial = !name.isEmpty() ? name.substring(0, 1).toUpperCase() : "A";
             tvAvatarInitial.setText(initial);
         }
+    }
+
+    private void updateStatsUi() {
+        if (pendingStats == null) return;
+        if (hasAnimatedStatsThisSession) {
+            displayStatsDirectly(pendingStats);
+        } else {
+            checkAndAnimateStatsIfNeeded();
+        }
+    }
+
+    private void checkAndAnimateStatsIfNeeded() {
+        if (hasAnimatedStatsThisSession || pendingStats == null || tvTotalFilms == null) return;
+        if (isElementFullyVisible(tvTotalFilms)) {
+            hasAnimatedStatsThisSession = true;
+            runStatsAnimations(pendingStats);
+        } else {
+            tvTotalFilms.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    if (tvTotalFilms != null && tvTotalFilms.getViewTreeObserver().isAlive()) {
+                        tvTotalFilms.getViewTreeObserver().removeOnPreDrawListener(this);
+                    }
+                    if (!hasAnimatedStatsThisSession && pendingStats != null && isElementFullyVisible(tvTotalFilms)) {
+                        hasAnimatedStatsThisSession = true;
+                        runStatsAnimations(pendingStats);
+                        return true;
+                    }
+                    return true;
+                }
+            });
+        }
+    }
+
+    private boolean isElementFullyVisible(View view) {
+        if (view == null || !view.isShown() || view.getHeight() == 0) return false;
+        if (!view.getGlobalVisibleRect(statVisibleRect)) return false;
+        return statVisibleRect.height() >= view.getHeight();
+    }
+
+    private void displayStatsDirectly(ProfileViewModel.ProfileStats stats) {
+        if (tvTotalFilms != null) tvTotalFilms.setText(String.valueOf(stats.totalFilms));
+        if (tvWatchTime != null) tvWatchTime.setText(stats.getFormattedWatchTime());
+        if (tvInWatchlist != null) tvInWatchlist.setText(String.valueOf(stats.inWatchlistCount));
+        if (tvWatchedCount != null) tvWatchedCount.setText(String.valueOf(stats.watchedCount));
+
+        int maxCount = Math.max(1, stats.totalFilms);
+        Map<String, Integer> counts = stats.reactionCounts;
+
+        updateReactionRowDirectly(progressLove, tvCountLove, counts.get("LOVE"), maxCount);
+        updateReactionRowDirectly(progressLike, tvCountLike, counts.get("LIKE"), maxCount);
+        updateReactionRowDirectly(progressUmm, tvCountUmm, counts.get("UMM"), maxCount);
+        updateReactionRowDirectly(progressDislike, tvCountDislike, counts.get("DISLIKE"), maxCount);
+        updateReactionRowDirectly(progressHate, tvCountHate, counts.get("HATE"), maxCount);
+    }
+
+    private void updateReactionRowDirectly(LinearProgressIndicator progress, TextView tvCount, Integer countObj, int maxCount) {
+        int count = countObj != null ? countObj : 0;
+        if (tvCount != null) tvCount.setText(String.valueOf(count));
+        int targetPercentage = Math.round(((float) count / maxCount) * 100);
+        if (progress != null) progress.setProgress(targetPercentage);
+    }
+
+    private void runStatsAnimations(ProfileViewModel.ProfileStats stats) {
+        animateCounter(tvTotalFilms, stats.totalFilms, null, null);
+        animateCounter(tvWatchTime, stats.totalRuntimeHours, "~", " hrs");
+
+        if (tvInWatchlist != null) {
+            animateCounter(tvInWatchlist, stats.inWatchlistCount, null, null);
+        }
+        if (tvWatchedCount != null) {
+            animateCounter(tvWatchedCount, stats.watchedCount, null, null);
+        }
+
+        int maxCount = Math.max(1, stats.totalFilms);
+        Map<String, Integer> counts = stats.reactionCounts;
+
+        updateReactionRow(progressLove, tvCountLove, counts.get("LOVE"), maxCount);
+        updateReactionRow(progressLike, tvCountLike, counts.get("LIKE"), maxCount);
+        updateReactionRow(progressUmm, tvCountUmm, counts.get("UMM"), maxCount);
+        updateReactionRow(progressDislike, tvCountDislike, counts.get("DISLIKE"), maxCount);
+        updateReactionRow(progressHate, tvCountHate, counts.get("HATE"), maxCount);
     }
 
     private void animateCounter(TextView textView, int targetValue, String prefix, String suffix) {

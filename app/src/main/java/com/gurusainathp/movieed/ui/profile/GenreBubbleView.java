@@ -90,9 +90,11 @@ public class GenreBubbleView extends View {
     // Intro animation plays once the view is fully in view and not clipped
     private final Rect visibleRect = new Rect();
     private boolean animationPending = false;
+    private boolean hasAnimatedOnce = false;
     private final ViewTreeObserver.OnPreDrawListener preDrawListener = () -> {
-        if (animationPending && !data.isEmpty() && isFullyVisible()) {
+        if (!hasAnimatedOnce && animationPending && !data.isEmpty() && isFullyVisible()) {
             animationPending = false;
+            hasAnimatedOnce = true;
             startIntroAnimation();
         }
         return true;
@@ -158,8 +160,13 @@ public class GenreBubbleView extends View {
         computeLayout();
 
         if (!data.isEmpty()) {
-            animationPending = true;
-            animProgress = 0f;
+            if (!hasAnimatedOnce) {
+                animationPending = true;
+                animProgress = 0f;
+            } else {
+                animationPending = false;
+                animProgress = 1f;
+            }
             invalidate();
         } else {
             animationPending = false;
@@ -400,8 +407,8 @@ public class GenreBubbleView extends View {
     protected void onDetachedFromWindow() {
         getViewTreeObserver().removeOnPreDrawListener(preDrawListener);
         if (animator != null) animator.cancel();
-        // If we were detached mid-animation, show the final state next time instead of a blank card
-        if (!animationPending && animProgress < 1f) animProgress = 1f;
+        // If we were detached mid-animation or already animated once, show the final state next time
+        if (hasAnimatedOnce || (!animationPending && animProgress < 1f)) animProgress = 1f;
         super.onDetachedFromWindow();
     }
 
