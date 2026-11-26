@@ -53,6 +53,7 @@ public class HomeViewModel extends AndroidViewModel {
 
     private int activePendingRequests = 0;
     private boolean hadNetworkSuccess = false;
+    private boolean isContentLoaded = false;
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
@@ -73,6 +74,14 @@ public class HomeViewModel extends AndroidViewModel {
     public LiveData<String> getErrorMessage() { return errorMessage; }
 
     public void loadHomeContent(String apiKey) {
+        loadHomeContent(apiKey, false);
+    }
+
+    public void loadHomeContent(String apiKey, boolean forceReload) {
+        if (!forceReload && (isContentLoaded || activePendingRequests > 0)) {
+            return;
+        }
+
         if (apiKey == null || apiKey.trim().isEmpty()) {
             errorMessage.setValue("TMDB API Key missing in local.properties");
             return;
@@ -247,7 +256,9 @@ public class HomeViewModel extends AndroidViewModel {
         activePendingRequests--;
         if (activePendingRequests <= 0) {
             isLoading.setValue(false);
-            if (!hadNetworkSuccess) {
+            if (hadNetworkSuccess) {
+                isContentLoaded = true;
+            } else {
                 errorMessage.setValue("Could not connect to TMDB. Please check your internet connection.");
             }
         }

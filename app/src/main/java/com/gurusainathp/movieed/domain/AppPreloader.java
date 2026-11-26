@@ -6,6 +6,7 @@ import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.gurusainathp.movieed.BuildConfig;
 import com.gurusainathp.movieed.data.local.entity.MovieLogWithDetails;
@@ -56,33 +57,48 @@ public class AppPreloader {
         // 1. Preload Home Content
         if (homeViewModel != null) {
             homeViewModel.loadHomeContent(BuildConfig.TMDB_API_KEY);
-            homeViewModel.getIsLoading().observeForever(loading -> {
-                if (Boolean.FALSE.equals(loading)) {
-                    checkComplete.run();
+            Observer<Boolean> homeLoadingObserver = new Observer<Boolean>() {
+                @Override
+                public void onChanged(Boolean loading) {
+                    if (Boolean.FALSE.equals(loading)) {
+                        homeViewModel.getIsLoading().removeObserver(this);
+                        checkComplete.run();
+                    }
                 }
-            });
+            };
+            homeViewModel.getIsLoading().observeForever(homeLoadingObserver);
         } else {
             pendingTasks.decrementAndGet();
         }
 
         // 2. Preload Profile & User Logs
         MovieRepository repository = new MovieRepository(application);
-        repository.getAllLogsWithDetails().observeForever(logs -> {
-            List<MovieLogWithDetails> userLogs = logs != null ? logs : Collections.emptyList();
+        Observer<List<MovieLogWithDetails>> logsObserver = new Observer<List<MovieLogWithDetails>>() {
+            @Override
+            public void onChanged(List<MovieLogWithDetails> logs) {
+                repository.getAllLogsWithDetails().removeObserver(this);
+                List<MovieLogWithDetails> userLogs = logs != null ? logs : Collections.emptyList();
 
-            // 3. Preload Explore Content with user history seeds
-            if (exploreViewModel != null) {
-                exploreViewModel.loadExploreMovies(userLogs, true);
-                exploreViewModel.getIsLoading().observeForever(loading -> {
-                    if (Boolean.FALSE.equals(loading)) {
-                        checkComplete.run();
-                    }
-                });
-            } else {
-                pendingTasks.decrementAndGet();
+                // 3. Preload Explore Content with user history seeds
+                if (exploreViewModel != null) {
+                    exploreViewModel.loadExploreMovies(userLogs, true);
+                    Observer<Boolean> exploreLoadingObserver = new Observer<Boolean>() {
+                        @Override
+                        public void onChanged(Boolean loading) {
+                            if (Boolean.FALSE.equals(loading)) {
+                                exploreViewModel.getIsLoading().removeObserver(this);
+                                checkComplete.run();
+                            }
+                        }
+                    };
+                    exploreViewModel.getIsLoading().observeForever(exploreLoadingObserver);
+                } else {
+                    pendingTasks.decrementAndGet();
+                }
+
+                checkComplete.run(); // Profile logs loaded
             }
-
-            checkComplete.run(); // Profile logs loaded
-        });
+        };
+        repository.getAllLogsWithDetails().observeForever(logsObserver);
     }
 }

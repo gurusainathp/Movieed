@@ -81,13 +81,13 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
 
         initViews(view);
         setupRecyclerViews();
         observeViewModel();
 
-        btnRetry.setOnClickListener(v -> loadData());
+        btnRetry.setOnClickListener(v -> viewModel.loadHomeContent(BuildConfig.TMDB_API_KEY, true));
         btnSeeAllDiary.setOnClickListener(v -> navigateToTab(R.id.nav_diary));
         btnExploreMore.setOnClickListener(v -> navigateToTab(R.id.nav_explore));
 
@@ -196,7 +196,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadData() {
-        viewModel.loadHomeContent(BuildConfig.TMDB_API_KEY);
+        viewModel.loadHomeContent(BuildConfig.TMDB_API_KEY, false);
     }
 
     private void observeViewModel() {
