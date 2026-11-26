@@ -54,6 +54,15 @@ public class TmdbMovieDto {
     @SerializedName("number_of_episodes")
     private int numberOfEpisodes;
 
+    @SerializedName("profile_path")
+    private String profilePath;
+
+    @SerializedName("known_for_department")
+    private String knownForDepartment;
+
+    @SerializedName("known_for")
+    private List<TmdbMovieDto> knownFor;
+
     public TmdbMovieDto() {
     }
 
@@ -120,6 +129,18 @@ public class TmdbMovieDto {
 
     public String getOriginalLanguage() {
         return originalLanguage;
+    }
+
+    public String getProfilePath() {
+        return profilePath != null ? profilePath : posterPath;
+    }
+
+    public String getKnownForDepartment() {
+        return knownForDepartment;
+    }
+
+    public List<TmdbMovieDto> getKnownFor() {
+        return knownFor;
     }
 
     public int getRuntime() {

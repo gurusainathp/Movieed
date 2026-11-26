@@ -65,8 +65,21 @@ public class SearchViewModel extends ViewModel {
                     if (dtos != null) {
                         for (TmdbMovieDto dto : dtos) {
                             String mediaType = dto.getMediaType();
-                            // Include movies and tv shows (ignore persons)
-                            if (mediaType == null || !mediaType.equals("person")) {
+                            if ("person".equalsIgnoreCase(mediaType)) {
+                                String overview = formatPersonOverview(dto);
+                                String activeYears = formatYearsActive(dto);
+
+                                movies.add(new Movie(
+                                        dto.getId(),
+                                        dto.getTitle(),
+                                        overview,
+                                        activeYears,
+                                        dto.getProfilePath(),
+                                        null,
+                                        0.0,
+                                        "person"
+                                ));
+                            } else {
                                 movies.add(new Movie(
                                         dto.getId(),
                                         dto.getTitle(),
@@ -75,7 +88,7 @@ public class SearchViewModel extends ViewModel {
                                         dto.getPosterPath(),
                                         dto.getBackdropPath(),
                                         dto.getVoteAverage(),
-                                        dto.getMediaType()
+                                        dto.getMediaType() != null ? dto.getMediaType() : "movie"
                                 ));
                             }
                         }
@@ -94,6 +107,66 @@ public class SearchViewModel extends ViewModel {
                 }
             }
         });
+    }
+
+    private String formatPersonOverview(TmdbMovieDto dto) {
+        StringBuilder sb = new StringBuilder();
+        String dept = dto.getKnownForDepartment();
+        if (dept != null && !dept.isEmpty()) {
+            sb.append(formatDepartment(dept));
+        } else {
+            sb.append("Person");
+        }
+
+        if (dto.getKnownFor() != null && !dto.getKnownFor().isEmpty()) {
+            sb.append(" · Known for ");
+            int limit = Math.min(3, dto.getKnownFor().size());
+            for (int i = 0; i < limit; i++) {
+                TmdbMovieDto m = dto.getKnownFor().get(i);
+                if (m != null && m.getTitle() != null) {
+                    if (i > 0) sb.append(", ");
+                    sb.append(m.getTitle());
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    private String formatYearsActive(TmdbMovieDto dto) {
+        if (dto.getKnownFor() == null || dto.getKnownFor().isEmpty()) {
+            return "";
+        }
+        int minYear = 9999;
+        int maxYear = 0;
+        for (TmdbMovieDto m : dto.getKnownFor()) {
+            if (m != null && m.getReleaseDate() != null && m.getReleaseDate().length() >= 4) {
+                try {
+                    int y = Integer.parseInt(m.getReleaseDate().substring(0, 4));
+                    if (y < minYear) minYear = y;
+                    if (y > maxYear) maxYear = y;
+                } catch (Exception ignored) {}
+            }
+        }
+        if (minYear != 9999 && maxYear != 0) {
+            if (minYear == maxYear) return String.valueOf(minYear);
+            return minYear + " - " + maxYear;
+        }
+        return "";
+    }
+
+    private String formatDepartment(String department) {
+        if (department == null) return "";
+        switch (department.trim().toLowerCase()) {
+            case "acting": return "Actor";
+            case "directing": return "Director";
+            case "writing": return "Writer";
+            case "production": return "Producer";
+            case "editing": return "Editor";
+            case "camera": return "Cinematographer";
+            case "sound":
+            case "music": return "Composer";
+            default: return department;
+        }
     }
 
     @Override

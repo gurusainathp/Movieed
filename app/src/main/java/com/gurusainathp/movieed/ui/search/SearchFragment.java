@@ -52,8 +52,14 @@ public class SearchFragment extends Fragment {
         rvResults = view.findViewById(R.id.rv_search_results);
 
         adapter = new SearchMovieAdapter(movie -> {
-            boolean isTv = "tv".equals(movie.getMediaType());
-            MovieDetailsActivity.launch(requireContext(), movie.getId(), movie.getTitle(), movie.getPosterPath(), isTv);
+            if (movie != null) {
+                if ("person".equalsIgnoreCase(movie.getMediaType())) {
+                    com.gurusainathp.movieed.ui.person.PersonDetailsActivity.launch(requireContext(), movie.getId(), movie.getTitle());
+                } else {
+                    boolean isTv = "tv".equals(movie.getMediaType());
+                    MovieDetailsActivity.launch(requireContext(), movie.getId(), movie.getTitle(), movie.getPosterPath(), isTv);
+                }
+            }
         });
         rvResults.setAdapter(adapter);
 
