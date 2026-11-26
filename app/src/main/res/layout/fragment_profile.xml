@@ -528,6 +528,39 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- ============ Top genres ============ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TOP GENRES"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+
+                        <com.gurusainathp.movieed.ui.profile.GenreBubbleView
+                            android:id="@+id/bubble_top_genres"
+                            android:layout_width="match_parent"
+                            android:layout_height="220dp"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- ============ All-time favorites: people + decade ============ -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
@@ -699,39 +732,6 @@
                             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             tools:listitem="@layout/item_home_movie_card" />
 
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- ============ Top genres ============ -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="12dp"
-                    app:strokeColor="@color/movieed_border"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="TOP GENRES"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        
-                        <com.gurusainathp.movieed.ui.profile.GenreBubbleView
-                            android:id="@+id/bubble_top_genres"
-                            android:layout_width="match_parent"
-                            android:layout_height="220dp"
-                            android:layout_marginTop="8dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

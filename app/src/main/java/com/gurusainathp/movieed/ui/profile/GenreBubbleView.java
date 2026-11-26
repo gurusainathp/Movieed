@@ -87,12 +87,11 @@ public class GenreBubbleView extends View {
     @ColorInt
     private int lightText;
 
-    // Intro animation plays once the view is actually scrolled into view
-    private static final float VISIBLE_FRACTION_TO_START = 0.5f;
+    // Intro animation plays once the view is fully in view and not clipped
     private final Rect visibleRect = new Rect();
     private boolean animationPending = false;
     private final ViewTreeObserver.OnPreDrawListener preDrawListener = () -> {
-        if (animationPending && !data.isEmpty() && isMostlyVisible()) {
+        if (animationPending && !data.isEmpty() && isFullyVisible()) {
             animationPending = false;
             startIntroAnimation();
         }
@@ -382,12 +381,12 @@ public class GenreBubbleView extends View {
     }
 
     /**
-     * True once at least half of the view is on screen (works inside AppBar/scroll containers).
+     * True once the view is fully in view and not clipped.
      */
-    private boolean isMostlyVisible() {
+    private boolean isFullyVisible() {
         if (!isShown() || getHeight() == 0) return false;
         if (!getGlobalVisibleRect(visibleRect)) return false;
-        return visibleRect.height() >= getHeight() * VISIBLE_FRACTION_TO_START;
+        return visibleRect.height() >= getHeight();
     }
 
     @Override
