@@ -1,84 +1,129 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- Page used for both Watched and Watchlist.
+     Top: one compact row of filter chips (same look as the person filmography filters).
+     Below: the poster grid. No cards anywhere. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@color/movieed_background">
+    android:background="@color/movieed_background"
+    android:orientation="vertical">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- Custom scroll view keeps horizontal swipes here from flipping the ViewPager page -->
+    <com.gurusainathp.movieed.ui.diary.NestedHorizontalScrollView
+        android:id="@+id/scroll_diary_filters"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="80dp">
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="10dp"
+        android:scrollbars="none">
 
-        <TextView
-            android:id="@+id/tv_tab_empty"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="32dp"
-            android:gravity="center"
-            android:text="No items found."
-            android:textColor="@color/movieed_text_secondary"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_tab_grid"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            android:nestedScrollingEnabled="false"
-            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="4"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:listitem="@layout/item_diary_grid" />
-
-        <!-- Custom NestedHorizontalScrollView for conflict-free gesture handling -->
-        <com.gurusainathp.movieed.ui.diary.NestedHorizontalScrollView
-            android:id="@+id/scroll_provider_filter_bar"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginBottom="16dp"
-            android:clipToPadding="false"
-            android:fadingEdgeLength="16dp"
-            android:overScrollMode="ifContentScrolls"
-            android:requiresFadingEdge="horizontal"
-            android:scrollbars="none"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/layout_provider_filters"
+            <!-- Hidden until streaming providers are known -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_provider"
+                style="@style/Widget.Movieed.FilterChip.Dropdown"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="All services"
+                android:visibility="gone" />
+
+            <!-- Watched tab only -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_reaction"
+                style="@style/Widget.Movieed.FilterChip.Dropdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="Any reaction" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_type"
+                style="@style/Widget.Movieed.FilterChip.Dropdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="All types" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_sort"
+                style="@style/Widget.Movieed.FilterChip.Dropdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="Recent" />
+
+            <TextView
+                android:id="@+id/tv_filters_reset"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="10dp"
+                android:text="Reset"
+                android:textColor="@color/movieed_accent"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </com.gurusainathp.movieed.ui.diary.NestedHorizontalScrollView>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="32dp">
+
+            <!-- Empty state -->
+            <TextView
+                android:id="@+id/tv_tab_empty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="40dp"
+                android:drawablePadding="14dp"
+                android:drawableTint="@color/movieed_text_secondary"
+                android:drawableTop="@drawable/ic_empty_film"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:lineSpacingExtra="3dp"
+                android:text="No items found."
+                android:textColor="@color/movieed_text_secondary"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                <TextView
-                    android:id="@+id/btn_filter_prov_all"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginHorizontal="4dp"
-                    android:background="@drawable/bg_selected_filter"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:text="All"
-                    android:textColor="@color/movieed_text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_tab_grid"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:spanCount="3"
+                tools:listitem="@layout/item_diary_grid" />
 
-            </LinearLayout>
-        </com.gurusainathp.movieed.ui.diary.NestedHorizontalScrollView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView>
+</LinearLayout>

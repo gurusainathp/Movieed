@@ -1,4 +1,4 @@
-package com.gurusainathp.movieed.ui.person;
+package com.gurusainathp.movieed.ui.common;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -7,10 +7,12 @@ import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -20,30 +22,39 @@ import com.gurusainathp.movieed.R;
 import java.util.List;
 
 /**
- * Small themed dropdown that opens under a filter chip.
- * One row per option: label, optional count, and a check mark on the selected one.
+ * Small themed dropdown that opens under a filter chip (shared by the person page and the diary).
+ * One row per option: label, optional detail (e.g. a count), and a check mark on the selected one.
  */
-final class FilterDropdown {
+public final class FilterDropdown {
 
-    interface OnSelected {
+    public interface OnSelected {
         void onSelected(int id);
     }
 
-    static final class Option {
+    public static final class Option {
         final int id;
         @NonNull
         final String label;
         @Nullable
-        final String detail;     // e.g. a count
+        final String detail;
         final boolean selected;
-        final boolean dimmed;              // e.g. a count of 0
+        final boolean dimmed;
+        @DrawableRes
+        final int iconRes; // 0 = no icon
 
-        Option(int id, @NonNull String label, @Nullable String detail, boolean selected, boolean dimmed) {
+        public Option(int id, @NonNull String label, @Nullable String detail,
+                      boolean selected, boolean dimmed) {
+            this(id, label, detail, selected, dimmed, 0);
+        }
+
+        public Option(int id, @NonNull String label, @Nullable String detail,
+                      boolean selected, boolean dimmed, @DrawableRes int iconRes) {
             this.id = id;
             this.label = label;
             this.detail = detail;
             this.selected = selected;
             this.dimmed = dimmed;
+            this.iconRes = iconRes;
         }
     }
 
@@ -54,7 +65,8 @@ final class FilterDropdown {
     private FilterDropdown() {
     }
 
-    static void show(@NonNull View anchor, @NonNull List<Option> options, @NonNull OnSelected callback) {
+    public static void show(@NonNull View anchor, @NonNull List<Option> options,
+                            @NonNull OnSelected callback) {
         Context ctx = anchor.getContext();
         float density = ctx.getResources().getDisplayMetrics().density;
         LayoutInflater inflater = LayoutInflater.from(ctx);
@@ -77,6 +89,16 @@ final class FilterDropdown {
             TextView label = row.findViewById(R.id.tv_option_label);
             TextView detail = row.findViewById(R.id.tv_option_count);
             View check = row.findViewById(R.id.iv_option_check);
+            ImageView icon = row.findViewById(R.id.iv_option_icon);
+
+            if (icon != null) {
+                if (o.iconRes != 0) {
+                    icon.setImageResource(o.iconRes);
+                    icon.setVisibility(View.VISIBLE);
+                } else {
+                    icon.setVisibility(View.GONE);
+                }
+            }
 
             label.setText(o.label);
             label.setTextColor(o.selected ? primary : textPrimary);
@@ -101,7 +123,8 @@ final class FilterDropdown {
         // Size: at least as wide as the chip, capped in height (the list scrolls beyond that)
         int minWidth = Math.max(anchor.getWidth(), Math.round(MIN_WIDTH_DP * density));
         content.measure(
-                View.MeasureSpec.makeMeasureSpec(ctx.getResources().getDisplayMetrics().widthPixels, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(ctx.getResources().getDisplayMetrics().widthPixels,
+                        View.MeasureSpec.AT_MOST),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
         int pad = Math.round(SHADOW_PADDING_DP * density * 2);
         popup.setWidth(Math.max(content.getMeasuredWidth(), minWidth + pad));

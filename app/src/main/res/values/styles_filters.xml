@@ -43,4 +43,12 @@
         <item name="android:windowExitAnimation">@anim/filter_popup_out</item>
     </style>
 
+    <!-- Tab labels: bold, not forced to upper case -->
+    <style name="TextAppearance.Movieed.Tab" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
 </resources>

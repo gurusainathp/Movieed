@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!-- One row in a filter dropdown: label, count, check mark when selected -->
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -11,6 +11,16 @@
     android:minHeight="44dp"
     android:orientation="horizontal"
     android:paddingHorizontal="16dp">
+
+    <!-- Optional leading icon (e.g. a streaming provider logo) -->
+    <ImageView
+        android:id="@+id/iv_option_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tv_option_label"

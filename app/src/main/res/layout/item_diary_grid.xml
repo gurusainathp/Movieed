@@ -1,48 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- Just a rounded poster. No card, no border. A small dark dot carries the reaction emoji
+     (Watched) or "+" (Watchlist). The tap ripple is clipped to the rounded corners. -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="@drawable/ripple_poster">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/iv_diary_poster"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/movieed_surface_elevated"
         android:contentDescription="@null"
         android:scaleType="centerCrop"
-        android:background="@color/movieed_surface_elevated"
         app:layout_constraintDimensionRatio="2:3"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Movieed.Poster"
         tools:src="@tools:sample/backgrounds/scenic" />
 
-    <com.google.android.material.card.MaterialCardView
+    <FrameLayout
         android:id="@+id/card_badge"
         android:layout_width="26dp"
         android:layout_height="26dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="4dp"
-        app:cardBackgroundColor="#CC1E2420"
-        app:cardCornerRadius="13dp"
-        app:cardElevation="2dp"
-        app:strokeWidth="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/bg_badge_dot"
+        app:layout_constraintBottom_toBottomOf="@id/iv_diary_poster"
+        app:layout_constraintEnd_toEndOf="@id/iv_diary_poster">
 
         <TextView
             android:id="@+id/tv_diary_badge"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textColor="@color/movieed_text_primary"
-            android:textSize="12sp"
+            android:includeFontPadding="false"
+            android:textColor="@color/movieed_primary"
+            android:textSize="13sp"
             android:textStyle="bold"
             tools:text="😍" />
 
-    </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

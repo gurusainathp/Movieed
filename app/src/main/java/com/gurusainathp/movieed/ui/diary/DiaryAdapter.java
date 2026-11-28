@@ -1,5 +1,6 @@
 package com.gurusainathp.movieed.ui.diary;
 
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -22,6 +24,9 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
     public interface OnDiaryClickListener {
         void onDiaryClick(MovieLogWithDetails item);
     }
+
+    // Posters are ~80dp wide in a 4-column grid, so w342 is plenty (w500 just wastes memory)
+    private static final String POSTER_BASE = "https://image.tmdb.org/t/p/w342";
 
     private final List<MovieLogWithDetails> items = new ArrayList<>();
     private final OnDiaryClickListener listener;
@@ -62,6 +67,12 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
     }
 
     @Override
+    public void onViewRecycled(@NonNull DiaryViewHolder holder) {
+        Glide.with(holder.ivPoster).clear(holder.ivPoster);
+        super.onViewRecycled(holder);
+    }
+
+    @Override
     public int getItemCount() {
         return items.size();
     }
@@ -83,12 +94,21 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.DiaryViewHol
             if (item == null || item.log == null) return;
 
             if (item.movie != null && item.movie.getPosterPath() != null) {
-                Glide.with(itemView.getContext())
-                        .load("https://image.tmdb.org/t/p/w500" + item.movie.getPosterPath())
+                Glide.with(ivPoster)
+                        .load(POSTER_BASE + item.movie.getPosterPath())
                         .placeholder(R.color.movieed_surface_elevated)
+                        .error(R.color.movieed_surface_elevated)
                         .into(ivPoster);
             } else {
-                ivPoster.setImageResource(R.color.movieed_surface_elevated);
+                Glide.with(ivPoster).clear(ivPoster);
+                ivPoster.setImageDrawable(new ColorDrawable(ContextCompat.getColor(
+                        itemView.getContext(), R.color.movieed_surface_elevated)));
+            }
+
+            // TalkBack: read the film title instead of nothing
+            // (if getTitle() isn't available on item.movie in your model, delete these 3 lines)
+            if (item.movie != null && item.movie.getTitle() != null) {
+                itemView.setContentDescription(item.movie.getTitle());
             }
 
             boolean hasReaction = item.log.getReaction() != null && !item.log.getReaction().isEmpty();
