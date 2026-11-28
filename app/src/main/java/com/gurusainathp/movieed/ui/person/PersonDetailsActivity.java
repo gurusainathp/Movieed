@@ -109,7 +109,7 @@ public class PersonDetailsActivity extends AppCompatActivity {
                 findViewById(R.id.iv_person_backdrop),
                 findViewById(R.id.view_backdrop_dim));
 
-        findViewById(R.id.btn_person_back).setOnClickListener(v -> finish());
+
 
         observeViewModel();
 
