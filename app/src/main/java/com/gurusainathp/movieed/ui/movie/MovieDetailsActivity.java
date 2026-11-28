@@ -59,10 +59,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private TextView tvTypeBadge;
     private TextView tvTitle;
     private TextView tvYear;
-    private TextView tvDetailsRating;
     private TextView tvOverview;
     private RecyclerView cgGenres;
     private GenreBadgeAdapter genreAdapter;
+
+    private TextView tvStatRuntime;
+    private TextView tvStatRatingStat;
+    private TextView tvStatVotes;
 
     private Button btnActionWatchlist;
     private Button btnActionRate;
@@ -97,9 +100,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         tvTypeBadge = findViewById(R.id.tv_details_type_badge);
         tvTitle = findViewById(R.id.tv_details_title);
         tvYear = findViewById(R.id.tv_details_year);
-        tvDetailsRating = findViewById(R.id.tv_details_rating);
         tvOverview = findViewById(R.id.tv_details_overview);
         cgGenres = findViewById(R.id.cg_movie_genres);
+
+        tvStatRuntime = findViewById(R.id.tv_stat_runtime);
+        tvStatRatingStat = findViewById(R.id.tv_stat_rating);
+        tvStatVotes = findViewById(R.id.tv_stat_votes);
 
         genreAdapter = new GenreBadgeAdapter();
         cgGenres.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -173,11 +179,22 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 tvOverview.setText(dto.getOverview());
 
                 double voteAvg = dto.getVoteAverage();
-                if (voteAvg > 0) {
-                    tvDetailsRating.setText("★ " + String.format(Locale.US, "%.1f", voteAvg));
-                    tvDetailsRating.setVisibility(View.VISIBLE);
-                } else {
-                    tvDetailsRating.setVisibility(View.GONE);
+
+                if (tvStatRuntime != null) {
+                    int runtime = dto.getRuntime();
+                    if (runtime > 0) {
+                        int hrs = runtime / 60;
+                        int mins = runtime % 60;
+                        tvStatRuntime.setText(hrs > 0 ? (hrs + "h " + mins + "m") : (mins + "m"));
+                    } else {
+                        tvStatRuntime.setText("—");
+                    }
+                }
+                if (tvStatRatingStat != null) {
+                    tvStatRatingStat.setText(voteAvg > 0 ? ("★ " + String.format(Locale.US, "%.1f", voteAvg)) : "—");
+                }
+                if (tvStatVotes != null) {
+                    tvStatVotes.setText(formatVoteCount(dto.getVoteCount()));
                 }
 
                 if (cgGenres != null) {
@@ -280,6 +297,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private String formatVoteCount(int count) {
+        if (count >= 1000000) {
+            return String.format(Locale.US, "%.1fM", count / 1000000.0);
+        } else if (count >= 1000) {
+            return String.format(Locale.US, "%dK", count / 1000);
+        }
+        return String.valueOf(count);
     }
 
     private void updateActionButtonsState() {
