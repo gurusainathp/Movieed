@@ -27,4 +27,9 @@
     <color name="movieed_bubble_slate">#8FA6BF</color>  <!-- dusty blue -->
     <color name="movieed_bubble_mauve">#B494AA</color>  <!-- soft mauve -->
     <color name="movieed_bubble_glass">#7FADA3</color>  <!-- sea glass -->
+
+    <!-- Poster scrim (movieed_background at different opacities) -->
+    <color name="movieed_scrim_clear">#00202522</color>   <!--  0% -->
+    <color name="movieed_scrim_soft">#26202522</color>    <!-- 15% -->
+    <color name="movieed_scrim_strong">#E6202522</color>  <!-- 90% -->
 </resources>
