@@ -133,16 +133,16 @@ public class DiaryTabFragment extends Fragment {
                         @Override
                         public void onResponse(@NonNull Call<TmdbWatchProvidersResponseDto> call,
                                                @NonNull Response<TmdbWatchProvidersResponseDto> response) {
-                            Set<Integer> icons = new HashSet<>();
+                            Set<Integer> providerIds = new HashSet<>();
                             if (response.isSuccessful() && response.body() != null && response.body().getResults() != null) {
                                 TmdbCountryWatchProvidersDto in = response.body().getResults().get("IN");
                                 if (in != null) {
-                                    addProvidersToSet(in.getFlatrate(), icons);
-                                    addProvidersToSet(in.getRent(), icons);
-                                    addProvidersToSet(in.getBuy(), icons);
+                                    addProvidersToSet(in.getFlatrate(), providerIds);
+                                    addProvidersToSet(in.getRent(), providerIds);
+                                    addProvidersToSet(in.getBuy(), providerIds);
                                 }
                             }
-                            movieProvidersMap.put(movieId, icons);
+                            movieProvidersMap.put(movieId, providerIds);
                             applyFilterAndRender();
                         }
 
@@ -157,9 +157,23 @@ public class DiaryTabFragment extends Fragment {
     private void addProvidersToSet(List<TmdbProviderDto> list, Set<Integer> targetSet) {
         if (list == null) return;
         for (TmdbProviderDto p : list) {
-            int iconRes = LocalProviderMapper.getLocalDrawableRes(p);
-            if (iconRes != 0) {
-                targetSet.add(iconRes);
+            if (p != null) {
+                targetSet.add(p.getProviderId());
+                int localRes = LocalProviderMapper.getLocalDrawableRes(p);
+                if (localRes == R.drawable.ic_provider_netflix) targetSet.add(8);
+                else if (localRes == R.drawable.ic_provider_prime_video) { targetSet.add(9); targetSet.add(119); }
+                else if (localRes == R.drawable.jiohotstar) { targetSet.add(122); targetSet.add(337); }
+                else if (localRes == R.drawable.sonyliv) targetSet.add(237);
+                else if (localRes == R.drawable.zee5) targetSet.add(232);
+                else if (localRes == R.drawable.ic_provider_apple_tv_plus) { targetSet.add(2); targetSet.add(350); }
+                else if (localRes == R.drawable.mx_player) targetSet.add(134);
+                else if (localRes == R.drawable.ic_provider_youtube_premium) targetSet.add(192);
+                else if (localRes == R.drawable.ic_provider_crunchyroll) targetSet.add(283);
+                else if (localRes == R.drawable.mubi_logo) targetSet.add(11);
+                else if (localRes == R.drawable.ic_provider_lionsgate_plus) targetSet.add(569);
+                else if (localRes == R.drawable.ic_provider_paramount_plus) targetSet.add(531);
+                else if (localRes == R.drawable.ic_provider_plex) targetSet.add(538);
+                else if (localRes == R.drawable.ic_provider_tubi) targetSet.add(73);
             }
         }
     }
@@ -184,8 +198,8 @@ public class DiaryTabFragment extends Fragment {
 
             // Provider filter
             if (state.providerId != DiaryFilterBar.State.ALL_PROVIDERS) {
-                Set<Integer> icons = item.movie != null ? movieProvidersMap.get((long) item.movie.getTmdbId()) : null;
-                if (icons == null || !icons.contains(state.providerId)) continue;
+                Set<Integer> providerIds = item.movie != null ? movieProvidersMap.get((long) item.movie.getTmdbId()) : null;
+                if (providerIds == null || !providerIds.contains(state.providerId)) continue;
             }
 
             filteredList.add(item);
@@ -195,15 +209,25 @@ public class DiaryTabFragment extends Fragment {
         Collections.sort(filteredList, (a, b) -> {
             long timeA = a.log.getUpdatedAt() > 0 ? a.log.getUpdatedAt() : a.log.getCreatedAt();
             long timeB = b.log.getUpdatedAt() > 0 ? b.log.getUpdatedAt() : b.log.getCreatedAt();
-            if (state.sort == DiaryFilterBar.Sort.OLDEST) {
-                return Long.compare(timeA, timeB);
-            } else if (state.sort == DiaryFilterBar.Sort.TITLE) {
-                String titleA = a.movie != null && a.movie.getTitle() != null ? a.movie.getTitle() : "";
-                String titleB = b.movie != null && b.movie.getTitle() != null ? b.movie.getTitle() : "";
+
+            String dateA = a.movie != null && a.movie.getReleaseDate() != null ? a.movie.getReleaseDate() : "";
+            String dateB = b.movie != null && b.movie.getReleaseDate() != null ? b.movie.getReleaseDate() : "";
+
+            String titleA = a.movie != null && a.movie.getTitle() != null ? a.movie.getTitle() : "";
+            String titleB = b.movie != null && b.movie.getTitle() != null ? b.movie.getTitle() : "";
+
+            if (state.sort == DiaryFilterBar.Sort.RECENT) {
+                return Long.compare(timeB, timeA);
+            } else if (state.sort == DiaryFilterBar.Sort.NEWEST) {
+                return dateB.compareTo(dateA);
+            } else if (state.sort == DiaryFilterBar.Sort.OLDEST) {
+                return dateA.compareTo(dateB);
+            } else if (state.sort == DiaryFilterBar.Sort.TITLE_AZ) {
                 return titleA.compareToIgnoreCase(titleB);
-            } else {
-                return Long.compare(timeB, timeA); // RECENT
+            } else if (state.sort == DiaryFilterBar.Sort.TITLE_ZA) {
+                return titleB.compareToIgnoreCase(titleA);
             }
+            return Long.compare(timeB, timeA);
         });
 
         adapter.setItems(filteredList);

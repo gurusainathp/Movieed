@@ -12,28 +12,35 @@ import com.gurusainathp.movieed.data.local.entity.MovieLogEntity;
 import com.gurusainathp.movieed.ui.common.FilterDropdown;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 /**
- * The row of filter chips at the top of a diary tab (same look and behaviour as the person
- * filmography filters): Provider, Reaction (Watched only), Type and Sort, plus Reset.
- * <p>
- * It only holds the selection and tells you when it changes; you apply it to your list:
- * <p>
- * filterBar = new DiaryFilterBar(view, !isWatchlistTab, state -> applyFilters(state));
- * filterBar.setProviders(providers);     // when the streaming providers are known
+ * The row of filter chips at the top of a diary tab: Provider, Reaction (Watched only), Type and Sort, plus Reset.
  */
 public final class DiaryFilterBar {
 
-    // ---- Options -------------------------------------------------------------------------
-
-    /**
-     * Reaction keys as stored in the diary log. Adjust if yours differ.
-     */
     private static final String[] REACTION_KEYS = {"love", "like", "umm", "dislike", "hate"};
+
+    public static final List<Provider> DEFAULT_PROVIDERS = Arrays.asList(
+            new Provider(122, "JioHotstar"),
+            new Provider(8, "Netflix"),
+            new Provider(9, "Prime Video"),
+            new Provider(237, "SonyLIV"),
+            new Provider(232, "ZEE5"),
+            new Provider(134, "MX Player"),
+            new Provider(2, "Apple TV+"),
+            new Provider(192, "YouTube Premium"),
+            new Provider(283, "Crunchyroll"),
+            new Provider(11, "MUBI"),
+            new Provider(569, "Lionsgate+"),
+            new Provider(531, "Paramount+"),
+            new Provider(538, "Plex"),
+            new Provider(73, "Tubi")
+    );
 
     public enum Media {
         ALL("All types"), MOVIES("Movies"), SERIES("Series");
@@ -47,9 +54,10 @@ public final class DiaryFilterBar {
 
     public enum Sort {
         RECENT("Recent", "Recently added"),
+        NEWEST("Newest", "Newest"),
         OLDEST("Oldest", "Oldest first"),
-        TITLE("A–Z", "Title A–Z"),
-        YEAR("Year", "Release year");
+        TITLE_AZ("A–Z", "A–Z"),
+        TITLE_ZA("Z–A", "Z–A");
 
         public final String chipLabel;
         public final String menuLabel;
@@ -71,14 +79,12 @@ public final class DiaryFilterBar {
         }
     }
 
-    // ---- State ---------------------------------------------------------------------------
-
     public static final class State {
         public static final int ALL_PROVIDERS = -1;
 
-        public final int providerId;                 // ALL_PROVIDERS = no provider filter
+        public final int providerId;
         @Nullable
-        public final String reaction;      // null = any reaction
+        public final String reaction;
         @NonNull
         public final Media media;
         @NonNull
@@ -134,8 +140,6 @@ public final class DiaryFilterBar {
         void onFilterChanged(@NonNull State state);
     }
 
-    // ---- Bar -----------------------------------------------------------------------------
-
     private final Listener listener;
     private final Chip chipProvider;
     private final Chip chipReaction;
@@ -143,13 +147,9 @@ public final class DiaryFilterBar {
     private final Chip chipSort;
     private final TextView tvReset;
 
-    private List<Provider> providers = Collections.emptyList();
+    private List<Provider> providers = new ArrayList<>(DEFAULT_PROVIDERS);
     private State state = State.defaults();
 
-    /**
-     * @param root          the tab page's root view (the layout with chip_provider, chip_reaction, ...)
-     * @param showReactions true on the Watched tab; the Watchlist has no reactions to filter by
-     */
     public DiaryFilterBar(@NonNull View root, boolean showReactions, @NonNull Listener listener) {
         this.listener = listener;
 
@@ -175,13 +175,21 @@ public final class DiaryFilterBar {
         return state;
     }
 
-    /**
-     * Call when the streaming providers are known (or change). The chip is hidden while the list is empty.
-     */
     public void setProviders(@Nullable List<Provider> newProviders) {
-        providers = newProviders == null ? Collections.<Provider>emptyList() : new ArrayList<>(newProviders);
-
-        // A selected provider that no longer exists would leave the list filtered by nothing
+        if (newProviders != null && !newProviders.isEmpty()) {
+            List<Provider> merged = new ArrayList<>(DEFAULT_PROVIDERS);
+            for (Provider p : newProviders) {
+                boolean exists = false;
+                for (Provider d : merged) {
+                    if (d.id == p.id || d.name.equalsIgnoreCase(p.name)) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) merged.add(p);
+            }
+            this.providers = merged;
+        }
         if (state.providerId != State.ALL_PROVIDERS && findProvider(state.providerId) == null) {
             update(state.withProvider(State.ALL_PROVIDERS));
         } else {
@@ -189,15 +197,10 @@ public final class DiaryFilterBar {
         }
     }
 
-    /**
-     * Restore a saved selection without notifying the listener.
-     */
     public void setState(@NonNull State newState) {
         state = newState;
         render();
     }
-
-    // ---- Menus ---------------------------------------------------------------------------
 
     private void showProviderMenu() {
         List<FilterDropdown.Option> options = new ArrayList<>();
@@ -237,8 +240,6 @@ public final class DiaryFilterBar {
         FilterDropdown.show(chipSort, options, id -> update(state.withSort(Sort.values()[id])));
     }
 
-    // ---- Internals -----------------------------------------------------------------------
-
     private void update(@NonNull State newState) {
         if (newState.equals(state)) return;
         state = newState;
@@ -247,21 +248,17 @@ public final class DiaryFilterBar {
     }
 
     private void render() {
-        // Provider
-        chipProvider.setVisibility(providers.isEmpty() ? View.GONE : View.VISIBLE);
+        chipProvider.setVisibility(View.VISIBLE);
         Provider selected = findProvider(state.providerId);
         chipProvider.setText(selected != null ? selected.name : "All services");
         chipProvider.setActivated(selected != null);
 
-        // Reaction
         chipReaction.setText(state.reaction == null ? "Any reaction" : reactionLabel(state.reaction));
         chipReaction.setActivated(state.reaction != null);
 
-        // Type
         chipType.setText(state.media.label);
         chipType.setActivated(state.media != Media.ALL);
 
-        // Sort
         chipSort.setText(state.sort.chipLabel);
         chipSort.setActivated(state.sort != Sort.RECENT);
 
@@ -277,18 +274,12 @@ public final class DiaryFilterBar {
         return null;
     }
 
-    /**
-     * "😍 Love" (emoji comes from your existing mapping).
-     */
     private static String reactionLabel(@NonNull String key) {
         String emoji = MovieLogEntity.getEmojiForReaction(key);
         String name = key.substring(0, 1).toUpperCase(Locale.ROOT) + key.substring(1);
         return emoji == null || emoji.isEmpty() ? name : emoji + " " + name;
     }
 
-    /**
-     * The chevron is the chip's close icon, so it needs the same click handler as the chip body.
-     */
     private static void bindDropdown(Chip chip, Runnable open) {
         chip.setOnClickListener(v -> open.run());
         chip.setOnCloseIconClickListener(v -> open.run());
