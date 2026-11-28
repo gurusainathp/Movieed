@@ -48,21 +48,67 @@ public class TmdbPersonCastCreditDto {
     @SerializedName("genre_ids")
     private List<Integer> genreIds;
 
-    public int getId() { return id; }
-    public String getTitle() { return title != null ? title : name; }
-    public String getOverview() { return overview != null ? overview : ""; }
+    @SerializedName("department")
+    private String department;
+    @SerializedName("popularity")
+    private double popularity;
+
+    public int getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title != null ? title : name;
+    }
+
+    public String getOverview() {
+        return overview != null ? overview : "";
+    }
+
     public String getCharacter() {
         if (character != null && !character.isEmpty()) {
             return character;
         }
         return job != null ? job : "";
     }
-    public String getJob() { return job; }
-    public String getReleaseDate() { return releaseDate != null ? releaseDate : firstAirDate; }
-    public String getPosterPath() { return posterPath; }
-    public String getBackdropPath() { return backdropPath; }
-    public String getMediaType() { return mediaType; }
-    public double getVoteAverage() { return voteAverage; }
-    public int getVoteCount() { return voteCount; }
-    public List<Integer> getGenreIds() { return genreIds; }
+
+    public String getJob() {
+        return job;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate != null ? releaseDate : firstAirDate;
+    }
+
+    public String getPosterPath() {
+        return posterPath;
+    }
+
+    public String getBackdropPath() {
+        return backdropPath;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public double getVoteAverage() {
+        return voteAverage;
+    }
+
+    public int getVoteCount() {
+        return voteCount;
+    }
+
+    public List<Integer> getGenreIds() {
+        return genreIds;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public double getPopularity() {
+        return popularity;
+    }
 }

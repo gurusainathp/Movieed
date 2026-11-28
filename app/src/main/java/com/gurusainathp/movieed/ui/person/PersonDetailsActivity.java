@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.button.MaterialButton;
 import com.gurusainathp.movieed.R;
 import com.gurusainathp.movieed.data.remote.dto.TmdbMovieDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbPersonCastCreditDto;
@@ -51,13 +50,7 @@ public class PersonDetailsActivity extends AppCompatActivity {
 
     private RecyclerView rvKnownFor;
     private HomeMovieAdapter knownForAdapter;
-
-    private RecyclerView rvFilmography;
-    private PersonFilmographyAdapter filmographyAdapter;
-    private MaterialButton btnShowAll;
-
     private boolean isBioExpanded = false;
-    private boolean isFilmographyExpanded = false;
     private List<TmdbPersonCastCreditDto> fullCreditsList = new ArrayList<>();
 
     @Override
@@ -79,8 +72,6 @@ public class PersonDetailsActivity extends AppCompatActivity {
         tvReadMore = findViewById(R.id.tv_read_more);
 
         rvKnownFor = findViewById(R.id.rv_person_known_for);
-        rvFilmography = findViewById(R.id.rv_person_filmography);
-        btnShowAll = findViewById(R.id.btn_show_all_filmography);
 
         tvReadMore.setOnClickListener(v -> {
             isBioExpanded = !isBioExpanded;
@@ -104,20 +95,21 @@ public class PersonDetailsActivity extends AppCompatActivity {
         rvKnownFor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvKnownFor.setAdapter(knownForAdapter);
 
-        filmographyAdapter = new PersonFilmographyAdapter(credit -> {
+        new PersonFilmographyBinder(this, findViewById(R.id.scroll_person), viewModel, credit -> {
             if (credit != null) {
                 boolean isTv = "tv".equals(credit.getMediaType());
-                MovieDetailsActivity.launch(this, credit.getId(), credit.getTitle(), credit.getPosterPath(), isTv);
+                MovieDetailsActivity.launch(this, credit.getId(), credit.getTitle(),
+                        credit.getPosterPath(), isTv);
             }
         });
-        rvFilmography.setLayoutManager(new LinearLayoutManager(this));
-        rvFilmography.setAdapter(filmographyAdapter);
 
-        btnShowAll.setOnClickListener(v -> {
-            isFilmographyExpanded = true;
-            btnShowAll.setVisibility(View.GONE);
-            displayFilmography();
-        });
+        new BackdropScrollEffect(
+                findViewById(R.id.scroll_person),
+                findViewById(R.id.section_filmography),
+                findViewById(R.id.iv_person_backdrop),
+                findViewById(R.id.view_backdrop_dim));
+
+        findViewById(R.id.btn_person_back).setOnClickListener(v -> finish());
 
         observeViewModel();
 
@@ -235,7 +227,6 @@ public class PersonDetailsActivity extends AppCompatActivity {
                     knownForAdapter.setMovies(knownForFallback);
                 }
 
-                displayFilmography();
             }
         });
 
@@ -249,28 +240,23 @@ public class PersonDetailsActivity extends AppCompatActivity {
     private String formatDepartment(String department) {
         if (department == null) return "";
         switch (department.trim().toLowerCase()) {
-            case "acting": return "Actor";
-            case "directing": return "Director";
-            case "writing": return "Writer";
-            case "production": return "Producer";
-            case "editing": return "Editor";
-            case "camera": return "Cinematographer";
+            case "acting":
+                return "Actor";
+            case "directing":
+                return "Director";
+            case "writing":
+                return "Writer";
+            case "production":
+                return "Producer";
+            case "editing":
+                return "Editor";
+            case "camera":
+                return "Cinematographer";
             case "sound":
-            case "music": return "Composer";
-            default: return department;
-        }
-    }
-
-    private void displayFilmography() {
-        if (fullCreditsList.isEmpty()) return;
-
-        if (isFilmographyExpanded || fullCreditsList.size() <= 10) {
-            filmographyAdapter.setCredits(fullCreditsList);
-            btnShowAll.setVisibility(View.GONE);
-        } else {
-            List<TmdbPersonCastCreditDto> subList = fullCreditsList.subList(0, 10);
-            filmographyAdapter.setCredits(subList);
-            btnShowAll.setVisibility(View.VISIBLE);
+            case "music":
+                return "Composer";
+            default:
+                return department;
         }
     }
 }

@@ -1,43 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- One filmography row: a clean list item, no card. Dividers are drawn by ListDividerDecoration
+     (inset so the line starts under the text, not under the poster). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/row_credit"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="16dp"
-    android:paddingBottom="16dp">
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="horizontal"
+    android:paddingVertical="14dp">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_poster"
-        android:layout_width="90dp"
-        android:layout_height="127dp"
-        app:cardBackgroundColor="@color/movieed_surface"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="0dp"
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_poster"
+        android:layout_width="64dp"
+        android:layout_height="96dp"
+        android:background="@color/movieed_surface_elevated"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Movieed.Poster"
         app:strokeColor="@color/movieed_border"
         app:strokeWidth="1dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_poster"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/movieed_surface_elevated"
-            android:scaleType="centerCrop"
-            tools:src="@tools:sample/backgrounds/scenic" />
-
-    </com.google.android.material.card.MaterialCardView>
+        tools:src="@tools:sample/backgrounds/scenic" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@id/card_poster"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/card_poster"
-        app:layout_constraintTop_toTopOf="@id/card_poster">
+        android:layout_marginStart="14dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/tv_title"
@@ -46,7 +38,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:textColor="@color/movieed_text_primary"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             tools:text="The Dark Knight" />
 
@@ -54,40 +46,64 @@
             android:id="@+id/tv_character"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="3dp"
             android:ellipsize="end"
             android:maxLines="2"
             android:textColor="@color/movieed_text_secondary"
             android:textSize="13sp"
             tools:text="Bruce Wayne / Batman" />
 
+        <!-- MOVIE · 2008 · ★ 8.5 · ✓ LOGGED -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tv_year"
-                android:layout_width="0dp"
+                android:id="@+id/tv_type"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:letterSpacing="0.1"
+                android:textColor="@color/movieed_primary"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                tools:text="MOVIE" />
+
+            <TextView
+                android:id="@+id/tv_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:textColor="@color/movieed_text_secondary"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 tools:text="2008" />
 
             <TextView
                 android:id="@+id/tv_rating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
                 android:textColor="@color/movieed_accent"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="★ 8.5" />
+
+            <TextView
+                android:id="@+id/tv_logged"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:letterSpacing="0.1"
+                android:text="✓ LOGGED"
+                android:textColor="@color/movieed_primary"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
         </LinearLayout>
 
     </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

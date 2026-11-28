@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Dropdown shown under a filter chip. The outer padding leaves room for the card's shadow. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:padding="8dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/movieed_surface_elevated"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/movieed_border"
+        app:strokeWidth="1dp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/layout_filter_options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingVertical="6dp" />
+        </ScrollView>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

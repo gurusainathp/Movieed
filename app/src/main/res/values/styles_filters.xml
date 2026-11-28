@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Compact filter chip: 34dp high, dark fill, thin border. Active = sage outline + sage text. -->
+    <style name="Widget.Movieed.FilterChip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/movieed_chip_bg</item>
+        <item name="chipStrokeColor">@color/movieed_chip_stroke</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipCornerRadius">17dp</item>
+        <item name="chipMinHeight">34dp</item>
+        <item name="chipStartPadding">12dp</item>
+        <item name="chipEndPadding">12dp</item>
+        <item name="textStartPadding">0dp</item>
+        <item name="textEndPadding">0dp</item>
+        <item name="chipIconVisible">false</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="rippleColor">@color/movieed_primary_dark</item>
+        <item name="android:textColor">@color/movieed_chip_text</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <!-- Same chip with a chevron; tapping it opens a dropdown (not checkable) -->
+    <style name="Widget.Movieed.FilterChip.Dropdown">
+        <item name="android:checkable">false</item>
+        <item name="closeIconVisible">true</item>
+        <item name="closeIcon">@drawable/ic_chevron_down</item>
+        <item name="closeIconSize">16dp</item>
+        <item name="closeIconTint">@color/movieed_text_secondary</item>
+        <item name="closeIconStartPadding">2dp</item>
+        <item name="closeIconEndPadding">0dp</item>
+        <item name="chipEndPadding">8dp</item>
+    </style>
+
+    <!-- Rounded corners for poster thumbnails -->
+    <style name="ShapeAppearance.Movieed.Poster" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <style name="Animation.Movieed.FilterPopup" parent="">
+        <item name="android:windowEnterAnimation">@anim/filter_popup_in</item>
+        <item name="android:windowExitAnimation">@anim/filter_popup_out</item>
+    </style>
+
+</resources>

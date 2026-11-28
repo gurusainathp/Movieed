@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?><!-- One row in a filter dropdown: label, count, check mark when selected -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="44dp"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp">
+
+    <TextView
+        android:id="@+id/tv_option_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/movieed_text_primary"
+        android:textSize="14sp"
+        tools:text="Newest" />
+
+    <TextView
+        android:id="@+id/tv_option_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textColor="@color/movieed_text_secondary"
+        android:textSize="12sp"
+        tools:text="24" />
+
+    <ImageView
+        android:id="@+id/iv_option_check"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginStart="12dp"
+        android:contentDescription="Selected"
+        android:src="@drawable/ic_check"
+        android:visibility="invisible"
+        app:tint="@color/movieed_primary" />
+</LinearLayout>

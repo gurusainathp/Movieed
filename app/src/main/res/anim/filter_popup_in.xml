@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Dropdown opens: fades in while settling down from slightly above and growing from its top-left corner -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/linear_out_slow_in"
+    android:shareInterpolator="true">
+    <alpha
+        android:duration="160"
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0" />
+    <scale
+        android:duration="200"
+        android:fromXScale="0.94"
+        android:fromYScale="0.88"
+        android:pivotX="20%"
+        android:pivotY="0%"
+        android:toXScale="1.0"
+        android:toYScale="1.0" />
+    <translate
+        android:duration="200"
+        android:fromYDelta="-3%"
+        android:toYDelta="0%" />
+</set>
