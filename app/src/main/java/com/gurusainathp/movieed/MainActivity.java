@@ -5,9 +5,9 @@ import android.os.Bundle;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -15,11 +15,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.gurusainathp.movieed.domain.AppPreloader;
 import com.gurusainathp.movieed.ui.HomeFragment;
 import com.gurusainathp.movieed.ui.HomeViewModel;
+import com.gurusainathp.movieed.ui.diary.DiaryFragment;
 import com.gurusainathp.movieed.ui.explore.ExploreFragment;
 import com.gurusainathp.movieed.ui.explore.ExploreViewModel;
 import com.gurusainathp.movieed.ui.profile.ProfileFragment;
 import com.gurusainathp.movieed.ui.profile.ProfileViewModel;
-import com.gurusainathp.movieed.ui.search.SearchFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,12 +63,12 @@ public class MainActivity extends AppCompatActivity {
         if (itemId == R.id.nav_explore) {
             tag = "explore";
             fragment = new ExploreFragment();
-        } else if (itemId == R.id.nav_search) {
-            tag = "search";
-            fragment = new SearchFragment();
         } else if (itemId == R.id.nav_diary) {
             tag = "diary";
-            fragment = new ProfileFragment(); // Merged Profile + Diary
+            fragment = new DiaryFragment();
+        } else if (itemId == R.id.nav_profile) {
+            tag = "profile";
+            fragment = new ProfileFragment();
         } else {
             tag = "home";
             fragment = new HomeFragment();

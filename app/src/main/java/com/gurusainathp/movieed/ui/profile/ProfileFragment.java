@@ -85,9 +85,6 @@ public class ProfileFragment extends Fragment {
     private TextView tvCountDislike;
     private TextView tvCountHate;
 
-    private TabLayout tabLayout;
-    private ViewPager2 viewPager;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -111,19 +108,6 @@ public class ProfileFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadUserData();
-
-        // Setup Diary Pager inside ProfileFragment
-        DiaryPagerAdapter diaryPagerAdapter = new DiaryPagerAdapter(this);
-        viewPager.setAdapter(diaryPagerAdapter);
-
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            if (position == 0) {
-                tab.setText("Watchlist");
-            } else {
-                tab.setText("Watched");
-            }
-        }).attach();
-
         observeViewModel();
     }
 
@@ -169,8 +153,6 @@ public class ProfileFragment extends Fragment {
         tvCountDislike = view.findViewById(R.id.tv_count_reaction_dislike);
         tvCountHate = view.findViewById(R.id.tv_count_reaction_hate);
 
-        tabLayout = view.findViewById(R.id.tl_profile_diary_tabs);
-        viewPager = view.findViewById(R.id.vp_profile_diary_pager);
         bubbleTopGenres = view.findViewById(R.id.bubble_top_genres);
 
         if (tvTotalFilms != null) tvTotalFilms.setText("0");

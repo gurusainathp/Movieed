@@ -1,36 +1,379 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll_profile"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/movieed_background">
+    android:background="@color/movieed_background"
+    android:clipToPadding="false"
+    android:paddingBottom="24dp">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar_profile"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/movieed_background"
-        app:elevation="0dp">
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
 
-        <!-- NOTE: "snap" removed. With a header this tall it would jump the header
-             fully open/closed every time the finger lifts. -->
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/collapsing_profile"
+        <!-- ============ Header: avatar, name, member since, theme toggle ============ -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_avatar"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                app:cardBackgroundColor="@color/movieed_surface_elevated"
+                app:cardCornerRadius="28dp"
+                app:strokeColor="@color/movieed_primary"
+                app:strokeWidth="2dp">
+
+                <TextView
+                    android:id="@+id/tv_avatar_initial"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    tools:text="A" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_profile_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/movieed_text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    tools:text="Alex" />
+
+                <TextView
+                    android:id="@+id/tv_member_since"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp"
+                    tools:text="Member since Mar 2026" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btn_theme_toggle"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Toggle Theme"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/movieed_text_primary" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Your story, one film at a time."
+            android:textColor="@color/movieed_text_secondary"
+            android:textSize="14sp" />
+
+        <!-- ============ Stats row 1 ============ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/movieed_surface"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/movieed_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_stat_total_films"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/movieed_primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        tools:text="14" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="LOGGED"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/movieed_surface"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/movieed_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_stat_watch_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/movieed_primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        tools:text="28 hrs" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="WATCH TIME"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- ============ Stats row 2: in watchlist + watched ============ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/movieed_surface"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/movieed_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_stat_in_watchlist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/movieed_primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        tools:text="5" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="IN WATCHLIST"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/movieed_surface"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/movieed_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_stat_watched_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/movieed_primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        tools:text="14" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="WATCHED"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- ============ Favorite films ============ -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/movieed_surface"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/movieed_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
-                app:layout_collapseMode="none">
+                android:padding="16dp">
 
-                <!-- ============ Header: avatar, name, member since, settings ============ -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="FAVORITE FILMS"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Pin up to four films that define you"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_favorite_films"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_home_movie_card" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ============ Reaction breakdown ============ -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/movieed_surface"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/movieed_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="REACTION BREAKDOWN"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_taste_summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Your emotional distribution across every logged story"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Love Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:text="😍"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progress_reaction_love"
+                        android:layout_width="0dp"
+                        android:layout_height="8dp"
+                        android:layout_marginHorizontal="12dp"
+                        android:layout_weight="1"
+                        app:indicatorColor="@color/movieed_primary"
+                        app:trackColor="@color/movieed_surface_elevated"
+                        app:trackCornerRadius="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_count_reaction_love"
+                        android:layout_width="24dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="12sp"
+                        tools:text="6" />
+                </LinearLayout>
+
+                <!-- Like Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -38,730 +381,348 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_avatar"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        app:cardBackgroundColor="@color/movieed_surface_elevated"
-                        app:cardCornerRadius="28dp"
-                        app:strokeColor="@color/movieed_primary"
-                        app:strokeWidth="2dp">
-
-                        <TextView
-                            android:id="@+id/tv_avatar_initial"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            tools:text="A" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="30dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
+                        android:text="🙂"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progress_reaction_like"
+                        android:layout_width="0dp"
+                        android:layout_height="8dp"
+                        android:layout_marginHorizontal="12dp"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        app:indicatorColor="@color/movieed_primary"
+                        app:trackColor="@color/movieed_surface_elevated"
+                        app:trackCornerRadius="4dp" />
 
-                        <!-- Same id as before; now shows the user's display name -->
-                        <TextView
-                            android:id="@+id/tv_profile_header"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/movieed_text_primary"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            tools:text="Alex" />
-
-                        <TextView
-                            android:id="@+id/tv_member_since"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:textColor="@color/movieed_text_secondary"
-                            android:textSize="12sp"
-                            tools:text="Member since Mar 2026" />
-                    </LinearLayout>
-
-                    <!-- Swap for your own gear icon (e.g. @drawable/ic_settings) if you have one -->
-                    <ImageButton
-                        android:id="@+id/btn_settings"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Settings"
-                        android:src="@android:drawable/ic_menu_preferences"
-                        app:tint="@color/movieed_text_primary" />
+                    <TextView
+                        android:id="@+id/tv_count_reaction_like"
+                        android:layout_width="24dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="12sp"
+                        tools:text="4" />
                 </LinearLayout>
+
+                <!-- Umm Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:text="😐"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progress_reaction_umm"
+                        android:layout_width="0dp"
+                        android:layout_height="8dp"
+                        android:layout_marginHorizontal="12dp"
+                        android:layout_weight="1"
+                        app:indicatorColor="@color/movieed_primary"
+                        app:trackColor="@color/movieed_surface_elevated"
+                        app:trackCornerRadius="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_count_reaction_umm"
+                        android:layout_width="24dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="12sp"
+                        tools:text="2" />
+                </LinearLayout>
+
+                <!-- Dislike Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:text="🙁"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progress_reaction_dislike"
+                        android:layout_width="0dp"
+                        android:layout_height="8dp"
+                        android:layout_marginHorizontal="12dp"
+                        android:layout_weight="1"
+                        app:indicatorColor="@color/movieed_primary"
+                        app:trackColor="@color/movieed_surface_elevated"
+                        app:trackCornerRadius="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_count_reaction_dislike"
+                        android:layout_width="24dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="12sp"
+                        tools:text="1" />
+                </LinearLayout>
+
+                <!-- Hate Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:text="😡"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progress_reaction_hate"
+                        android:layout_width="0dp"
+                        android:layout_height="8dp"
+                        android:layout_marginHorizontal="12dp"
+                        android:layout_weight="1"
+                        app:indicatorColor="@color/movieed_primary"
+                        app:trackColor="@color/movieed_surface_elevated"
+                        app:trackCornerRadius="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_count_reaction_hate"
+                        android:layout_width="24dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="12sp"
+                        tools:text="1" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ============ All-time favorites ============ -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/movieed_surface"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/movieed_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Top Actors -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="YOUR TOP ACTORS"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_empty_actors"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Log a few more films"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_fav_actors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_cast" />
+
+                <!-- Top Actresses -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="YOUR TOP ACTRESSES"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_empty_actresses"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Log a few more films"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_fav_actresses"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_cast" />
+
+                <!-- Top Directors -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="YOUR TOP DIRECTORS"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_empty_directors"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Log a few more films"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_fav_directors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_cast" />
+
+                <!-- Top Composers -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="YOUR TOP COMPOSERS"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_empty_composers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Log a few more films"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_fav_composers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_cast" />
+
+                <!-- Favorite Decade -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="FAVORITE DECADE"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_fav_decade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/movieed_accent"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    tools:text="2010s" />
+
+                <!-- Scrollable List of 5 Highest Rated Movies from Top Decade -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_decade_movies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_home_movie_card" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ============ Top genres ============ -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/movieed_surface"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/movieed_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Your story, one film at a time."
-                    android:textColor="@color/movieed_text_secondary"
-                    android:textSize="14sp" />
+                    android:letterSpacing="0.12"
+                    android:text="TOP GENRES"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-                <!-- ============ Stats row 1 (unchanged) ============ -->
-                <LinearLayout
+                <com.gurusainathp.movieed.ui.profile.GenreBubbleView
+                    android:id="@+id/bubble_top_genres"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="@color/movieed_surface"
-                        app:cardCornerRadius="12dp"
-                        app:strokeColor="@color/movieed_border"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:id="@+id/tv_stat_total_films"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/movieed_primary"
-                                android:textSize="26sp"
-                                android:textStyle="bold"
-                                tools:text="14" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="LOGGED"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="@color/movieed_surface"
-                        app:cardCornerRadius="12dp"
-                        app:strokeColor="@color/movieed_border"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:id="@+id/tv_stat_watch_time"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/movieed_primary"
-                                android:textSize="26sp"
-                                android:textStyle="bold"
-                                tools:text="28 hrs" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="WATCH TIME"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- ============ Stats row 2: this month + streak ============ -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="@color/movieed_surface"
-                        app:cardCornerRadius="12dp"
-                        app:strokeColor="@color/movieed_border"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:id="@+id/tv_stat_in_watchlist"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/movieed_primary"
-                                android:textSize="26sp"
-                                android:textStyle="bold"
-                                tools:text="5" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="IN WATCHLIST"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="@color/movieed_surface"
-                        app:cardCornerRadius="12dp"
-                        app:strokeColor="@color/movieed_border"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:id="@+id/tv_stat_watched_count"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/movieed_primary"
-                                android:textSize="26sp"
-                                android:textStyle="bold"
-                                tools:text="14" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="WATCHED"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- ============ Favorite films (pinned posters) ============ -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="12dp"
-                    app:strokeColor="@color/movieed_border"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="FAVORITE FILMS"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Pin up to four films that define you"
-                            android:textColor="@color/movieed_text_secondary"
-                            android:textSize="12sp" />
-
-                        <!-- Item layout: item_poster_small.xml (provided separately) -->
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_favorite_films"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:nestedScrollingEnabled="false"
-                            android:orientation="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            tools:itemCount="4"
-                            tools:listitem="@layout/item_home_movie_card" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- ============ Reaction breakdown (average rating removed) ============ -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="12dp"
-                    app:strokeColor="@color/movieed_border"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:letterSpacing="0.12"
-                            android:text="REACTION BREAKDOWN"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_taste_summary"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Your emotional distribution across every logged story"
-                            android:textColor="@color/movieed_text_secondary"
-                            android:textSize="12sp" />
-
-                        <!-- Love Row -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="30dp"
-                                android:layout_height="wrap_content"
-                                android:text="😍"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="16sp" />
-
-                            <com.google.android.material.progressindicator.LinearProgressIndicator
-                                android:id="@+id/progress_reaction_love"
-                                android:layout_width="0dp"
-                                android:layout_height="8dp"
-                                android:layout_marginHorizontal="12dp"
-                                android:layout_weight="1"
-                                app:indicatorColor="@color/movieed_primary"
-                                app:trackColor="@color/movieed_surface_elevated"
-                                app:trackCornerRadius="4dp" />
-
-                            <TextView
-                                android:id="@+id/tv_count_reaction_love"
-                                android:layout_width="24dp"
-                                android:layout_height="wrap_content"
-                                android:gravity="end"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="12sp"
-                                tools:text="6" />
-                        </LinearLayout>
-
-                        <!-- Like Row -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="30dp"
-                                android:layout_height="wrap_content"
-                                android:text="🙂"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="16sp" />
-
-                            <com.google.android.material.progressindicator.LinearProgressIndicator
-                                android:id="@+id/progress_reaction_like"
-                                android:layout_width="0dp"
-                                android:layout_height="8dp"
-                                android:layout_marginHorizontal="12dp"
-                                android:layout_weight="1"
-                                app:indicatorColor="@color/movieed_primary"
-                                app:trackColor="@color/movieed_surface_elevated"
-                                app:trackCornerRadius="4dp" />
-
-                            <TextView
-                                android:id="@+id/tv_count_reaction_like"
-                                android:layout_width="24dp"
-                                android:layout_height="wrap_content"
-                                android:gravity="end"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="12sp"
-                                tools:text="4" />
-                        </LinearLayout>
-
-                        <!-- Umm Row -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="30dp"
-                                android:layout_height="wrap_content"
-                                android:text="😐"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="16sp" />
-
-                            <com.google.android.material.progressindicator.LinearProgressIndicator
-                                android:id="@+id/progress_reaction_umm"
-                                android:layout_width="0dp"
-                                android:layout_height="8dp"
-                                android:layout_marginHorizontal="12dp"
-                                android:layout_weight="1"
-                                app:indicatorColor="@color/movieed_primary"
-                                app:trackColor="@color/movieed_surface_elevated"
-                                app:trackCornerRadius="4dp" />
-
-                            <TextView
-                                android:id="@+id/tv_count_reaction_umm"
-                                android:layout_width="24dp"
-                                android:layout_height="wrap_content"
-                                android:gravity="end"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="12sp"
-                                tools:text="2" />
-                        </LinearLayout>
-
-                        <!-- Dislike Row -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="30dp"
-                                android:layout_height="wrap_content"
-                                android:text="🙁"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="16sp" />
-
-                            <com.google.android.material.progressindicator.LinearProgressIndicator
-                                android:id="@+id/progress_reaction_dislike"
-                                android:layout_width="0dp"
-                                android:layout_height="8dp"
-                                android:layout_marginHorizontal="12dp"
-                                android:layout_weight="1"
-                                app:indicatorColor="@color/movieed_primary"
-                                app:trackColor="@color/movieed_surface_elevated"
-                                app:trackCornerRadius="4dp" />
-
-                            <TextView
-                                android:id="@+id/tv_count_reaction_dislike"
-                                android:layout_width="24dp"
-                                android:layout_height="wrap_content"
-                                android:gravity="end"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="12sp"
-                                tools:text="1" />
-                        </LinearLayout>
-
-                        <!-- Hate Row -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="30dp"
-                                android:layout_height="wrap_content"
-                                android:text="😡"
-                                android:textColor="@color/movieed_text_primary"
-                                android:textSize="16sp" />
-
-                            <com.google.android.material.progressindicator.LinearProgressIndicator
-                                android:id="@+id/progress_reaction_hate"
-                                android:layout_width="0dp"
-                                android:layout_height="8dp"
-                                android:layout_marginHorizontal="12dp"
-                                android:layout_weight="1"
-                                app:indicatorColor="@color/movieed_primary"
-                                app:trackColor="@color/movieed_surface_elevated"
-                                app:trackCornerRadius="4dp" />
-
-                            <TextView
-                                android:id="@+id/tv_count_reaction_hate"
-                                android:layout_width="24dp"
-                                android:layout_height="wrap_content"
-                                android:gravity="end"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="12sp"
-                                tools:text="1" />
-                        </LinearLayout>
-
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- ============ Top genres ============ -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="12dp"
-                    app:strokeColor="@color/movieed_border"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="TOP GENRES"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-
-                        <com.gurusainathp.movieed.ui.profile.GenreBubbleView
-                            android:id="@+id/bubble_top_genres"
-                            android:layout_width="match_parent"
-                            android:layout_height="220dp"
-                            android:layout_marginTop="8dp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- ============ All-time favorites: people + decade ============ -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="@color/movieed_surface"
-                    app:cardCornerRadius="12dp"
-                    app:strokeColor="@color/movieed_border"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <!-- Top Actors -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:letterSpacing="0.12"
-                            android:text="YOUR TOP ACTORS"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_empty_actors"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Log a few more films"
-                            android:textColor="@color/movieed_text_secondary"
-                            android:textSize="13sp"
-                            android:visibility="gone" />
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_fav_actors"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:clipToPadding="false"
-                            android:orientation="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            tools:listitem="@layout/item_cast" />
-
-                        <!-- Top Actresses -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:letterSpacing="0.12"
-                            android:text="YOUR TOP ACTRESSES"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_empty_actresses"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Log a few more films"
-                            android:textColor="@color/movieed_text_secondary"
-                            android:textSize="13sp"
-                            android:visibility="gone" />
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_fav_actresses"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:clipToPadding="false"
-                            android:orientation="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            tools:listitem="@layout/item_cast" />
-
-                        <!-- Top Directors -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:letterSpacing="0.12"
-                            android:text="YOUR TOP DIRECTORS"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_empty_directors"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Log a few more films"
-                            android:textColor="@color/movieed_text_secondary"
-                            android:textSize="13sp"
-                            android:visibility="gone" />
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_fav_directors"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:clipToPadding="false"
-                            android:orientation="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            tools:listitem="@layout/item_cast" />
-
-                        <!-- Top Composers -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:letterSpacing="0.12"
-                            android:text="YOUR TOP COMPOSERS"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_empty_composers"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Log a few more films"
-                            android:textColor="@color/movieed_text_secondary"
-                            android:textSize="13sp"
-                            android:visibility="gone" />
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_fav_composers"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:clipToPadding="false"
-                            android:orientation="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            tools:listitem="@layout/item_cast" />
-
-                        <!-- Favorite Decade -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:letterSpacing="0.12"
-                            android:text="FAVORITE DECADE"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_fav_decade"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textColor="@color/movieed_accent"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            tools:text="2010s" />
-
-                        <!-- Scrollable List of 5 Highest Rated Movies from Top Decade -->
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_decade_movies"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:clipToPadding="false"
-                            android:orientation="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            tools:listitem="@layout/item_home_movie_card" />
-
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
+                    android:layout_height="220dp"
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </LinearLayout>
 
-        <!-- Pinned Tabs for Watched & Watchlist (unchanged) -->
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tl_profile_diary_tabs"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:background="@color/movieed_surface"
-            app:tabBackground="@color/movieed_surface"
-            app:tabGravity="fill"
-            app:tabIndicator="@drawable/tab_indicator_sharp"
-            app:tabIndicatorColor="@color/movieed_primary"
-            app:tabIndicatorFullWidth="true"
-            app:tabIndicatorHeight="3dp"
-            app:tabMode="fixed"
-            app:tabSelectedTextColor="@color/movieed_primary"
-            app:tabTextColor="@color/movieed_text_secondary" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- ViewPager for Diary Tabs (unchanged; watched / watchlist fetched separately) -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/vp_profile_diary_pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.core.widget.NestedScrollView>
