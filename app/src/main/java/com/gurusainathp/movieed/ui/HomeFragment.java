@@ -1,5 +1,6 @@
 package com.gurusainathp.movieed.ui;
 
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,6 +26,8 @@ import com.gurusainathp.movieed.R;
 import com.gurusainathp.movieed.domain.model.Movie;
 import com.gurusainathp.movieed.ui.movie.MovieDetailsActivity;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class HomeFragment extends Fragment {
@@ -70,6 +74,12 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvNowPlayingMovies;
     private RecyclerView rvStreamingSeries;
 
+    // Shared by every HomeMovieAdapter list so poster views are reused across rows
+    private RecyclerView.RecycledViewPool posterViewPool;
+
+    // Controllers
+    private HomeSearchController homeSearchController;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -87,11 +97,63 @@ public class HomeFragment extends Fragment {
         setupRecyclerViews();
         observeViewModel();
 
+        homeSearchController = new HomeSearchController(this, view);
+
         btnRetry.setOnClickListener(v -> viewModel.loadHomeContent(BuildConfig.TMDB_API_KEY, true));
         btnSeeAllDiary.setOnClickListener(v -> navigateToTab(R.id.nav_diary));
         btnExploreMore.setOnClickListener(v -> navigateToTab(R.id.nav_explore));
 
         loadData();
+    }
+
+    @Override
+    public void onDestroyView() {
+        // Detach adapters so the old view tree can be garbage collected
+        detachList(rvRecentlyLogged);
+        detachList(rvRecommendedMovies);
+        detachList(rvClassicsMovies);
+        detachList(rvClassicsSeries);
+        detachList(rvTrendingMovies);
+        detachList(rvTrendingSeries);
+        detachList(rvNowPlayingMovies);
+        detachList(rvStreamingSeries);
+
+        posterViewPool = null;
+        homeSearchController = null;
+
+        pbLoading = null;
+        cardError = null;
+        tvError = null;
+        btnRetry = null;
+        sectionFeatured = null;
+        cardHeroBanner = null;
+        ivHeroBackdrop = null;
+        tvHeroTitle = null;
+        tvHeroYear = null;
+        tvHeroRating = null;
+        sectionRecentlyLogged = null;
+        btnSeeAllDiary = null;
+        sectionRecommended = null;
+        btnExploreMore = null;
+        rvRecentlyLogged = null;
+        rvRecommendedMovies = null;
+        rvClassicsMovies = null;
+        rvClassicsSeries = null;
+        rvTrendingMovies = null;
+        rvTrendingSeries = null;
+        rvNowPlayingMovies = null;
+        rvStreamingSeries = null;
+
+        recentLogAdapter = null;
+        recommendedAdapter = null;
+        classicsAdapter = null;
+        classicsSeriesAdapter = null;
+        trendingAdapter = null;
+        trendingSeriesAdapter = null;
+        nowPlayingAdapter = null;
+        streamingSeriesAdapter = null;
+
+        super.onDestroyView();
     }
 
     private void initViews(View view) {
@@ -124,9 +186,14 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupRecyclerViews() {
-        // User's recent logs
+        posterViewPool = new RecyclerView.RecycledViewPool();
+        posterViewPool.setMaxRecycledViews(0, 24);
+
+        // User's recent logs (different item layout, so it does not use the shared pool)
         recentLogAdapter = new HomeRecentLogAdapter(item -> {
             if (item != null && item.movie != null) {
+                // TODO: if your logged entity stores the media type, pass it as the 5th argument
+                // (like openMovieDetails does) so logged TV shows open as TV, not as movies.
                 MovieDetailsActivity.launch(
                         requireContext(),
                         item.movie.getTmdbId(),
@@ -135,43 +202,57 @@ public class HomeFragment extends Fragment {
                 );
             }
         });
-        rvRecentlyLogged.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvRecentlyLogged.setAdapter(recentLogAdapter);
+        setupHorizontalList(rvRecentlyLogged, recentLogAdapter, null);
 
         // You May Like These (Recommendations)
         recommendedAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvRecommendedMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvRecommendedMovies.setAdapter(recommendedAdapter);
+        setupHorizontalList(rvRecommendedMovies, recommendedAdapter, posterViewPool);
 
         // Hall of Fame Classics
         classicsAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvClassicsMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvClassicsMovies.setAdapter(classicsAdapter);
+        setupHorizontalList(rvClassicsMovies, classicsAdapter, posterViewPool);
 
         // Hall of Fame Classic Series
         classicsSeriesAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvClassicsSeries.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvClassicsSeries.setAdapter(classicsSeriesAdapter);
+        setupHorizontalList(rvClassicsSeries, classicsSeriesAdapter, posterViewPool);
 
         // Trending Movies
         trendingAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvTrendingMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvTrendingMovies.setAdapter(trendingAdapter);
+        setupHorizontalList(rvTrendingMovies, trendingAdapter, posterViewPool);
 
         // Trending Series
         trendingSeriesAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvTrendingSeries.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvTrendingSeries.setAdapter(trendingSeriesAdapter);
+        setupHorizontalList(rvTrendingSeries, trendingSeriesAdapter, posterViewPool);
 
         // Now Playing (In Theaters)
         nowPlayingAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvNowPlayingMovies.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvNowPlayingMovies.setAdapter(nowPlayingAdapter);
+        setupHorizontalList(rvNowPlayingMovies, nowPlayingAdapter, posterViewPool);
 
         // Streaming Series
         streamingSeriesAdapter = new HomeMovieAdapter(this::openMovieDetails);
-        rvStreamingSeries.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvStreamingSeries.setAdapter(streamingSeriesAdapter);
+        setupHorizontalList(rvStreamingSeries, streamingSeriesAdapter, posterViewPool);
+    }
+
+    /**
+     * One place for the horizontal list setup. Passing a shared pool lets lists with the
+     * same item layout reuse each other's views while scrolling the long home page.
+     */
+    private void setupHorizontalList(@NonNull RecyclerView rv,
+                                     @NonNull RecyclerView.Adapter<?> adapter,
+                                     @Nullable RecyclerView.RecycledViewPool pool) {
+        LinearLayoutManager lm = new LinearLayoutManager(
+                requireContext(), LinearLayoutManager.HORIZONTAL, false);
+        if (pool != null) {
+            // Needed so detached views actually go back into the shared pool
+            lm.setRecycleChildrenOnDetach(true);
+            rv.setRecycledViewPool(pool);
+        }
+        rv.setLayoutManager(lm);
+        rv.setAdapter(adapter);
+    }
+
+    private void detachList(@Nullable RecyclerView rv) {
+        if (rv != null) rv.setAdapter(null);
     }
 
     private void openMovieDetails(Movie movie) {
@@ -199,11 +280,17 @@ public class HomeFragment extends Fragment {
         viewModel.loadHomeContent(BuildConfig.TMDB_API_KEY, false);
     }
 
+    /**
+     * Lists coming from LiveData can be null; adapters should always get a real list.
+     */
+    private static <T> List<T> safeList(@Nullable List<T> list) {
+        return list != null ? list : Collections.emptyList();
+    }
+
     private void observeViewModel() {
         // Loading state
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
-            pbLoading.setVisibility(loading != null && loading ? View.VISIBLE : View.GONE);
-        });
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading ->
+                pbLoading.setVisibility(Boolean.TRUE.equals(loading) ? View.VISIBLE : View.GONE));
 
         // Error state
         viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
@@ -245,13 +332,19 @@ public class HomeFragment extends Fragment {
                     tvHeroRating.setVisibility(View.GONE);
                 }
 
-                String imagePath = movie.getBackdropPath() != null ? movie.getBackdropPath() : movie.getPosterPath();
+                String imagePath = movie.getBackdropPath() != null
+                        ? movie.getBackdropPath() : movie.getPosterPath();
                 if (imagePath != null) {
                     Glide.with(this)
                             .load("https://image.tmdb.org/t/p/w780" + imagePath)
                             .placeholder(R.color.movieed_surface_elevated)
                             .error(R.color.movieed_surface_elevated)
                             .into(ivHeroBackdrop);
+                } else {
+                    // No image for this movie: don't leave the previous hero image on screen
+                    Glide.with(this).clear(ivHeroBackdrop);
+                    ivHeroBackdrop.setImageDrawable(new ColorDrawable(
+                            ContextCompat.getColor(requireContext(), R.color.movieed_surface_elevated)));
                 }
 
                 cardHeroBanner.setOnClickListener(v -> openMovieDetails(movie));
@@ -271,33 +364,27 @@ public class HomeFragment extends Fragment {
         });
 
         // Hall of Fame Classics (Movies)
-        viewModel.getClassicsMovies().observe(getViewLifecycleOwner(), movies -> {
-            classicsAdapter.setMovies(movies);
-        });
+        viewModel.getClassicsMovies().observe(getViewLifecycleOwner(),
+                movies -> classicsAdapter.setMovies(safeList(movies)));
 
         // Hall of Fame Classic Series (TV)
-        viewModel.getClassicsSeries().observe(getViewLifecycleOwner(), series -> {
-            classicsSeriesAdapter.setMovies(series);
-        });
+        viewModel.getClassicsSeries().observe(getViewLifecycleOwner(),
+                series -> classicsSeriesAdapter.setMovies(safeList(series)));
 
         // Trending movies
-        viewModel.getTrendingMovies().observe(getViewLifecycleOwner(), movies -> {
-            trendingAdapter.setMovies(movies);
-        });
+        viewModel.getTrendingMovies().observe(getViewLifecycleOwner(),
+                movies -> trendingAdapter.setMovies(safeList(movies)));
 
         // Trending series
-        viewModel.getTrendingSeries().observe(getViewLifecycleOwner(), series -> {
-            trendingSeriesAdapter.setMovies(series);
-        });
+        viewModel.getTrendingSeries().observe(getViewLifecycleOwner(),
+                series -> trendingSeriesAdapter.setMovies(safeList(series)));
 
         // In Theaters
-        viewModel.getNowPlayingMovies().observe(getViewLifecycleOwner(), movies -> {
-            nowPlayingAdapter.setMovies(movies);
-        });
+        viewModel.getNowPlayingMovies().observe(getViewLifecycleOwner(),
+                movies -> nowPlayingAdapter.setMovies(safeList(movies)));
 
         // Streaming Series
-        viewModel.getStreamingSeries().observe(getViewLifecycleOwner(), series -> {
-            streamingSeriesAdapter.setMovies(series);
-        });
+        viewModel.getStreamingSeries().observe(getViewLifecycleOwner(),
+                series -> streamingSeriesAdapter.setMovies(safeList(series)));
     }
 }

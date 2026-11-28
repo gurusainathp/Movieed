@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  CHANGES TO fragment_home.xml  (this file is not a layout itself, just the pieces to paste)
+
+  STEP 1 - DELETE this whole block from inside the header FrameLayout (layout_home_header_root):
+           <com.google.android.material.card.MaterialCardView
+               android:id="@+id/card_home_search_overlay" ... > ... </MaterialCardView>
+           The search bar now lives at the ROOT of the screen (step 2) so the blur on the
+           scroll content does not blur the search bar itself.
+           KEEP the circular button (card_home_search_button) exactly as it is.
+
+  STEP 2 - DELETE the old "Dark Dim Overlay" View (view_search_dim_overlay, marginTop 80dp)
+           at the bottom of the root FrameLayout, and put the two views below in its place.
+           They must come AFTER the NestedScrollView so they draw on top of it,
+           and the scrim must come BEFORE the search bar.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Scrim: tinted with the app background colour. Tap anywhere to close search. -->
+    <View
+        android:id="@+id/view_search_dim_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/movieed_search_scrim"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone" />
+
+    <!-- Search bar. Starts as a 48dp circle sitting exactly on the button,
+         then grows to full width (width/margins are animated from code). -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_home_search_overlay"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="20dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/movieed_surface"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/movieed_border"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
+
+            <!-- Same size/centre as the icon on the button, so the morph looks seamless -->
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@android:drawable/ic_menu_search"
+                app:tint="@color/movieed_primary" />
+
+            <EditText
+                android:id="@+id/et_home_search_query"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="10dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:ellipsize="end"
+                android:hint="Search films, cast &amp; crew"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:textColor="@color/movieed_text_primary"
+                android:textColorHint="@color/movieed_text_secondary"
+                android:textSize="15sp" />
+
+            <ImageView
+                android:id="@+id/btn_close_home_search"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Close search"
+                android:focusable="true"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/movieed_text_secondary" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</merge>

@@ -1,607 +1,729 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scroll_home"
+    android:id="@+id/layout_home_root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/movieed_background"
-    android:clipToPadding="false"
-    android:paddingBottom="24dp">
+    android:background="@color/movieed_background">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_home"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp">
 
-        <!-- Header / Brand Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingTop="28dp"
-            android:paddingEnd="20dp">
+            android:orientation="vertical">
+
+            <!-- Header / Brand Section with circular search button.
+                 (The expanded search bar lives at the bottom of this file, at the root,
+                 so the background blur does not affect it.) -->
+            <FrameLayout
+                android:id="@+id/layout_home_header_root"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="24dp">
+
+                <!-- Normal Brand Title Stack -->
+                <LinearLayout
+                    android:id="@+id/layout_home_title_stack"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.2"
+                            android:text="MOVIEED"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Explore &amp; Log"
+                            android:textColor="@color/movieed_text_primary"
+                            android:textSize="26sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <!-- Circular Search Button on Top Right -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_home_search_button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        app:cardBackgroundColor="@color/movieed_surface"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="4dp"
+                        app:strokeColor="@color/movieed_border"
+                        app:strokeWidth="1dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Search"
+                            android:src="@android:drawable/ic_menu_search"
+                            app:tint="@color/movieed_primary" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:letterSpacing="0.2"
-                android:text="MOVIEED"
-                android:textColor="@color/movieed_primary"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Explore &amp; Log"
-                android:textColor="@color/movieed_text_primary"
-                android:textSize="26sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="4dp"
                 android:text="Track films, discover trending stories, and log your journey."
                 android:textColor="@color/movieed_text_secondary"
                 android:textSize="13sp" />
 
-        </LinearLayout>
+            <!-- Loading indicator -->
+            <ProgressBar
+                android:id="@+id/pb_home_loading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:indeterminateTint="@color/movieed_primary"
+                android:visibility="gone" />
 
-        <!-- Loading indicator -->
-        <ProgressBar
-            android:id="@+id/pb_home_loading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="32dp"
-            android:indeterminateTint="@color/movieed_primary"
-            android:visibility="gone" />
-
-        <!-- Error Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_home_error"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="16dp"
-            android:visibility="gone"
-            app:cardBackgroundColor="@color/movieed_surface"
-            app:cardCornerRadius="12dp"
-            app:strokeColor="@color/movieed_error"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
+            <!-- Error Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_home_error"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:id="@+id/tv_home_error"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:textColor="@color/movieed_text_secondary"
-                    android:textSize="13sp"
-                    tools:text="Failed to load movies. Tap retry." />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_home_retry"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Retry"
-                    android:textColor="@color/movieed_background"
-                    app:backgroundTint="@color/movieed_primary"
-                    app:cornerRadius="8dp" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- SECTION: FEATURED HERO BANNER -->
-        <LinearLayout
-            android:id="@+id/section_featured"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="20dp"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_hero_banner"
-                android:layout_width="match_parent"
-                android:layout_height="220dp"
-                android:clickable="true"
-                android:focusable="true"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
                 app:cardBackgroundColor="@color/movieed_surface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:strokeColor="@color/movieed_border"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/movieed_error"
                 app:strokeWidth="1dp">
 
-                <FrameLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                    <ImageView
-                        android:id="@+id/iv_hero_backdrop"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:contentDescription="@null"
-                        android:scaleType="centerCrop"
-                        tools:src="@tools:sample/backgrounds/scenic" />
-
-                    <!-- Dark Gradient Overlay for text readability -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="170dp"
-                        android:layout_gravity="bottom"
-                        android:background="@drawable/poster_scrim" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/tv_home_error"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="bottom"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                        android:gravity="center"
+                        android:textColor="@color/movieed_text_secondary"
+                        android:textSize="13sp"
+                        tools:text="Failed to load movies. Tap retry." />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_unselected_filter"
-                            android:letterSpacing="0.1"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp"
-                            android:text="FEATURED TODAY"
-                            android:textColor="@color/movieed_primary"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_home_retry"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Retry"
+                        android:textColor="@color/movieed_background"
+                        app:backgroundTint="@color/movieed_primary"
+                        app:cornerRadius="8dp" />
 
-                        <TextView
-                            android:id="@+id/tv_hero_title"
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SECTION: FEATURED HERO BANNER -->
+            <LinearLayout
+                android:id="@+id/section_featured"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="20dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_hero_banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/movieed_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="@color/movieed_border"
+                    app:strokeWidth="1dp">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/iv_hero_backdrop"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:textColor="@color/movieed_text_primary"
-                            android:textSize="20sp"
-                            android:textStyle="bold"
-                            tools:text="Dune: Part Two" />
+                            android:layout_height="match_parent"
+                            android:contentDescription="@null"
+                            android:scaleType="centerCrop"
+                            tools:src="@tools:sample/backgrounds/scenic" />
+
+                        <!-- Poster Scrim Gradient Overlay for text readability -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="170dp"
+                            android:layout_gravity="bottom"
+                            android:background="@drawable/poster_scrim" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                            android:layout_gravity="bottom"
+                            android:orientation="vertical"
+                            android:padding="16dp">
 
                             <TextView
-                                android:id="@+id/tv_hero_year"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/movieed_text_secondary"
-                                android:textSize="12sp"
-                                tools:text="2024" />
+                                android:background="@drawable/bg_unselected_filter"
+                                android:letterSpacing="0.1"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="4dp"
+                                android:text="FEATURED TODAY"
+                                android:textColor="@color/movieed_primary"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
 
                             <TextView
-                                android:id="@+id/tv_hero_rating"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tv_hero_title"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="12dp"
-                                android:textColor="@color/movieed_accent"
-                                android:textSize="12sp"
+                                android:layout_marginTop="6dp"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:textColor="@color/movieed_text_primary"
+                                android:textSize="20sp"
                                 android:textStyle="bold"
-                                tools:text="★ 8.4" />
+                                tools:text="Dune: Part Two" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/tv_hero_year"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/movieed_text_secondary"
+                                    android:textSize="12sp"
+                                    tools:text="2024" />
+
+                                <TextView
+                                    android:id="@+id/tv_hero_rating"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="12dp"
+                                    android:textColor="@color/movieed_accent"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    tools:text="★ 8.4" />
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
-                    </LinearLayout>
+                    </FrameLayout>
 
-                </FrameLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-
-        <!-- SECTION: RECENTLY LOGGED / WATCHLIST -->
-        <LinearLayout
-            android:id="@+id/section_recently_logged"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="20dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:letterSpacing="0.12"
-                    android:text="YOUR RECENT LOGS"
-                    android:textColor="@color/movieed_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/btn_see_all_diary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="4dp"
-                    android:text="Diary →"
-                    android:textColor="@color/movieed_accent"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_recently_logged"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
-
-        </LinearLayout>
-
-        <!-- SECTION: YOU MAY LIKE THESE -->
-        <LinearLayout
-            android:id="@+id/section_recommended"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp"
-            android:visibility="gone"
-            tools:visibility="visible">
-
+            <!-- SECTION: RECENTLY LOGGED / WATCHLIST -->
             <LinearLayout
+                android:id="@+id/section_recently_logged"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="20dp">
+                android:orientation="vertical"
+                android:paddingTop="28dp"
+                android:visibility="gone"
+                tools:visibility="visible">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:letterSpacing="0.12"
-                        android:text="YOU MAY LIKE THESE"
+                        android:text="YOUR RECENT LOGS"
                         android:textColor="@color/movieed_primary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/btn_see_all_diary"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Personalized picks based on your watch history"
+                        android:padding="4dp"
+                        android:text="Diary →"
+                        android:textColor="@color/movieed_accent"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_recently_logged"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- SECTION: YOU MAY LIKE THESE -->
+            <LinearLayout
+                android:id="@+id/section_recommended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="28dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:text="YOU MAY LIKE THESE"
+                            android:textColor="@color/movieed_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Personalized picks based on your watch history"
+                            android:textColor="@color/movieed_text_secondary"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/btn_explore_more"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="4dp"
+                        android:text="Explore More →"
+                        android:textColor="@color/movieed_accent"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_recommended_home_movies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- SECTION: HALL OF FAME CLASSICS -->
+            <LinearLayout
+                android:id="@+id/section_classics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="28dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="HALL OF FAME CLASSICS"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="2dp"
+                    android:text="All-time masterpieces every cinema lover must experience"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_classics_movies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- SECTION: HALL OF FAME CLASSIC SERIES -->
+            <LinearLayout
+                android:id="@+id/section_classics_series"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="28dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="HALL OF FAME CLASSIC SERIES"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="2dp"
+                    android:text="Timeless television masterpieces to binge and log"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_classics_series"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- SECTION: TRENDING TODAY -->
+            <LinearLayout
+                android:id="@+id/section_trending"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="28dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="TRENDING TODAY"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="2dp"
+                    android:text="What cinema lovers are watching right now"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_trending_movies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- SECTION: TRENDING SERIES TODAY -->
+            <LinearLayout
+                android:id="@+id/section_trending_series"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="28dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="TRENDING SERIES TODAY"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="2dp"
+                    android:text="Top television shows generating buzz right now"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_trending_series"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- SECTION: IN THEATERS NOW -->
+            <LinearLayout
+                android:id="@+id/section_now_playing"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="28dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="IN THEATERS NOW"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="2dp"
+                    android:text="Fresh releases waiting for your reaction"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_now_playing_movies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- SECTION: STREAMING SERIES -->
+            <LinearLayout
+                android:id="@+id/section_streaming_series"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="28dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:letterSpacing="0.12"
+                    android:text="STREAMING SERIES"
+                    android:textColor="@color/movieed_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="2dp"
+                    android:text="Popular binge-worthy shows on streaming"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_streaming_series"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+            <!-- FOOTER / MOTTO CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="36dp"
+                app:cardBackgroundColor="@color/movieed_surface"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="@color/movieed_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎬 Log your stories"
+                        android:textColor="@color/movieed_text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:text="Every film you watch is part of your memory. Keep track of what moved you."
                         android:textColor="@color/movieed_text_secondary"
                         android:textSize="12sp" />
 
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/btn_explore_more"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="4dp"
-                    android:text="Explore More →"
-                    android:textColor="@color/movieed_accent"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_recommended_home_movies"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-        <!-- SECTION: HALL OF FAME CLASSICS -->
+    <!-- Scrim: tinted with the app background colour. Tap anywhere to close search.
+         Must stay AFTER the scroll view and BEFORE the search bar. -->
+    <View
+        android:id="@+id/view_search_dim_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/movieed_search_scrim"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone" />
+
+    <!-- Expanding search bar. Starts as a 48dp circle exactly on top of the search button,
+         then grows to full width (width / margins are animated by HomeSearchController). -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_home_search_overlay"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="20dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/movieed_surface"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/movieed_border"
+        app:strokeWidth="1dp">
+
         <LinearLayout
-            android:id="@+id/section_classics"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp">
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:letterSpacing="0.12"
-                android:text="HALL OF FAME CLASSICS"
-                android:textColor="@color/movieed_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+            <!-- Same size/centre as the icon on the button, so the morph looks seamless -->
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@android:drawable/ic_menu_search"
+                app:tint="@color/movieed_primary" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="2dp"
-                android:text="All-time masterpieces every cinema lover must experience"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="12sp" />
+            <EditText
+                android:id="@+id/et_home_search_query"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="10dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:ellipsize="end"
+                android:hint="Search films, cast &amp; crew"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:textColor="@color/movieed_text_primary"
+                android:textColorHint="@color/movieed_text_secondary"
+                android:textSize="15sp" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_classics_movies"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
+            <ImageView
+                android:id="@+id/btn_close_home_search"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Close search"
+                android:focusable="true"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/movieed_text_secondary" />
 
         </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-        <!-- SECTION: HALL OF FAME CLASSIC SERIES -->
-        <LinearLayout
-            android:id="@+id/section_classics_series"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:letterSpacing="0.12"
-                android:text="HALL OF FAME CLASSIC SERIES"
-                android:textColor="@color/movieed_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="2dp"
-                android:text="Timeless television masterpieces to binge and log"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="12sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_classics_series"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
-
-        </LinearLayout>
-
-        <!-- SECTION: TRENDING TODAY -->
-        <LinearLayout
-            android:id="@+id/section_trending"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:letterSpacing="0.12"
-                android:text="TRENDING TODAY"
-                android:textColor="@color/movieed_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="2dp"
-                android:text="What cinema lovers are watching right now"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="12sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_trending_movies"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
-
-        </LinearLayout>
-
-        <!-- SECTION: TRENDING SERIES TODAY -->
-        <LinearLayout
-            android:id="@+id/section_trending_series"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:letterSpacing="0.12"
-                android:text="TRENDING SERIES TODAY"
-                android:textColor="@color/movieed_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="2dp"
-                android:text="Top television shows generating buzz right now"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="12sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_trending_series"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
-
-        </LinearLayout>
-
-        <!-- SECTION: IN THEATERS NOW -->
-        <LinearLayout
-            android:id="@+id/section_now_playing"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:letterSpacing="0.12"
-                android:text="IN THEATERS NOW"
-                android:textColor="@color/movieed_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="2dp"
-                android:text="Fresh releases waiting for your reaction"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="12sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_now_playing_movies"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
-
-        </LinearLayout>
-
-        <!-- SECTION: STREAMING SERIES -->
-        <LinearLayout
-            android:id="@+id/section_streaming_series"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="28dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:letterSpacing="0.12"
-                android:text="STREAMING SERIES"
-                android:textColor="@color/movieed_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="2dp"
-                android:text="Popular binge-worthy shows on streaming"
-                android:textColor="@color/movieed_text_secondary"
-                android:textSize="12sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_streaming_series"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="8dp" />
-
-        </LinearLayout>
-
-        <!-- FOOTER / MOTTO CARD -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="36dp"
-            app:cardBackgroundColor="@color/movieed_surface"
-            app:cardCornerRadius="16dp"
-            app:strokeColor="@color/movieed_border"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🎬 Log your stories"
-                    android:textColor="@color/movieed_text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:gravity="center"
-                    android:text="Every film you watch is part of your memory. Keep track of what moved you."
-                    android:textColor="@color/movieed_text_secondary"
-                    android:textSize="12sp" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-    </LinearLayout>
-
-</androidx.core.widget.NestedScrollView>
+</FrameLayout>
