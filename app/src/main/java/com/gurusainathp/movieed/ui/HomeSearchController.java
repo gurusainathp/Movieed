@@ -7,6 +7,8 @@ import android.content.Context;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.os.Build;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -19,6 +21,7 @@ import android.widget.FrameLayout;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
@@ -74,6 +77,21 @@ public class HomeSearchController implements DefaultLifecycleObserver {
     // Geometry captured when the search opens
     private int startW, endW, startTop, endTop, startEnd, endEnd, barHeight;
 
+    /**
+     * Lets another class (the results binder) react to the search UI without touching its animation code.
+     */
+    public interface Callbacks {
+        void onQueryChanged(@NonNull String query);   // user typed (while open)
+
+        void onSubmit(@NonNull String query);         // keyboard "search" key; keyboard is already hidden
+
+        void onSearchExpanded();                      // bar finished expanding, keyboard is coming up
+
+        void onSearchClosing();                       // close started (or forced), hide suggestions now
+    }
+
+    private Callbacks callbacks;
+
     private ValueAnimator animator;
     private float progress = 0f;      // 0 = button, 1 = full search bar
     private boolean open = false;     // target state
@@ -107,9 +125,25 @@ public class HomeSearchController implements DefaultLifecycleObserver {
         input.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 hideKeyboard();
+                if (callbacks != null) callbacks.onSubmit(input.getText().toString());
                 return true;
             }
             return false;
+        });
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Ignore the programmatic setText("") that happens after closing
+                if (open && callbacks != null) callbacks.onQueryChanged(s.toString());
+            }
         });
 
         // Back button closes the search first
@@ -127,6 +161,17 @@ public class HomeSearchController implements DefaultLifecycleObserver {
 
     public boolean isOpen() {
         return open;
+    }
+
+    public void setCallbacks(@Nullable Callbacks callbacks) {
+        this.callbacks = callbacks;
+    }
+
+    /**
+     * Y position (inside the screen root) of the bottom edge of the expanded search bar.
+     */
+    public int getBarBottomPx() {
+        return endTop + barHeight;
     }
 
     // ---- Public actions -------------------------------------------------
@@ -158,6 +203,7 @@ public class HomeSearchController implements DefaultLifecycleObserver {
         if (!open) return;
         open = false;
         backCallback.setEnabled(false);
+        if (callbacks != null) callbacks.onSearchClosing();
         hideKeyboard();
         input.clearFocus();
         animateTo(0f);
@@ -228,6 +274,7 @@ public class HomeSearchController implements DefaultLifecycleObserver {
     }
 
     private void onFullyOpen() {
+        if (callbacks != null) callbacks.onSearchExpanded();
         input.requestFocus();
         input.post(() -> {
             InputMethodManager imm = (InputMethodManager)
@@ -249,6 +296,7 @@ public class HomeSearchController implements DefaultLifecycleObserver {
         open = false;
         progress = 0f;
         backCallback.setEnabled(false);
+        if (callbacks != null) callbacks.onSearchClosing();
         hideKeyboard();
         input.clearFocus();
         onFullyClosed();

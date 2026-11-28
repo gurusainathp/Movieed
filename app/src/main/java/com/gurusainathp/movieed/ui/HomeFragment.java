@@ -25,6 +25,7 @@ import com.gurusainathp.movieed.BuildConfig;
 import com.gurusainathp.movieed.R;
 import com.gurusainathp.movieed.domain.model.Movie;
 import com.gurusainathp.movieed.ui.movie.MovieDetailsActivity;
+import com.gurusainathp.movieed.ui.search.SearchViewModel;
 
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +80,8 @@ public class HomeFragment extends Fragment {
 
     // Controllers
     private HomeSearchController homeSearchController;
+    private HomeSearchResultsBinder searchResultsBinder;
+    private SearchViewModel searchViewModel;
 
     @Nullable
     @Override
@@ -97,7 +100,12 @@ public class HomeFragment extends Fragment {
         setupRecyclerViews();
         observeViewModel();
 
+        // Scoped to this fragment so Home suggestions never share state with the Search page
+        searchViewModel = new ViewModelProvider(this).get(SearchViewModel.class);
         homeSearchController = new HomeSearchController(this, view);
+        searchResultsBinder = new HomeSearchResultsBinder(
+                this, view, homeSearchController, searchViewModel,
+                BuildConfig.TMDB_API_KEY, this::openSearchResult);
 
         btnRetry.setOnClickListener(v -> viewModel.loadHomeContent(BuildConfig.TMDB_API_KEY, true));
         btnSeeAllDiary.setOnClickListener(v -> navigateToTab(R.id.nav_diary));
@@ -119,7 +127,9 @@ public class HomeFragment extends Fragment {
         detachList(rvStreamingSeries);
 
         posterViewPool = null;
+        searchResultsBinder = null;
         homeSearchController = null;
+        searchViewModel = null;
 
         pbLoading = null;
         cardError = null;
@@ -265,6 +275,15 @@ public class HomeFragment extends Fragment {
                 movie.getPosterPath(),
                 isTv
         );
+    }
+
+    private void openSearchResult(@NonNull Movie movie) {
+        if (movie == null) return;
+        if ("person".equalsIgnoreCase(movie.getMediaType())) {
+            com.gurusainathp.movieed.ui.person.PersonDetailsActivity.launch(requireContext(), movie.getId(), movie.getTitle());
+        } else {
+            openMovieDetails(movie);
+        }
     }
 
     private void navigateToTab(int menuId) {

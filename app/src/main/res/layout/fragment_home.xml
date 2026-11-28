@@ -726,4 +726,94 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Search suggestions: sits under the expanded search bar. Position/size set by HomeSearchResultsBinder. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_search_results"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginHorizontal="20dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/movieed_surface"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/movieed_border"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Thin activity line at the top of the card -->
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progress_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:visibility="invisible"
+                app:indicatorColor="@color/movieed_primary"
+                app:trackColor="@color/movieed_surface_elevated"
+                app:trackThickness="2dp" />
+
+            <!-- Loading / empty / error message -->
+            <LinearLayout
+                android:id="@+id/layout_search_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="24dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_search_message_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="2"
+                    android:textColor="@color/movieed_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_search_message_body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textColor="@color/movieed_text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/btn_search_retry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="8dp"
+                    android:text="Retry"
+                    android:textColor="@color/movieed_accent"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- Results -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_search_results"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:paddingVertical="4dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+
 </FrameLayout>
