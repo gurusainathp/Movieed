@@ -15,6 +15,7 @@ import com.gurusainathp.movieed.data.remote.dto.TmdbCreditsResponseDto;
 import com.gurusainathp.movieed.data.remote.dto.TmdbCrewDto;
 import com.gurusainathp.movieed.data.repository.MovieRepository;
 import com.gurusainathp.movieed.domain.model.Movie;
+import com.gurusainathp.movieed.domain.util.GenreMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -143,25 +144,57 @@ public class ProfileViewModel extends AndroidViewModel {
         });
     }
 
-    public LiveData<ProfileStats> getProfileStats() { return profileStats; }
-    public LiveData<List<TmdbCastDto>> getActorList() { return actorListLiveData; }
-    public LiveData<List<TmdbCastDto>> getActressList() { return actressListLiveData; }
-    public LiveData<List<TmdbCastDto>> getDirectorList() { return directorListLiveData; }
-    public LiveData<List<TmdbCastDto>> getComposerList() { return composerListLiveData; }
-    public LiveData<String> getTopDecade() { return topDecadeLiveData; }
-    public LiveData<List<Movie>> getTopDecadeMovies() { return topDecadeMoviesLiveData; }
-    public LiveData<List<GenreStat>> getTopGenres() { return topGenresLiveData; }
-    public LiveData<String> getMemberSince() { return memberSinceLiveData; }
+    public LiveData<ProfileStats> getProfileStats() {
+        return profileStats;
+    }
+
+    public LiveData<List<TmdbCastDto>> getActorList() {
+        return actorListLiveData;
+    }
+
+    public LiveData<List<TmdbCastDto>> getActressList() {
+        return actressListLiveData;
+    }
+
+    public LiveData<List<TmdbCastDto>> getDirectorList() {
+        return directorListLiveData;
+    }
+
+    public LiveData<List<TmdbCastDto>> getComposerList() {
+        return composerListLiveData;
+    }
+
+    public LiveData<String> getTopDecade() {
+        return topDecadeLiveData;
+    }
+
+    public LiveData<List<Movie>> getTopDecadeMovies() {
+        return topDecadeMoviesLiveData;
+    }
+
+    public LiveData<List<GenreStat>> getTopGenres() {
+        return topGenresLiveData;
+    }
+
+    public LiveData<String> getMemberSince() {
+        return memberSinceLiveData;
+    }
 
     public static float getReactionVibeWeight(String reaction) {
         if (reaction == null) return 0.4f;
         switch (reaction.toUpperCase()) {
-            case "LOVE": return 1.0f;
-            case "LIKE": return 0.75f;
-            case "UMM": return 0.4f;
-            case "DISLIKE": return 0.1f;
-            case "HATE": return 0.0f;
-            default: return 0.4f;
+            case "LOVE":
+                return 1.0f;
+            case "LIKE":
+                return 0.75f;
+            case "UMM":
+                return 0.4f;
+            case "DISLIKE":
+                return 0.1f;
+            case "HATE":
+                return 0.0f;
+            default:
+                return 0.4f;
         }
     }
 
@@ -306,7 +339,8 @@ public class ProfileViewModel extends AndroidViewModel {
                             item.movie.getVoteAverage(),
                             mediaType
                     ));
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
 
@@ -348,7 +382,8 @@ public class ProfileViewModel extends AndroidViewModel {
                 try {
                     int genreId = Integer.parseInt(part.trim());
                     genreCounts.put(genreId, genreCounts.getOrDefault(genreId, 0) + 1);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
 
@@ -362,44 +397,11 @@ public class ProfileViewModel extends AndroidViewModel {
             int genreId = entry.getKey();
             int count = entry.getValue();
             int percentage = Math.round(((float) count / totalWatched) * 100);
-            String name = getGenreName(genreId);
+            String name = GenreMapper.getGenreName(genreId);
             stats.add(new GenreStat(name, percentage));
         }
 
         topGenresLiveData.setValue(stats);
-    }
-
-    private String getGenreName(int genreId) {
-        switch (genreId) {
-            case 28: return "Action";
-            case 12: return "Adventure";
-            case 16: return "Animation";
-            case 35: return "Comedy";
-            case 80: return "Crime";
-            case 99: return "Documentary";
-            case 18: return "Drama";
-            case 10751: return "Family";
-            case 14: return "Fantasy";
-            case 36: return "History";
-            case 27: return "Horror";
-            case 10402: return "Music";
-            case 9648: return "Mystery";
-            case 10749: return "Romance";
-            case 878: return "Sci-Fi";
-            case 10770: return "TV Movie";
-            case 53: return "Thriller";
-            case 10752: return "War";
-            case 37: return "Western";
-            case 10759: return "Action & Adventure";
-            case 10762: return "Kids";
-            case 10763: return "News";
-            case 10764: return "Reality";
-            case 10765: return "Sci-Fi & Fantasy";
-            case 10766: return "Soap";
-            case 10767: return "Talk";
-            case 10768: return "War & Politics";
-            default: return "Genre";
-        }
     }
 
     private void evaluateFavoritePeople(List<MovieLogWithDetails> watchedLogs,

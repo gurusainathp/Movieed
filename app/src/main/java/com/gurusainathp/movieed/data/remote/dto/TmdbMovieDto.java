@@ -42,6 +42,9 @@ public class TmdbMovieDto {
     @SerializedName("genre_ids")
     private List<Integer> genreIds;
 
+    @SerializedName("genres")
+    private List<TmdbGenreDto> genres;
+
     @SerializedName("original_language")
     private String originalLanguage;
 
@@ -125,6 +128,10 @@ public class TmdbMovieDto {
 
     public List<Integer> getGenreIds() {
         return genreIds;
+    }
+
+    public List<TmdbGenreDto> getGenres() {
+        return genres;
     }
 
     public String getOriginalLanguage() {
